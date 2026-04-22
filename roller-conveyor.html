@@ -20,7 +20,7 @@
 
     <main class="app-main">
       <section class="panel">
-        <h2><span class="panel-icon">R</span> Datos de entrada</h2>
+        <h2><span class="panel-icon">?</span> Datos de entrada</h2>
         <p class="form-lead">
           Modelo orientativo para <strong>transportador de rodillos motorizado horizontal</strong>. El calculo entrega par,
           velocidad y potencia para seleccionar motorreductor.
@@ -40,14 +40,14 @@
         <h3 class="field-section-title">Norma y carga</h3>
         <div class="field-grid field-grid--essential">
           <div class="field">
-            <label for="designStandard">Norma</label>
+            <label for="designStandard">Norma <span class="info-chip" title="Marco de cálculo recomendado para el informe">?</span></label>
             <select id="designStandard">
               <option value="ISO5048">ISO 5048</option>
               <option value="CEMA">CEMA</option>
             </select>
           </div>
           <div class="field">
-            <label for="loadDuty">Tipo de carga</label>
+            <label for="loadDuty">Tipo de carga <span class="info-chip" title="Ajusta automáticamente el factor de servicio">?</span></label>
             <select id="loadDuty">
               <option value="uniform">Uniforme</option>
               <option value="moderate" selected>Moderada</option>
@@ -57,7 +57,7 @@
             <span id="loadDutyHint" class="field-hint">Cargas moderadas: SF recomendado tipico.</span>
           </div>
           <div class="field">
-            <label for="serviceFactor">Factor de servicio</label>
+            <label for="serviceFactor">Factor de servicio <span class="info-chip" title="Use personalizado si su norma interna exige otro valor">?</span></label>
             <input id="serviceFactor" type="number" min="1.0" step="0.05" value="1.25" readonly class="input-synced" />
           </div>
         </div>
@@ -65,46 +65,46 @@
         <h3 class="field-section-title">Datos esenciales</h3>
         <div class="field-grid field-grid--essential">
           <div class="field">
-            <label for="length">Longitud util</label>
+            <label for="length">Longitud util <span class="info-chip" title="Longitud efectiva de transporte en metros">?</span></label>
             <input id="length" type="number" min="0.5" step="0.1" value="5.0" />
             <span class="field-hint">m</span>
           </div>
           <div class="field">
-            <label for="loadMass">Carga total</label>
+            <label for="loadMass">Carga total <span class="info-chip" title="Carga total simultánea sobre los rodillos">?</span></label>
             <input id="loadMass" type="number" min="1" step="1" value="350" />
             <span class="field-hint">kg</span>
           </div>
           <div class="field">
-            <label for="speed">Velocidad lineal</label>
+            <label for="speed">Velocidad lineal <span class="info-chip" title="Velocidad objetivo del producto sobre la línea">?</span></label>
             <input id="speed" type="number" min="0.01" step="0.01" value="0.35" />
             <span class="field-hint">m/s</span>
           </div>
           <div class="field">
-            <label for="rollerD">Diametro rodillo motriz</label>
+            <label for="rollerD">Diametro rodillo motriz <span class="info-chip" title="Diámetro del rodillo de accionamiento">?</span></label>
             <input id="rollerD" type="number" min="40" step="1" value="89" />
             <span class="field-hint">mm</span>
           </div>
           <div class="field">
-            <label for="rollingResistance">Coef. rodadura Crr</label>
+            <label for="rollingResistance">Coef. rodadura Crr <span class="info-chip" title="0.02 a 0.05 típico; mayor valor implica más pérdidas">?</span></label>
             <input id="rollingResistance" type="number" min="0.002" step="0.001" value="0.030" />
           </div>
           <div class="field">
-            <label for="efficiency">Rendimiento eta</label>
+            <label for="efficiency">Rendimiento eta <span class="info-chip" title="Rendimiento total del tren de transmisión en porcentaje">?</span></label>
             <input id="efficiency" type="number" min="1" max="100" step="0.5" value="90" />
             <span class="field-hint">%</span>
           </div>
           <div class="field">
-            <label for="additionalResistance">Resistencia adicional</label>
+            <label for="additionalResistance">Resistencia adicional <span class="info-chip" title="Sume rozamientos extra: guías, topes, transferencias">?</span></label>
             <input id="additionalResistance" type="number" min="0" step="10" value="0" />
             <span class="field-hint">N</span>
           </div>
           <div class="field">
-            <label for="accelTime">Tiempo aceleracion</label>
+            <label for="accelTime">Tiempo aceleracion <span class="info-chip" title="A menor tiempo de aceleración, mayor pico de par">?</span></label>
             <input id="accelTime" type="number" min="0.2" step="0.1" value="2.5" />
             <span class="field-hint">s</span>
           </div>
           <div class="field">
-            <label for="inertiaFactor">Factor de inercia arranque</label>
+            <label for="inertiaFactor">Factor de inercia arranque <span class="info-chip" title="Ajuste para inercia adicional de rodillos y acoplamientos">?</span></label>
             <input id="inertiaFactor" type="number" min="1" step="0.05" value="1.10" />
           </div>
         </div>
@@ -125,7 +125,7 @@
         </section>
 
         <section class="panel">
-          <h2><span class="panel-icon">S</span> Resultado</h2>
+          <h2><span class="panel-icon">?</span> Resultados finales (tambor y motor)</h2>
           <div id="resultsGrid"></div>
         </section>
 
@@ -133,7 +133,7 @@
           <details class="motors-details">
             <summary class="motors-details__summary">
               <span class="motors-details__summary-main">
-                <span class="panel-icon">D</span>
+                <span class="panel-icon">?</span>
                 <span class="motors-details__text">
                   <span class="motors-details__title">Desglose de ingenieria</span>
                   <span class="motors-details__hint">Pasos de calculo, hipotesis y criterios</span>
@@ -166,7 +166,7 @@
         </section>
 
         <section class="panel">
-          <h2><span class="panel-icon">H</span> Hipotesis del modelo</h2>
+          <h2><span class="panel-icon">?</span> Hipotesis del modelo</h2>
           <ul class="assumptions" id="assumptionsList"></ul>
         </section>
 

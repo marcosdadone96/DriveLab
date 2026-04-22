@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Bloques HTML: pasos de cálculo (plegados), reductor, estrategias, unidades SI.
  */
 
@@ -189,3 +189,5 @@ export function renderFullEngineeringAside(r, gearOpts) {
     renderDetailedStepsTable(r)
   );
 }
+
+

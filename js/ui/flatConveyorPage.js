@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Página cinta plana — motor de cálculo detallado + informe de ingeniería.
  */
 
@@ -226,7 +226,7 @@ function refresh() {
       <div class="metric"><div class="label">Par requerido</div><div class="value">${formatNum(r.torqueWithService_Nm, 2)} N·m</div></div>
       <div class="metric"><div class="label">Factor de servicio</div><div class="value">${formatNum(r.serviceFactorUsed ?? raw.serviceFactor, 2)}</div></div>
       <div class="metric metric--text"><div class="label">Tipo de montaje</div><div class="value">${formatMounting(mount)}</div></div>
-      <div class="metric"><div class="label">Velocidad</div><div class="value">${formatNum(r.drumRpm, 2)} min⁻¹</div></div>
+      <div class="metric"><div class="label">Velocidad</div><div class="value">${formatNum(r.drumRpm, 2)} rpm</div></div>
       <div class="metric"><div class="label">Motor (kW)</div><div class="value">${formatNum(r.requiredMotorPower_kW, 3)} kW</div></div>
       <div class="metric metric--text"><div class="label">Detalles mecánicos</div><div class="value">${mechanicalSummary || 'Configuración estándar'}</div></div>
     </div>
@@ -357,3 +357,6 @@ MOUNTING_INPUT_IDS.forEach((id) => {
 
 syncLoadDutyUi();
 refresh();
+
+
+

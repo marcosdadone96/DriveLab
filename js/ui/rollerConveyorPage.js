@@ -123,14 +123,14 @@ function refresh() {
         <div class="metric"><div class="label">Par requerido</div><div class="value">${formatNum(r.torqueWithService_Nm, 2)} N*m</div></div>
         <div class="metric"><div class="label">Factor de servicio</div><div class="value">${formatNum(r.serviceFactorUsed, 2)}</div></div>
         <div class="metric metric--text"><div class="label">Tipo de montaje</div><div class="value">${formatMounting(mount)}</div></div>
-        <div class="metric"><div class="label">Velocidad</div><div class="value">${formatNum(r.drumRpm, 2)} min^-1</div></div>
+        <div class="metric"><div class="label">Velocidad</div><div class="value">${formatNum(r.drumRpm, 2)} rpm</div></div>
         <div class="metric"><div class="label">Motor (kW)</div><div class="value">${formatNum(r.requiredMotorPower_kW, 3)} kW</div></div>
         <div class="metric metric--text"><div class="label">Detalles mecanicos</div><div class="value">${mechanicalSummary || 'Configuracion estandar'}</div></div>
       </div>
       <details class="motors-details result-focus-extra">
         <summary class="motors-details__summary">
           <span class="motors-details__summary-main">
-            <span class="panel-icon">=</span>
+            <span class="panel-icon">?</span>
             <span class="motors-details__text">
               <span class="motors-details__title">Resultado completo</span>
               <span class="motors-details__hint">Fuerzas, potencia y metricas extendidas</span>
@@ -219,4 +219,6 @@ document.getElementById('btnCalcular')?.addEventListener('click', () => {
 
 syncLoadDutyUi();
 refresh();
+
+
 

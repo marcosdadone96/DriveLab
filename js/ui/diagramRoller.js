@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Transportador de rodillos motorizado - esquema visual.
  */
 
@@ -94,8 +94,10 @@ export function renderRollerConveyorDiagram(svg, p) {
     <text x="716" y="143" font-size="9.5" fill="#374151" font-family="Inter, system-ui, sans-serif">Diametro rodillo: ${D.toFixed(0)} mm</text>
     <text x="716" y="160" font-size="9.5" fill="#374151" font-family="Inter, system-ui, sans-serif">Pitch: ${pitch.toFixed(1)} px</text>
     <text x="716" y="177" font-size="9.5" fill="#374151" font-family="Inter, system-ui, sans-serif">Vel. lineal: ${v.toFixed(2)} m/s</text>
-    <text x="716" y="194" font-size="9.5" fill="#374151" font-family="Inter, system-ui, sans-serif">Vel. giro: ${Number.isFinite(n) ? n.toFixed(1) : '--'} min^-1</text>
+    <text x="716" y="194" font-size="9.5" fill="#374151" font-family="Inter, system-ui, sans-serif">Vel. giro: ${Number.isFinite(n) ? n.toFixed(1) : '--'} rpm</text>
     <text x="716" y="211" font-size="9.5" fill="#374151" font-family="Inter, system-ui, sans-serif">Rodillos: ${rollers + 1}</text>
   `;
 }
+
+
 

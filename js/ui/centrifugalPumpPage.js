@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Página bomba centrífuga — mismo patrón que cintas: resultados, informe, motorreductores, PDF Pro.
  */
 
@@ -271,7 +271,7 @@ function refresh() {
       <div class="metric"><div class="label">Par requerido</div><div class="value">${formatNum(r.torqueWithService_Nm, 2)} N·m</div></div>
       <div class="metric"><div class="label">Factor de servicio</div><div class="value">${formatNum(r.serviceFactorUsed ?? 1, 3)}</div></div>
       <div class="metric metric--text"><div class="label">Tipo de montaje</div><div class="value">${formatMounting(mount)}</div></div>
-      <div class="metric"><div class="label">Velocidad</div><div class="value">${formatNum(r.drumRpm, 2)} min⁻¹</div></div>
+      <div class="metric"><div class="label">Velocidad</div><div class="value">${formatNum(r.drumRpm, 2)} rpm</div></div>
       <div class="metric"><div class="label">Motor (kW)</div><div class="value">${formatNum(r.requiredMotorPower_kW, 3)} kW</div></div>
       <div class="metric metric--text"><div class="label">Detalles mecánicos</div><div class="value">${mechanicalSummary}</div></div>
     </div>
@@ -398,3 +398,6 @@ MOUNTING_INPUT_IDS.forEach((id) => {
 syncProInstallUi();
 syncLoadDutyUi();
 refresh();
+
+
+

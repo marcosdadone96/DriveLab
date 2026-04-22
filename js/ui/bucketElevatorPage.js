@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Página elevador de cangilones — asistente 3 pasos + diagrama + motorreductores.
  */
 
@@ -170,7 +170,7 @@ function computeAndRender() {
         <div class="metric"><div class="label">Par requerido</div><div class="value">${drive.torque_Nm.toFixed(0)} N·m</div></div>
         <div class="metric"><div class="label">Factor de servicio</div><div class="value">1.00</div></div>
         <div class="metric metric--text"><div class="label">Tipo de montaje</div><div class="value">${formatMounting(mount)}</div></div>
-        <div class="metric"><div class="label">Velocidad</div><div class="value">${drive.drum_rpm.toFixed(1)} min⁻¹</div></div>
+        <div class="metric"><div class="label">Velocidad</div><div class="value">${drive.drum_rpm.toFixed(1)} rpm</div></div>
         <div class="metric"><div class="label">Motor (kW)</div><div class="value">${drive.power_kW.toFixed(3)} kW</div></div>
         <div class="metric metric--text"><div class="label">Detalles mecánicos</div><div class="value">${mechanicalSummary}</div></div>
       </div>
@@ -312,3 +312,6 @@ try {
 
 setStep(1);
 computeAndRender();
+
+
+

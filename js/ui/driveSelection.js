@@ -1,4 +1,4 @@
-/**
+﻿/**
  * UI: recomendaciones por marca y verificación de motorreductor del usuario.
  */
 
@@ -524,3 +524,5 @@ function escapeHtml(s) {
 function escapeAttr(s) {
   return escapeHtml(s).replace(/'/g, '&#39;');
 }
+
+

@@ -16,12 +16,7 @@ import {
   VERDICT,
 } from '../lab/transmissionCanvasEngine.js';
 import { CHAIN_CATALOG } from '../lab/chainCatalog.js';
-import { commerceIdForChainRef, filterChainCatalogRows, typicalBeltEfficiency } from '../data/commerceCatalog.js';
-import { emitEngineeringSnapshot, MDR_STOCK_FILTER_CHANGED } from '../services/engineeringSnapshot.js';
-import { getInStockOnly } from '../services/commerceStockFilter.js';
-import { bootSmartDashboardIfEnabled } from './smartDashboardBoot.js';
-
-bootSmartDashboardIfEnabled('Lienzo técnico');
+import { filterChainCatalogRows } from '../data/commerceCatalog.js';
 
 /** @type {'gears'|'belts'|'chains'} */
 let activeTab = 'gears';
@@ -41,12 +36,13 @@ const ZOOM_MAX = 5;
 
 let lastT = performance.now();
 let propsDirty = true;
-let lastDashboardEmit = 0;
 
 const svg = document.getElementById('txSvg');
 const svgWrap = document.getElementById('txSvgWrap');
 const hudFormulas = document.getElementById('txFormulas');
 const hudVerdict = document.getElementById('txVerdict');
+const hudInputChecks = document.getElementById('txInputChecks');
+const hudElements = document.getElementById('txElementResults');
 const hudPick = document.getElementById('txPickHint');
 const hudPickChain = document.getElementById('txPickHintChain');
 const inpN = document.getElementById('txN0');
@@ -76,93 +72,46 @@ function esc(s) {
     .replace(/"/g, '&quot;');
 }
 
-function emitCanvasEngineeringSnapshot() {
+function renderInputChecks(kin) {
+  if (!hudInputChecks) return;
   const { n, T } = readMotorInputs();
-  const P_kw = (T * (2 * Math.PI * n) / 60) / 1000;
-  /** @type {Array<{ commerceId: string, qty: number, note?: string }>} */
-  const shoppingLines = [];
-  const gears = state.nodes.filter((x) => x.kind === 'gear');
-  const pulleys = state.nodes.filter((x) => x.kind === 'pulley');
-  const sprockets = state.nodes.filter((x) => x.kind === 'sprocket');
-  if (gears.length) {
-    shoppingLines.push({
-      commerceId: 'gear-pair-quote',
-      qty: Math.max(1, Math.ceil(gears.length / 2)),
-      note: `${gears.length} engranaje(s) en modelo`,
-    });
-  }
-  if (pulleys.length) {
-    shoppingLines.push({
-      commerceId: 'pulley-stock-100',
-      qty: pulleys.length,
-      note: 'Poleas · referencia Ø100 stock demo',
-    });
-  }
-  if (sprockets.length) {
-    shoppingLines.push({
-      commerceId: 'sprocket-kit-17',
-      qty: sprockets.length,
-      note: 'Piñones · partida demo',
-    });
-  }
-  const chainIdsSeen = new Set();
-  for (const cr of state.chainRuns) {
-    const first = state.nodes.find((nn) => nn.id === cr.nodeIds[0]);
-    const ref = first?.chainRefId || cr.chainRefId || 'iso-08b-1';
-    if (chainIdsSeen.has(ref)) continue;
-    chainIdsSeen.add(ref);
-    shoppingLines.push({
-      commerceId: commerceIdForChainRef(ref),
-      qty: 1,
-      note: 'Cadena · bucle cerrado',
-    });
-  }
-  if (!state.chainRuns.length && sprockets.length >= 2) {
-    const ref = sprockets[0].chainRefId || 'iso-08b-1';
-    shoppingLines.push({
-      commerceId: commerceIdForChainRef(ref),
-      qty: 1,
-      note: 'Cadena · vista previa / sin cierre',
-    });
-  }
-  for (const br of state.beltRuns) {
-    const cid = br.kind === 'sync' ? 'belt-sync-5' : 'belt-v-SPA';
-    shoppingLines.push({ commerceId: cid, qty: 1, note: br.kind === 'sync' ? 'Correa síncrona demo' : 'Correa trapezoidal demo' });
-  }
+  /** @type {Array<{level:'ok'|'warn'|'err', text:string}>} */
+  const issues = [];
+  if (!(Number.isFinite(n) && n > 0)) issues.push({ level: 'err', text: 'n motor inválida: use un valor mayor que 0 rpm.' });
+  if (!(Number.isFinite(T) && T > 0)) issues.push({ level: 'err', text: 'T motor inválido: use un valor mayor que 0 N*m.' });
+  if (!state.nodes.length) issues.push({ level: 'warn', text: 'No hay elementos en el lienzo.' });
+  if (state.nodes.length > 0 && !state.nodes.some((x) => x.isMotor)) issues.push({ level: 'warn', text: 'Marque un elemento como motor para propagar resultados.' });
+  if (state.nodes.length > 0 && !Object.keys(kin.byId || {}).length) issues.push({ level: 'err', text: 'No se puede resolver la cinemática: revise conexiones y datos.' });
+  if (!issues.length) issues.push({ level: 'ok', text: 'Entradas coherentes. Modelo calculado correctamente.' });
+  hudInputChecks.innerHTML = issues.map((x) => `<div class="tx-check tx-check--${x.level}">${esc(x.text)}</div>`).join('');
+}
 
-  let etaSum = 0;
-  let etaN = 0;
-  for (const br of state.beltRuns) {
-    etaSum += typicalBeltEfficiency(br.kind === 'sync' ? 'synchronous' : 'v_trapezoidal');
-    etaN += 1;
+function renderElementColumns(kin) {
+  if (!hudElements) return;
+  const vis = state.nodes.filter((n) => kindVisibleInTab(n.kind));
+  if (!vis.length) {
+    hudElements.innerHTML = '<div class="tx-check tx-check--warn">Sin elementos para mostrar.</div>';
+    return;
   }
-  /** @type {'v_trapezoidal'|'synchronous'|'flat'|'poly_v'} */
-  let beltType = 'v_trapezoidal';
-  if (state.beltRuns.some((b) => b.kind === 'sync')) beltType = 'synchronous';
-
-  const energyEfficiencyPct =
-    etaN > 0
-      ? Math.round((etaSum / etaN) * 100)
-      : pulleys.length > 0 || state.beltRuns.length > 0
-        ? Math.round(typicalBeltEfficiency(beltType) * 100)
-        : gears.length > 0
-          ? 99
-          : P_kw > 0
-            ? 96
-            : null;
-
-  emitEngineeringSnapshot({
-    page: 'transmission-canvas',
-    moduleLabel: 'Lienzo técnico',
-    advisorContext: {
-      belt: { beltType, powerKw: P_kw > 0 ? P_kw : null },
-    },
-    shoppingLines,
-    metrics: {
-      energyEfficiencyPct,
-      materialUtilizationPct: gears.length ? Math.min(100, 35 + gears.length * 12) : null,
-    },
-  });
+  const kindLabel = { gear: 'Rueda', pulley: 'Polea', sprocket: 'Piñón' };
+  hudElements.innerHTML = vis
+    .map((n, idx) => {
+      const k = kin.byId?.[n.id];
+      const rpm = k ? Math.abs(k.n_rpm).toFixed(1) : '--';
+      const torque = k ? k.T_Nm.toFixed(2) : '--';
+      const ratio = k ? k.ratioFromMotor.toFixed(3) : '--';
+      const dim = n.kind === 'pulley' ? `${Math.round(getNodeD_mm(n))} mm` : `z${n.z ?? '--'}`;
+      return `<article class="tx-element-card">
+        <div class="tx-element-card__title">${kindLabel[n.kind]} ${idx + 1}</div>
+        <dl class="tx-element-card__kv">
+          <dt>Elemento</dt><dd>${dim}</dd>
+          <dt>rpm</dt><dd>${rpm}</dd>
+          <dt>T (N*m)</dt><dd>${torque}</dd>
+          <dt>i total</dt><dd>${ratio}</dd>
+        </dl>
+      </article>`;
+    })
+    .join('');
 }
 
 function kindVisibleInTab(kind) {
@@ -298,6 +247,8 @@ function updateHud(kin, verdict) {
       hudPickChain.textContent = '';
     }
   }
+  renderInputChecks(kin);
+  renderElementColumns(kin);
 }
 
 /** Geometría de lazo abierto (correa o cadena sobre primitivos). */
@@ -459,7 +410,7 @@ function drawSvg(kin) {
 
     const kn = kin.byId[node.id];
     const zLabel = k === 'pulley' ? `Ø${Math.round(D)}` : `z${node.z ?? '—'}`;
-    const tag = kn ? `${zLabel} · ${Math.abs(kn.n_rpm).toFixed(0)} min⁻¹ · ${kn.T_Nm.toFixed(1)} N·m` : `${k} #${node.id}`;
+    const tag = kn ? `${zLabel} · ${Math.abs(kn.n_rpm).toFixed(0)} rpm · ${kn.T_Nm.toFixed(1)} N*m` : `${k} #${node.id}`;
 
     nodesHtml += `<g class="tx-node" data-id="${node.id}" style="cursor:grab">
       ${motorRing}
@@ -582,11 +533,6 @@ function frame(t) {
     propsDirty = false;
   }
   drawSvg(kin);
-  const now = performance.now();
-  if (now - lastDashboardEmit > 450) {
-    lastDashboardEmit = now;
-    emitCanvasEngineeringSnapshot();
-  }
   requestAnimationFrame(frame);
 }
 
@@ -620,7 +566,7 @@ function syncPropsPanel() {
       <div class="lab-field"><label>Ø primitivo (mm)</label><input type="number" min="10" data-tx-p="d" value="${node.d_mm}" /></div>
       <button type="button" class="lab-btn" data-tx-p="del" style="margin-top:0.5rem">Eliminar elemento</button>`;
   } else {
-    const rows = filterChainCatalogRows(CHAIN_CATALOG, getInStockOnly());
+    const rows = filterChainCatalogRows(CHAIN_CATALOG, false);
     const idSet = new Set(rows.map((r) => r.id));
     const optionsRows =
       node.chainRefId && !idSet.has(node.chainRefId)
@@ -877,10 +823,6 @@ window.addEventListener('keydown', (ev) => {
 window.addEventListener('pointermove', onPointerMove);
 window.addEventListener('pointerup', onPointerUp);
 window.addEventListener('pointercancel', onPointerUp);
-
-window.addEventListener(MDR_STOCK_FILTER_CHANGED, () => {
-  propsDirty = true;
-});
 
 updateZoomLabel();
 switchTab('gears');

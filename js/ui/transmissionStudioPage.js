@@ -247,6 +247,46 @@ function updateSummary() {
 
   const { rows, n_final, total_ratio } = cascadeSpeeds(n0, stages);
 
+  /** @type {Array<{level:'ok'|'warn'|'err', text:string}>} */
+  const checks = [];
+  if (!(Number.isFinite(n0) && n0 > 0)) checks.push({ level: 'err', text: 'n entrada debe ser mayor que 0 rpm.' });
+  if (!stages.length) checks.push({ level: 'warn', text: 'No hay etapas en el lienzo.' });
+  for (const s of stages) {
+    if (s.type === 'gear_train' && s.gears.some((g) => !Number.isFinite(g.z) || g.z < 6)) checks.push({ level: 'err', text: `Tren ${s.id}: dientes inválidos (z < 6).` });
+    if (s.type === 'belt' && s.pulleys.some((p) => !Number.isFinite(p.d) || p.d <= 0)) checks.push({ level: 'err', text: `Correa ${s.id}: diámetros inválidos.` });
+    if (s.type === 'chain' && s.sprockets.some((sp) => !Number.isFinite(sp.z) || sp.z < 6)) checks.push({ level: 'err', text: `Cadena ${s.id}: dientes inválidos (z < 6).` });
+  }
+  if (!checks.length) checks.push({ level: 'ok', text: 'Entradas coherentes. Cálculo resuelto.' });
+
+  function stageElementsHtml(r) {
+    const s = r.stage;
+    if (s.type === 'gear_train') {
+      let nCurrent = r.n_in;
+      const els = s.gears.map((g, idx) => {
+        if (idx > 0) {
+          const zPrev = s.gears[idx - 1].z;
+          nCurrent = -(nCurrent * zPrev) / g.z;
+        }
+        return `<div class="studio-stage-el"><div class="studio-stage-el__t">Rueda ${idx + 1}</div><div class="studio-stage-el__v">z=${g.z}<br>n=${nCurrent.toFixed(1)} rpm</div></div>`;
+      });
+      return `<div class="studio-stage-elements">${els.join('')}</div>`;
+    }
+    if (s.type === 'belt') {
+      const d1 = s.pulleys[0]?.d || 1;
+      const els = s.pulleys.map((p, idx) => {
+        const nEl = r.n_in * (d1 / Math.max(1, p.d));
+        return `<div class="studio-stage-el"><div class="studio-stage-el__t">Polea ${idx + 1}</div><div class="studio-stage-el__v">D=${p.d.toFixed(0)} mm<br>n=${nEl.toFixed(1)} rpm</div></div>`;
+      });
+      return `<div class="studio-stage-elements">${els.join('')}</div>`;
+    }
+    const z1 = s.sprockets[0]?.z || 1;
+    const els = s.sprockets.map((sp, idx) => {
+      const nEl = r.n_in * (z1 / Math.max(1, sp.z));
+      return `<div class="studio-stage-el"><div class="studio-stage-el__t">Rueda ${idx + 1}</div><div class="studio-stage-el__v">z=${sp.z}<br>n=${nEl.toFixed(1)} rpm</div></div>`;
+    });
+    return `<div class="studio-stage-elements">${els.join('')}</div>`;
+  }
+
   if (cardsEl) {
     if (!rows.length) {
       cardsEl.innerHTML =
@@ -262,18 +302,22 @@ function updateSummary() {
           </div>
           <div class="studio-stage-result__body">
             <span class="studio-kv"><abbr title="Relación de transmisión">i</abbr> = <strong>${r.ratio.toFixed(4)}</strong></span>
-            <span class="studio-kv"><var>n</var>: <strong>${r.n_in.toFixed(1)}</strong> → <strong>${r.n_out.toFixed(1)}</strong> min⁻¹</span>
+            <span class="studio-kv"><var>n</var>: <strong>${r.n_in.toFixed(1)}</strong> → <strong>${r.n_out.toFixed(1)}</strong> rpm</span>
           </div>
+          ${stageElementsHtml(r)}
         </div>`,
         )
         .join('');
 
       cardsEl.innerHTML = `
+        <div class="studio-checks">
+          ${checks.map((c) => `<div class="studio-check studio-check--${c.level}">${esc(c.text)}</div>`).join('')}
+        </div>
         <div class="studio-metric-row">
           <div class="studio-metric-card studio-metric-card--in">
             <span class="studio-metric-card__label">Entrada</span>
             <span class="studio-metric-card__value">${n0.toFixed(1)}</span>
-            <span class="studio-metric-card__unit">min⁻¹</span>
+            <span class="studio-metric-card__unit">rpm</span>
           </div>
           <div class="studio-metric-card studio-metric-card--ratio">
             <span class="studio-metric-card__label">ω<sub>sal</sub>/ω<sub>ent</sub></span>
@@ -283,7 +327,7 @@ function updateSummary() {
           <div class="studio-metric-card studio-metric-card--out">
             <span class="studio-metric-card__label">Salida</span>
             <span class="studio-metric-card__value">${n_final.toFixed(1)}</span>
-            <span class="studio-metric-card__unit">min⁻¹</span>
+            <span class="studio-metric-card__unit">rpm</span>
           </div>
         </div>
         <div class="studio-stage-flow">${stageBlocks}</div>

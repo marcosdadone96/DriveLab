@@ -1203,6 +1203,67 @@
   color: #475569;
 }
 
+.studio-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.studio-check {
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  padding: 0.38rem 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.studio-check--ok {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #14532d;
+}
+
+.studio-check--warn {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.studio-check--err {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.studio-stage-elements {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.45rem;
+  padding: 0.35rem 0.65rem 0.7rem;
+}
+
+.studio-stage-el {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0.35rem 0.45rem;
+  background: #f8fafc;
+}
+
+.studio-stage-el__t {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #475569;
+  margin-bottom: 0.2rem;
+}
+
+.studio-stage-el__v {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: #0f172a;
+  font-variant-numeric: tabular-nums;
+}
+
 .studio-kv strong {
   font-weight: 800;
   color: #0f172a;
@@ -2250,6 +2311,80 @@
 
 .tx-verdict-line:first-child {
   margin-top: 0;
+}
+
+.tx-checks {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.8rem;
+}
+
+.tx-check {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  padding: 0.38rem 0.5rem;
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.tx-check--ok {
+  background: #ecfdf5;
+  border-color: #6ee7b7;
+  color: #14532d;
+}
+
+.tx-check--warn {
+  background: #fffbeb;
+  border-color: #fcd34d;
+  color: #92400e;
+}
+
+.tx-check--err {
+  background: #fef2f2;
+  border-color: #fca5a5;
+  color: #991b1b;
+}
+
+.tx-element-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 0.5rem;
+}
+
+.tx-element-card {
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #fff;
+  padding: 0.45rem 0.55rem;
+}
+
+.tx-element-card__title {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: #334155;
+  margin-bottom: 0.25rem;
+}
+
+.tx-element-card__kv {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.12rem 0.35rem;
+  font-size: 0.68rem;
+}
+
+.tx-element-card__kv dt {
+  color: #64748b;
+  font-weight: 700;
+}
+
+.tx-element-card__kv dd {
+  margin: 0;
+  text-align: right;
+  color: #0f172a;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
 }
 
 .tx-legend {

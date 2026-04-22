@@ -55,7 +55,7 @@
         </div>
         <div class="tx-motor-strip">
           <div class="lab-field">
-            <label for="txN0">n motor (min⁻¹)</label>
+            <label for="txN0">n motor (rpm)</label>
             <input id="txN0" type="number" min="1" step="any" value="1455" />
           </div>
           <div class="lab-field">
@@ -142,10 +142,14 @@
         </section>
 
         <aside class="lab-panel tx-hud">
+          <h2 class="studio-aside-title">Chequeo de entradas</h2>
+          <div id="txInputChecks" class="tx-checks"></div>
           <h2 class="studio-aside-title">Fórmulas en vivo</h2>
           <div id="txFormulas" class="tx-formulas"></div>
           <h2 class="studio-aside-title" style="margin-top: 1rem">Veredicto</h2>
           <div id="txVerdict" class="tx-verdict-strip tx-verdict-strip--ok"></div>
+          <h2 class="studio-aside-title" style="margin-top: 1rem">Resultados por elemento</h2>
+          <div id="txElementResults" class="tx-element-grid"></div>
           <p class="tx-small-print" style="margin-top: 0.75rem">
             Modelos simplificados (Lewis/Hertz orientativos, longitudes comerciales demo, carga cadena estimada). Valide siempre con normas ISO/AGMA y catálogo del fabricante.
           </p>

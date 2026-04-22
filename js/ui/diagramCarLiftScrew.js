@@ -54,6 +54,10 @@ export function renderCarLiftScrewDiagram(svg, p) {
       <marker id="liftArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
         <path d="M0,0 L8,4 L0,8 Z" fill="#0f766e" />
       </marker>
+      <pattern id="hazardStripe" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+        <rect width="8" height="8" fill="#f8fafc"/>
+        <rect width="4" height="8" fill="#f59e0b"/>
+      </pattern>
     </defs>
     <rect width="100%" height="100%" fill="url(#bgLift)"/>
     <text x="14" y="22" font-size="11" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">
@@ -83,6 +87,13 @@ export function renderCarLiftScrewDiagram(svg, p) {
     <rect x="154" y="${deckY + 6}" width="112" height="18" rx="6" fill="#0f172a" opacity="0.35"/>
     <circle cx="166" cy="${deckY + 42}" r="7.5" fill="#111827"/>
     <circle cx="254" cy="${deckY + 42}" r="7.5" fill="#111827"/>
+    <rect x="150" y="${deckY + 44}" width="120" height="6" rx="2" fill="url(#hazardStripe)" />
+
+    <!-- Eje de sincronismo -->
+    <line x1="${postLeftX + postW / 2}" y1="${postTop - 8}" x2="${postRightX + postW / 2}" y2="${postTop - 8}" stroke="#64748b" stroke-width="4.2" stroke-linecap="round"/>
+    <circle cx="${postLeftX + postW / 2}" cy="${postTop - 8}" r="5.5" fill="#475569"/>
+    <circle cx="${postRightX + postW / 2}" cy="${postTop - 8}" r="5.5" fill="#475569"/>
+    <text x="${(postLeftX + postRightX) / 2 + 14}" y="${postTop - 13}" font-size="7.2" fill="#475569" font-family="Inter,system-ui,sans-serif">Sincronismo entre columnas</text>
 
     <!-- Husillo en columna izquierda -->
     <line x1="${screwX}" y1="${screwTop}" x2="${screwX}" y2="${screwBot}" stroke="#0f172a" stroke-width="${screwR * 2}" stroke-linecap="round"/>
@@ -99,6 +110,10 @@ export function renderCarLiftScrewDiagram(svg, p) {
     <!-- Flecha elevación -->
     <line x1="${postRightX + postW + 18}" y1="${nutY + 30}" x2="${postRightX + postW + 18}" y2="${postTop + 78}" stroke="#0f766e" stroke-width="2.3" marker-end="url(#liftArrow)"/>
     <text x="${postRightX + postW + 26}" y="${postTop + 90}" font-size="7.2" fill="#0f766e" font-family="Inter,system-ui,sans-serif">Movimiento elevación</text>
+    <line x1="${postLeftX - 16}" y1="${postTop + postH}" x2="${postLeftX - 16}" y2="${postTop}" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="${postLeftX - 20}" y1="${postTop + postH}" x2="${postLeftX - 12}" y2="${postTop + postH}" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="${postLeftX - 20}" y1="${postTop}" x2="${postLeftX - 12}" y2="${postTop}" stroke="#94a3b8" stroke-width="1.3"/>
+    <text x="${postLeftX - 31}" y="${postTop + postH / 2}" font-size="7" fill="#64748b" transform="rotate(-90 ${postLeftX - 31} ${postTop + postH / 2})" font-family="Inter,system-ui,sans-serif">Altura útil H</text>
 
     <!-- Motor -->
     ${

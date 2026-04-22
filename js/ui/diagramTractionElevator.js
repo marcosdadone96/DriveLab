@@ -50,6 +50,9 @@ export function renderTractionElevatorDiagram(svg, p) {
       <linearGradient id="teCounterW" x1="0%" y1="0%" x2="0%" y2="100%">
         <stop offset="0%" stop-color="#fef3c7"/><stop offset="100%" stop-color="#fde68a"/>
       </linearGradient>
+      <marker id="teArrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill="#0f766e" />
+      </marker>
     </defs>
     <rect width="100%" height="100%" fill="#f8fafc"/>
     <text x="12" y="22" font-size="11" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Ascensor de tracción · vista de hueco</text>
@@ -57,6 +60,8 @@ export function renderTractionElevatorDiagram(svg, p) {
     <rect x="${shaftX}" y="${top}" width="${shaftW}" height="${shaftH}" rx="6" fill="url(#teShaft)" stroke="#94a3b8" stroke-width="1.7"/>
     <line x1="${xC - 34}" y1="${top + 8}" x2="${xC - 34}" y2="${yBot + 10}" stroke="#cbd5e1" stroke-width="2.1"/>
     <line x1="${xW + 34}" y1="${top + 8}" x2="${xW + 34}" y2="${yBot + 10}" stroke="#cbd5e1" stroke-width="2.1"/>
+    <text x="${xC - 46}" y="${(top + yBot) / 2}" font-size="6.8" fill="#94a3b8" font-family="Inter,system-ui,sans-serif" transform="rotate(-90 ${xC - 46} ${(top + yBot) / 2})">Guía cabina</text>
+    <text x="${xW + 46}" y="${(top + yBot) / 2}" font-size="6.8" fill="#94a3b8" font-family="Inter,system-ui,sans-serif" transform="rotate(-90 ${xW + 46} ${(top + yBot) / 2})">Guía contrapeso</text>
     <circle cx="${xP}" cy="${yP}" r="${rP}" fill="#e0f2fe" stroke="#0369a1" stroke-width="2.7"/>
     <circle cx="${xP}" cy="${yP}" r="${rP * 0.45}" fill="none" stroke="#0369a1" stroke-width="1.5"/>
     <text x="${xP}" y="${yP - rP - 8}" text-anchor="middle" font-size="7.2" font-weight="700" fill="#0c4a6e" font-family="Inter,system-ui,sans-serif">Polea tractora</text>
@@ -68,6 +73,14 @@ export function renderTractionElevatorDiagram(svg, p) {
     <line x1="${xW - 18}" y1="${yCw + 10}" x2="${xW + 18}" y2="${yCw + 10}" stroke="#d97706" stroke-width="1.2"/>
     <line x1="${xW - 18}" y1="${yCw + 22}" x2="${xW + 18}" y2="${yCw + 22}" stroke="#d97706" stroke-width="1.2"/>
     <text x="${xW}" y="${yCw + cwH / 2 + 4}" text-anchor="middle" font-size="8" font-weight="700" fill="#78350f" font-family="Inter,system-ui,sans-serif">Contrapeso</text>
+    <line x1="${xC - 44}" y1="${yCar + carH * 0.45}" x2="${xC - 44}" y2="${yCar - 26}" stroke="#0f766e" stroke-width="1.8" marker-end="url(#teArrow)"/>
+    <line x1="${xW + 44}" y1="${yCw + cwH * 0.55}" x2="${xW + 44}" y2="${yCw + cwH + 26}" stroke="#b45309" stroke-width="1.8" marker-end="url(#teArrow)"/>
+    <text x="${xC - 67}" y="${yCar - 30}" font-size="6.8" fill="#0f766e" font-family="Inter,system-ui,sans-serif">Cabina ↑</text>
+    <text x="${xW + 22}" y="${yCw + cwH + 35}" font-size="6.8" fill="#b45309" font-family="Inter,system-ui,sans-serif">CP ↓</text>
+    <line x1="${shaftX - 14}" y1="${top}" x2="${shaftX - 14}" y2="${yBot + 10}" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="${shaftX - 18}" y1="${top}" x2="${shaftX - 10}" y2="${top}" stroke="#94a3b8" stroke-width="1.3"/>
+    <line x1="${shaftX - 18}" y1="${yBot + 10}" x2="${shaftX - 10}" y2="${yBot + 10}" stroke="#94a3b8" stroke-width="1.3"/>
+    <text x="${shaftX - 27}" y="${(top + yBot) / 2 + 8}" font-size="7" fill="#64748b" transform="rotate(-90 ${shaftX - 27} ${(top + yBot) / 2 + 8})" font-family="Inter,system-ui,sans-serif">Recorrido H</text>
     <line x1="${shaftX - 2}" y1="${yBot + 10}" x2="${shaftX + shaftW + 2}" y2="${yBot + 10}" stroke="#475569" stroke-width="2.3"/>
     <rect x="${shaftX + shaftW + 10}" y="${top + 18}" width="30" height="20" rx="4" fill="#dbeafe" stroke="#2563eb"/>
     <text x="${shaftX + shaftW + 25}" y="${top + 32}" text-anchor="middle" font-size="6.8" fill="#1d4ed8" font-family="Inter,system-ui,sans-serif">Máquina</text>

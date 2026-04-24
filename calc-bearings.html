@@ -11,13 +11,17 @@
     <script src="js/gtag.js"></script>
   </head>
   <body class="lab-body">
-    <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html">Laboratorio</a>
-        <a href="calc-bearings-catalog.html">Catálogo 62xx</a>
-        <a href="transmission-canvas.html">Lienzo técnico Pro</a>
+    <header class="lab-header" role="banner">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+          <a href="calc-bearings-catalog.html">Catálogo 62xx</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
     <main class="lab-main">
@@ -26,7 +30,7 @@
         <p class="lab-lead">L₁₀ en millones de revoluciones: L = (C/P)<sup>p</sup> con p = 3 (bolas) o 10/3 (rodillos). Sin factores a<sub>ISO</sub>, temperatura ni confiabilidad distinta del 90%.</p>
         <div class="lab-calc-layout lab-calc-layout--with-diag">
           <div class="lab-calc-layout__diagram">
-            <div class="lab-diagram-wrap lab-diagram-wrap--elevated">
+            <div class="lab-diagram-wrap lab-diagram-wrap--elevated lab-diagram-wrap--bearing">
               <p class="lab-diagram-wrap__title">Vista en sección · rodamiento</p>
               <svg id="brgDiagram" xmlns="http://www.w3.org/2000/svg" aria-label="Diagrama de rodamiento"></svg>
               <p class="lab-diagram-caption">Ilustración genérica; <strong>C</strong> y <strong>P</strong> son los datos de catálogo y de cálculo para L₁₀.</p>
@@ -109,7 +113,14 @@
             </div>
           </div>
           <div class="lab-calc-layout__out">
-            <div class="lab-units-bar" role="group" aria-label="Unidades de los resultados">
+            <div
+              class="lab-units-bar"
+              role="group"
+              aria-label="Unidades de los resultados"
+              data-lab-convert-categories="length rotation linear life"
+              data-lab-convert-title="Conversor (rodamientos)"
+              data-lab-convert-tip="Dimensiones en mm; velocidad angular; v de rodadura; vida L10 en horas, Mrev o vueltas (RPM para horas)."
+            >
               <span class="lab-units-bar__title">Cómo ver los resultados</span>
               <label class="lab-units-bar__field">
                 <span class="lab-units-bar__lbl">Distancias</span>
@@ -156,10 +167,12 @@
               </div>
               <div class="lab-results" id="brgResults"></div>
             </div>
+            <div id="labPurchaseSuggestions" hidden></div>
           </div>
         </div>
       </section>
     </main>
     <script type="module" src="js/ui/calcBearingsPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
   </body>
 </html>

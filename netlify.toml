@@ -1,0 +1,5 @@
+# Browsers decode /js/* as UTF-8 even if the response omits charset.
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Content-Type = "text/javascript; charset=UTF-8"

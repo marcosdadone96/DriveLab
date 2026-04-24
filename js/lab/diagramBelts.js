@@ -59,18 +59,18 @@ function beltStrokeStyle(t) {
 export function renderBeltDriveDiagram(el, r) {
   if (!el || !r || r.d1 == null || r.d2 == null) return;
   const id = uid();
-  const vbW = 760;
-  const headerY = 92;
-  const y = 268;
-  let sx = 0.36;
-  let xL = 108;
+  const vbW = 680;
+  const headerY = 84;
+  const y = 252;
+  let sx = 0.33;
+  let xL = 96;
   /** Motriz (1) izquierda: radio primitivo d₁/2; conducida (2) derecha: d₂/2 */
   let rMot = (r.d1 / 2) * sx;
   let rDrv = (r.d2 / 2) * sx;
   let Cpx = r.center_mm * sx;
   let xR = xL + Cpx;
   let guard = 0;
-  while (xR + rDrv > vbW - 48 && guard++ < 40) {
+  while (xR + rDrv > vbW - 56 && guard++ < 45) {
     sx *= 0.91;
     rMot = (r.d1 / 2) * sx;
     rDrv = (r.d2 / 2) * sx;
@@ -82,12 +82,16 @@ export function renderBeltDriveDiagram(el, r) {
   const beltPath = svgOpenBeltLoopPath(xL, y, rMot, xR, rDrv);
   const tang = svgOpenBeltTangents(xL, y, rMot, xR, rDrv);
   const midTopX = (tang.UL.x + tang.UR.x) / 2;
-  const midTopY = (tang.UL.y + tang.UR.y) / 2 - 8;
+  const midTopY = (tang.UL.y + tang.UR.y) / 2 - 14;
 
   const Lm = r.beltLength_mm / 1000;
-  const dimY = y + Math.max(rMot, rDrv) + 52;
-  const tagY = dimY + 36;
-  const vbH = tagY + 56;
+  const dimY = y + Math.max(rMot, rDrv) + 54;
+  const tagY = dimY + 42;
+  const vbH = tagY + 62;
+  const geomLeft = xL - rMot - 22;
+  const geomRight = xR + rDrv + 22;
+  const shiftX = vbW / 2 - (geomLeft + geomRight) / 2;
+  const legendX = (vbW - 300) / 2;
 
   const bt = r.beltType || 'v_trapezoidal';
   const title = beltTypeTitle(bt);
@@ -125,14 +129,15 @@ export function renderBeltDriveDiagram(el, r) {
   const teethMot = syncTeeth(xL, y, rMot, Number(r.Z1) || 20);
   const teethDrv = syncTeeth(xR, y, rDrv, Number(r.Z2) || 40);
 
-  const n1CueY = y - rMot - 26;
+  const n1CueY = y - rMot - 36;
   const n1Arrow = `<g aria-label="Sentido de giro motor">
       <path d="M ${(xL - 18).toFixed(1)} ${(n1CueY + 10).toFixed(1)} Q ${xL.toFixed(1)} ${(n1CueY - 6).toFixed(1)} ${(xL + 18).toFixed(1)} ${(n1CueY + 10).toFixed(1)}" fill="none" stroke="#0f766e" stroke-width="2.2" stroke-linecap="round" marker-end="url(#${id}Arr)"/>
-      <text x="${xL}" y="${n1CueY - 4}" text-anchor="middle" font-size="11" font-weight="800" fill="#0f766e" font-family="Inter, system-ui, sans-serif">n₁</text>
+      <text x="${xL}" y="${n1CueY - 8}" text-anchor="middle" font-size="11" font-weight="800" fill="#0f766e" font-family="Inter, system-ui, sans-serif">n₁</text>
     </g>`;
-  const shaftH = 64;
+  const shaftH = 56;
 
   el.setAttribute('viewBox', `0 0 ${vbW} ${vbH}`);
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
@@ -162,24 +167,25 @@ export function renderBeltDriveDiagram(el, r) {
     <rect width="${vbW}" height="${vbH}" fill="url(#${id}Bg)" />
 
     <!-- Cabecera -->
-    <rect x="20" y="16" width="${vbW - 40}" height="${headerY - 24}" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
-    <text x="36" y="42" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">${title}</text>
-    <text x="36" y="64" font-size="11" fill="#475569" font-family="Inter, system-ui, sans-serif">Vista esquemática · tramo abierto · primitivos y distancia entre ejes C</text>
+    <rect x="18" y="14" width="${vbW - 36}" height="${headerY - 26}" rx="10" fill="#ffffff" stroke="#cbd5e1" stroke-width="1" />
+    <text x="${vbW / 2}" y="38" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">${title}</text>
+    <text x="${vbW / 2}" y="58" text-anchor="middle" font-size="10" fill="#475569" font-family="Inter, system-ui, sans-serif">Tramo abierto · primitivos y distancia C</text>
 
-    <!-- Leyenda -->
-    <g transform="translate(36, 72)">
-      <rect x="0" y="0" width="320" height="36" rx="6" fill="#f8fafc" stroke="#e2e8f0" />
-      <circle cx="18" cy="18" r="8" fill="url(#${id}FaceMot)" stroke="#0f766e" stroke-width="1.5" />
-      <text x="32" y="15" font-size="9.5" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Izquierda = motriz (1)</text>
-      <text x="32" y="28" font-size="8.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">Entrada n₁ · diámetro d₁</text>
-      <circle cx="188" cy="18" r="10" fill="url(#${id}FaceDrv)" stroke="#475569" stroke-width="1.5" />
-      <text x="206" y="15" font-size="9.5" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Derecha = conducida (2)</text>
-      <text x="206" y="28" font-size="8.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">Salida n₂ · diámetro d₂</text>
+    <!-- Leyenda centrada, debajo de la cabecera (evita solape con el recuadro) -->
+    <g transform="translate(${legendX.toFixed(1)}, 78)">
+      <rect x="0" y="0" width="300" height="32" rx="6" fill="#f8fafc" stroke="#e2e8f0" />
+      <circle cx="16" cy="16" r="7" fill="url(#${id}FaceMot)" stroke="#0f766e" stroke-width="1.5" />
+      <text x="28" y="13" font-size="9" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Izq. = motriz (1)</text>
+      <text x="28" y="25" font-size="8" fill="#64748b" font-family="Inter, system-ui, sans-serif">n₁ · d₁</text>
+      <circle cx="178" cy="16" r="9" fill="url(#${id}FaceDrv)" stroke="#475569" stroke-width="1.5" />
+      <text x="194" y="13" font-size="9" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Dcha. = conducida (2)</text>
+      <text x="194" y="25" font-size="8" fill="#64748b" font-family="Inter, system-ui, sans-serif">n₂ · d₂</text>
     </g>
 
+    <g transform="translate(${shiftX.toFixed(2)}, 0)">
     <!-- Línea de centros -->
     <line x1="${xL - rMot - 20}" y1="${y}" x2="${xR + rDrv + 20}" y2="${y}" stroke="#94a3b8" stroke-width="1" stroke-dasharray="6 5" opacity="0.9" />
-    <text x="${xL + Cpx / 2}" y="${y - Math.max(rMot, rDrv) - 18}" text-anchor="middle" font-size="9" font-weight="700" fill="#64748b" font-family="Inter, system-ui, sans-serif">Línea de centros (ejes paralelos)</text>
+    <text x="${xL + Cpx / 2}" y="${y - Math.max(rMot, rDrv) - 22}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#64748b" font-family="Inter, system-ui, sans-serif">Línea de centros</text>
 
     <!-- Ejes -->
     <line x1="${xL}" y1="${y - shaftH}" x2="${xL}" y2="${y + shaftH}" stroke="#475569" stroke-width="3" stroke-linecap="round" />
@@ -190,7 +196,7 @@ export function renderBeltDriveDiagram(el, r) {
     <!-- Círculos primitivos (cotas teóricas de la correa) -->
     <circle cx="${xL}" cy="${y}" r="${rMot}" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-dasharray="4 3" opacity="0.95" />
     <circle cx="${xR}" cy="${y}" r="${rDrv}" fill="none" stroke="#0d9488" stroke-width="1.8" stroke-dasharray="4 3" opacity="0.95" />
-    <text x="${vbW - 36}" y="${y - Math.max(rMot, rDrv) - 6}" text-anchor="end" font-size="8.5" font-weight="700" fill="#0f766e" font-family="Inter, system-ui, sans-serif">— primitivo</text>
+    <text x="${xR + rDrv + 10}" y="${y - Math.max(rMot, rDrv) - 4}" text-anchor="start" font-size="8" font-weight="700" fill="#0f766e" font-family="Inter, system-ui, sans-serif">primitivo</text>
 
     <!-- Poleas (cuerpo) -->
     <circle cx="${xL}" cy="${y}" r="${rMot + 3}" fill="#e2e8f0" opacity="0.5" />
@@ -224,7 +230,8 @@ export function renderBeltDriveDiagram(el, r) {
     <!-- Etiquetas poleas (multilínea) -->
     <text x="${xL}" y="${tagY}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">${tspansBlock(xL, linesMot)}</text>
     <text x="${xR}" y="${tagY}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">${tspansBlock(xR, linesDrv)}</text>
+    </g>
 
-    <text x="24" y="${vbH - 20}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${foot}</text>
+    <text x="${vbW / 2}" y="${vbH - 18}" text-anchor="middle" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${escXml(foot)}</text>
   `;
 }

@@ -4,6 +4,7 @@
  */
 
 import { augmentVerifyWithMounting, modelMatchesMounting } from './mountingPreferences.js';
+import { getCurrentLang } from '../config/locales.js';
 
 /**
  * @typedef {object} DriveRequirement
@@ -65,13 +66,21 @@ export function buildManualGearmotorModel(p) {
   if (Number.isFinite(eta_g) && eta_g > 1 && eta_g <= 100) eta_g /= 100;
   if (!Number.isFinite(eta_g) || eta_g <= 0 || eta_g > 1) eta_g = 0.92;
   const ratio = motor_rpm_nom / n2_rpm;
-  const code = String(p.code || 'Mi motorreductor · datos manuales').trim().slice(0, 200) || 'Mi motorreductor · datos manuales';
+  const en = getCurrentLang() === 'en';
+  const code =
+    String(
+      p.code ||
+        (en ? 'My gearmotor · manual data' : 'Mi motorreductor \u00b7 datos manuales'),
+    )
+      .trim()
+      .slice(0, 200) ||
+    (en ? 'My gearmotor · manual data' : 'Mi motorreductor \u00b7 datos manuales');
 
   return {
     id: 'user-manual-entry',
     brandId: 'custom',
     code,
-    series: 'Entrada manual',
+    series: en ? 'Manual entry' : 'Entrada manual',
     motor_kW,
     motor_rpm_nom,
     ratio,
@@ -81,7 +90,7 @@ export function buildManualGearmotorModel(p) {
     eta_g,
     enclosure: '—',
     duty: 'S1',
-    notes: 'Parámetros introducidos por el usuario',
+    notes: en ? 'User-entered parameters' : 'Par\u00e1metros introducidos por el usuario',
     userManual: true,
   };
 }
@@ -110,6 +119,7 @@ const RPM_BAD_FRAC = 0.35;
  * @returns {VerifyResult}
  */
 export function verifyGearmotorAgainstRequirement(req, model) {
+  const en = getCurrentLang() === 'en';
   const checks = [];
   const warnings = [];
   const blockers = [];
@@ -118,48 +128,77 @@ export function verifyGearmotorAgainstRequirement(req, model) {
   const Treq = Math.max(0, req.torque_Nm || 0);
   const nDrum = Math.max(0.01, req.drum_rpm || 0.01);
   const n2 = model.n2_rpm;
-  const src = model.userManual ? 'indicado' : 'catálogo';
+  const src = model.userManual ? (en ? 'entered' : 'indicado') : en ? 'catalog' : 'cat\u00e1logo';
+  const badP = en ? 'INSUFFICIENT' : 'INSUFICIENTE';
 
   const pOk = model.motor_kW + 1e-6 >= Preq * P_MARGIN;
   checks.push(
-    `Potencia motor: necesita ≥ ${(Preq * P_MARGIN).toFixed(2)} kW · ${src} ${model.motor_kW} kW → ${pOk ? 'OK' : 'INSUFICIENTE'}`,
+    en
+      ? `Motor power: need \u2265 ${(Preq * P_MARGIN).toFixed(2)} kW \u00b7 ${src} ${model.motor_kW} kW \u2192 ${pOk ? 'OK' : badP}`
+      : `Potencia motor: necesita \u2265 ${(Preq * P_MARGIN).toFixed(2)} kW \u00b7 ${src} ${model.motor_kW} kW \u2192 ${pOk ? 'OK' : badP}`,
   );
-  if (!pOk) blockers.push('La potencia nominal del motor es inferior a la requerida (con margen del 5%).');
+  if (!pOk)
+    blockers.push(
+      en
+        ? 'Motor rated power is below required power (5% margin).'
+        : 'La potencia nominal del motor es inferior a la requerida (con margen del 5%).',
+    );
 
   const tOk = model.T2_nom_Nm + 1e-6 >= Treq * T_MARGIN;
   checks.push(
-    `Par salida T₂ (nominal): necesita ≥ ${(Treq * T_MARGIN).toFixed(1)} N·m · ${src} ${model.T2_nom_Nm} N·m → ${tOk ? 'OK' : 'INSUFICIENTE'}`,
+    en
+      ? `Output torque T2 (nominal): need \u2265 ${(Treq * T_MARGIN).toFixed(1)} N\u00b7m \u00b7 ${src} ${model.T2_nom_Nm} N\u00b7m \u2192 ${tOk ? 'OK' : badP}`
+      : `Par salida T\u2082 (nominal): necesita \u2265 ${(Treq * T_MARGIN).toFixed(1)} N\u00b7m \u00b7 ${src} ${model.T2_nom_Nm} N\u00b7m \u2192 ${tOk ? 'OK' : badP}`,
   );
-  if (!tOk) blockers.push('El par nominal de salida del reductor es inferior al par de diseño en tambor (con margen).');
+  if (!tOk)
+    blockers.push(
+      en
+        ? 'Rated output torque of the gearbox is below drum design torque (with margin).'
+        : 'El par nominal de salida del reductor es inferior al par de dise\u00f1o en tambor (con margen).',
+    );
 
   const rpmDev = Math.abs(n2 - nDrum) / nDrum;
   checks.push(
-    `Velocidad salida: tambor ${nDrum.toFixed(1)} min⁻¹ vs salida reductor ${n2.toFixed(1)} min⁻¹ (Δ ${(rpmDev * 100).toFixed(1)}%)`,
+    en
+      ? `Output speed: drum ${nDrum.toFixed(1)} min\u207b\u00b9 vs gearbox output ${n2.toFixed(1)} min\u207b\u00b9 (\u0394 ${(rpmDev * 100).toFixed(1)}%)`
+      : `Velocidad salida: tambor ${nDrum.toFixed(1)} min\u207b\u00b9 vs salida reductor ${n2.toFixed(1)} min\u207b\u00b9 (\u0394 ${(rpmDev * 100).toFixed(1)}%)`,
   );
   if (rpmDev > RPM_BAD_FRAC) {
     warnings.push(
-      'Gran diferencia de velocidad de giro entre salida del reductor y tambor: probablemente necesite otra relación, poleas o engrane.',
+      en
+        ? 'Large speed mismatch between gearbox output and drum: you likely need a different ratio, pulleys, or gearing.'
+        : 'Gran diferencia de velocidad de giro entre salida del reductor y tambor: probablemente necesite otra relaci\u00f3n, poleas o engrane.',
     );
   } else if (rpmDev > RPM_WARN_FRAC) {
     warnings.push(
-      'Diferencia moderada de velocidad de giro: valide con el catálogo la relación exacta o el deslizamiento de la banda.',
+      en
+        ? 'Moderate speed mismatch: confirm exact ratio in the catalog or belt slip.'
+        : 'Diferencia moderada de velocidad de giro: valide con el cat\u00e1logo la relaci\u00f3n exacta o el deslizamiento de la banda.',
     );
   }
 
   if (model.T2_peak_Nm < Treq) {
     warnings.push(
-      `El par pico ${model.userManual ? 'indicado' : 'catalogado'} (${model.T2_peak_Nm} N·m) es inferior al par solicitado; revise arranques bajo carga.`,
+      en
+        ? `Peak torque ${model.userManual ? 'entered' : 'catalog'} (${model.T2_peak_Nm} N\u00b7m) is below required torque; review startups under load.`
+        : `El par pico ${model.userManual ? 'indicado' : 'catalogado'} (${model.T2_peak_Nm} N\u00b7m) es inferior al par solicitado; revise arranques bajo carga.`,
     );
   }
 
   const suitable = pOk && tOk && blockers.length === 0;
 
   let verdict = suitable
-    ? 'En principio SÍ puede valer para este punto de trabajo (revisar termina, frenos y ciclo real).'
-    : 'NO se recomienda tal cual: hay requisitos no cubiertos por este modelo de ejemplo.';
+    ? en
+      ? 'In principle YES for this duty point (confirm terminals, brakes, and real duty cycle).'
+      : 'En principio S\u00cd puede valer para este punto de trabajo (revisar termina, frenos y ciclo real).'
+    : en
+      ? 'NOT recommended as-is: this sample model does not meet stated requirements.'
+      : 'NO se recomienda tal cual: hay requisitos no cubiertos por este modelo de ejemplo.';
 
   if (suitable && warnings.length) {
-    verdict += ' Revise las advertencias de velocidad / pico de par.';
+    verdict += en
+      ? ' Review speed and peak-torque warnings.'
+      : ' Revise las advertencias de velocidad / pico de par.';
   }
 
   const base = { suitable, verdict, checks, warnings, blockers };

@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Muelle helicoidal compresi&oacute;n DIN 2089 &mdash; Laboratorio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/lab.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-43E5C8TB38"></script>
+    <script src="js/gtag.js"></script>
+    <style>
+      .spring-chart-embed {
+        margin: 0.65rem 0 0;
+        padding: 0.5rem;
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+      }
+      .spring-chart-embed__title {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #475569;
+        margin: 0 0 0.35rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .spring-pro {
+        margin-top: 0.75rem;
+        padding: 0.65rem;
+        border-radius: 10px;
+        border: 1px dashed #0d9488;
+        background: linear-gradient(180deg, #ecfdf5 0%, #f0fdfa 100%);
+      }
+      .spring-pro__head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 0.5rem;
+      }
+      .spring-pro__badge {
+        font-size: 0.58rem;
+        font-weight: 800;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: #fff;
+        background: #0f766e;
+        padding: 0.2rem 0.45rem;
+        border-radius: 6px;
+      }
+      .spring-pro__btn {
+        font-family: inherit;
+        font-size: 0.78rem;
+        font-weight: 800;
+        padding: 0.4rem 0.85rem;
+        border-radius: 8px;
+        border: 1px solid #0f766e;
+        background: #fff;
+        color: #0f766e;
+        cursor: pointer;
+      }
+      .spring-pro__btn:hover {
+        background: #0f766e;
+        color: #fff;
+      }
+      .spring-pro__body[hidden] {
+        display: none !important;
+      }
+      .spring-pro__slider-row label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #134e4a;
+      }
+      .spring-pro__slider-row input[type='range'] {
+        width: 100%;
+      }
+      .spring-pro__f {
+        font-size: 0.88rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+      .lab-units-bar--spring {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem 1rem;
+      }
+      .lab-units-bar--spring .lab-units-bar__note {
+        margin: 0;
+        font-size: 0.72rem;
+        color: #64748b;
+        flex: 1 1 220px;
+      }
+      .math-plain sub {
+        font-size: 0.78em;
+        vertical-align: baseline;
+      }
+      #springDiagram {
+        max-height: 320px;
+        width: 100%;
+      }
+    </style>
+  </head>
+  <body class="lab-body">
+    <header class="lab-header">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegaci�n laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo t�cnico multieje (Pro)">Lienzo Pro</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="lab-main">
+      <section class="lab-panel lab-panel--accent">
+        <h2>Muelle helicoidal de compresi&oacute;n &middot; dise&ntilde;o y verificaci&oacute;n (DIN 2089 orientativo)</h2>
+        <p class="lab-lead">
+          Rigidez <strong>k</strong>, condici&oacute;n de <strong>servicio</strong> (<strong>s<sub>op</sub></strong> o <strong>F<sub>op</sub></strong>), tensi&oacute;n con <strong>K</strong> (Wahl), comprobaci&oacute;n de <strong>pandeo</strong> (esbeltez docente), bloqueo <strong>F<sub>n</sub></strong> y datos opcionales de <strong>fatiga</strong>.
+          Valores de material y abacos simplificados; valide siempre con <strong>DIN/EN</strong>, dibujo y fabricante.
+        </p>
+
+        <div class="lab-calc-layout lab-calc-layout--with-diag">
+          <div class="lab-calc-layout__diagram">
+            <div class="lab-diagram-wrap lab-diagram-wrap--elevated">
+              <p class="lab-diagram-wrap__title">Vista esquem&aacute;tica &middot; se actualiza al cambiar los datos</p>
+              <svg id="springDiagram" xmlns="http://www.w3.org/2000/svg" aria-label="Muelle helicoidal de compresi&oacute;n"></svg>
+              <p class="lab-diagram-caption">
+                Proyecci&oacute;n lateral de la h&eacute;lice; cotas <strong>d</strong>, <strong>D<sub>m</sub></strong>, <strong>L<sub>0</sub></strong>. La simulaci&oacute;n Pro acorta la longitud libre manteniendo <strong>n</strong> espiras activas.
+              </p>
+            </div>
+          </div>
+
+          <div class="lab-calc-layout__inputs">
+            <div class="lab-grid lab-grid--2">
+              <div class="lab-field lab-field--wide">
+                <label for="springLabTier" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Nivel de memoria e informe">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 4h10v16H6zM8 8h6M8 12h6M8 16h4" />
+                      <path d="M9 4V2h6v2" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Nivel de detalle memoria</span>
+                </label>
+                <select id="springLabTier">
+                  <option value="basic" selected>Aula (b&aacute;sico)</option>
+                  <option value="project">Proyecto (tau adm. + nota + PDF)</option>
+                </select>
+                <span class="hint">Igual que otras calculadoras del laboratorio</span>
+                <p class="lab-field-help">Proyecto: &tau;<sub>adm</sub> y &tau;<sub>W</sub> manuales, nota en informe y PDF.</p>
+              </div>
+
+              <div class="lab-field lab-field--wide" id="springProjectPanel" hidden>
+                <div class="lab-grid lab-grid--2" style="gap: 0.65rem">
+                  <div class="lab-field">
+                    <label for="springTauAdmMpa" class="lab-field__label-row">
+                      <span class="lab-field-ico" title="Tensi&oacute;n admisible">
+                        <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M6 18L18 6M8 6h4v4" />
+                        </svg>
+                      </span>
+                      <span class="lab-field__label-text">&tau;<sub>adm</sub> est&aacute;tica manual (MPa)</span>
+                    </label>
+                    <input id="springTauAdmMpa" type="number" min="0" step="any" value="" placeholder="Vac&iacute;o = cat&aacute;logo" />
+                    <span class="hint">L&iacute;mite para &tau;<sub>m</sub> en Goodman</span>
+                  </div>
+                  <div class="lab-field">
+                    <label for="springTauW" class="lab-field__label-row">
+                      <span class="lab-field-ico" title="Fatiga">
+                        <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+                        </svg>
+                      </span>
+                      <span class="lab-field__label-text">&tau;<sub>W</sub> alternante adm. (MPa)</span>
+                    </label>
+                    <input id="springTauW" type="number" min="0" step="any" value="" placeholder="Fabricante / ensayo" />
+                    <span class="hint">Para &tau;<sub>alt</sub> / Goodman docente</span>
+                  </div>
+                  <div class="lab-field lab-field--wide">
+                    <label for="springAssumptionNote" class="lab-field__label-row">
+                      <span class="lab-field-ico" title="Nota">
+                        <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                          <path d="M4 19.5V5a2 2 0 012-2h12v14H6l-2 2.5z" />
+                        </svg>
+                      </span>
+                      <span class="lab-field__label-text">Nota de supuestos (opcional)</span>
+                    </label>
+                    <input id="springAssumptionNote" type="text" maxlength="220" placeholder="Ej. ensayo, norma interna..." />
+                  </div>
+                </div>
+              </div>
+
+              <div class="lab-field lab-field--wide">
+                <label for="springMaterial" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Material del hilo">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M8 18c2-4 4-8 8-8s6 4 8 8" />
+                      <path d="M5 12c1.5-2 3-3 5-3M3 8c2-2 4-3 7-3" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Material del hilo</span>
+                </label>
+                <select id="springMaterial">
+                  <option value="f1430" selected>Acero de muelles (F-1430 / 50CrV4 t&iacute;p.)</option>
+                  <option value="aisi302">Inoxidable AISI 302</option>
+                  <option value="piano">Cuerda de piano</option>
+                </select>
+                <p class="lab-field-help">
+                  <strong>G</strong> (N/mm<sup>2</sup>) y <strong>&tau;<sub>adm</sub></strong> son <em>orientativos</em> para comparar &oacute;rdenes de magnitud; en proyecto puede fijar &tau;<sub>adm</sub> manual y &tau;<sub>W</sub> (fatiga).
+                </p>
+              </div>
+
+              <div class="lab-field">
+                <label for="springDWire" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Di&aacute;metro de alambre">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="12" cy="12" r="6" />
+                      <circle cx="12" cy="12" r="2" fill="currentColor" stroke="none" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Di&aacute;metro hilo d (mm)</span>
+                </label>
+                <input id="springDWire" type="number" min="0.2" step="any" value="4" />
+                <p class="lab-field-help">Alambre redondo; con <strong>D<sub>m</sub></strong> define el &iacute;ndice <strong>C = D<sub>m</sub>/d</strong> y el factor de Wahl.</p>
+              </div>
+
+              <div class="lab-field lab-field--wide">
+                <label for="springDiaMode" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Referencia de di&aacute;metro">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <ellipse cx="12" cy="12" rx="9" ry="5" />
+                      <ellipse cx="12" cy="12" rx="5" ry="3" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Referencia de di&aacute;metro</span>
+                </label>
+                <select id="springDiaMode">
+                  <option value="dm" selected>Di&aacute;metro medio D<sub>m</sub></option>
+                  <option value="de">Di&aacute;metro exterior D<sub>e</sub></option>
+                </select>
+                <span class="hint">D<sub>m</sub> = D<sub>e</sub> &minus; d</span>
+              </div>
+
+              <div class="lab-field lab-field--wide">
+                <label for="springDiaValue" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Valor num&eacute;rico">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 18h16M7 18V9M12 18V6M17 18v-5" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Valor D<sub>m</sub> o D<sub>e</sub> (mm)</span>
+                </label>
+                <input id="springDiaValue" type="number" min="1" step="any" value="28" />
+              </div>
+
+              <div class="lab-field">
+                <label for="springNActive" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Espiras activas">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 16c2-6 6-10 12-10" />
+                      <path d="M8 18c3-5 7-8 12-8" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Espiras activas n (&minus;)</span>
+                </label>
+                <input id="springNActive" type="number" min="1" step="any" value="8" />
+                <p class="lab-field-help">Entra en <strong>k</strong> como divisor; m&aacute;s espiras ablanda el muelle (menor <strong>k</strong>).</p>
+              </div>
+
+              <div class="lab-field">
+                <label for="springL0" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Longitud libre">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 4v16M8 8V6M16 8V6M8 18v2M16 18v2" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Longitud libre L<sub>0</sub> (mm)</span>
+                </label>
+                <input id="springL0" type="number" min="1" step="any" value="65" />
+                <p class="lab-field-help">Sin carga. Con <strong>L<sub>s</sub></strong> (altura s&oacute;lida modelada) da el recorrido &uacute;til hasta bloqueo.</p>
+              </div>
+
+              <div class="lab-field lab-field--wide">
+                <label for="springEnds" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Tipo de extremos">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M5 8h14v8H5zM9 8V6M15 8V6" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Extremos</span>
+                </label>
+                <select id="springEnds">
+                  <option value="open">Abiertos</option>
+                  <option value="closed">Cerrados (no rectificados)</option>
+                  <option value="ground" selected>Rectificados y apoyados</option>
+                </select>
+                <p class="lab-field-help"><strong>L<sub>s</sub></strong> &asymp; (n + k<sub>ext</sub>)&middot;d con k<sub>ext</sub> docente 0,5 / 1,5 / 2.</p>
+              </div>
+
+              <div class="lab-field lab-field--wide">
+                <label for="springWorkDefine" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Servicio">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 3v18M8 7h8M8 17h8" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Condici&oacute;n de servicio</span>
+                </label>
+                <select id="springWorkDefine">
+                  <option value="deflection" selected>Por carrera s_op (mm)</option>
+                  <option value="force">Por fuerza F_op (N)</option>
+                </select>
+                <p class="lab-field-help">Para verificar <strong>&tau;</strong> en servicio y pandeo con la deflexi&oacute;n real. Si deja vac&iacute;o, solo se analiza el <strong>bloqueo</strong>.</p>
+              </div>
+
+              <div class="lab-field" id="springSWorkWrap">
+                <label for="springSWork" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Carrera">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 12h16M8 8l-4 4 4 4M16 16l4-4-4-4" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Carrera trabajo <span class="math-plain">s<sub>op</sub></span> (mm)</span>
+                </label>
+                <input id="springSWork" type="number" min="0" step="any" value="" placeholder="Opcional" />
+                <p class="lab-field-help">Debe ser <strong>&le; s<sub>max</sub></strong> (hasta s&oacute;lido). Equivale a <strong>F<sub>op</sub> = k &middot; s<sub>op</sub></strong>.</p>
+              </div>
+
+              <div class="lab-field" id="springFWorkWrap" hidden>
+                <label for="springFWork" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Fuerza">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M6 12h12M12 6v12" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Fuerza trabajo <span class="math-plain">F<sub>op</sub></span> (N)</span>
+                </label>
+                <input id="springFWork" type="number" min="0" step="any" value="" placeholder="Opcional" />
+                <p class="lab-field-help"><strong>s<sub>op</sub> = F<sub>op</sub> / k</strong> (ley lineal).</p>
+              </div>
+
+              <div class="lab-field lab-field--wide">
+                <label for="springFMin" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Ciclo">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 12a8 8 0 0116 0" />
+                      <path d="M4 12h4l2-3 4 6 2-3h4" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Fuerza m&iacute;nima en ciclo <span class="math-plain">F<sub>min</sub></span> (N)</span>
+                </label>
+                <input id="springFMin" type="number" min="0" step="any" value="0" />
+                <p class="lab-field-help"><strong>0</strong> = carga est&aacute;tica; si hay fluctuaci&oacute;n, indique la carga m&iacute;nima para estimar <strong>&tau;<sub>alt</sub></strong> y Goodman simplificado (proyecto con <strong>&tau;<sub>W</sub></strong>).</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lab-calc-layout__out">
+            <div
+              class="lab-units-bar lab-units-bar--spring"
+              role="group"
+              aria-label="Unidades de los resultados"
+              data-lab-convert-categories="length force stiffness pressure"
+              data-lab-convert-title="Conversor (muelle de compresion)"
+              data-lab-convert-tip="Longitudes y carreras; fuerzas (N, kN); rigidez k (N/mm); tension MPa o presion bar (MPa = N/mm2)."
+            >
+              <span class="lab-units-bar__title">Unidades en resultados</span>
+              <label class="lab-units-bar__field">
+                <span class="lab-units-bar__lbl">Longitudes / carreras</span>
+                <select id="labUnitLength" class="lab-units-bar__select">
+                  <option value="mm">mm (taller)</option>
+                  <option value="cm">cm</option>
+                  <option value="m">m (SI)</option>
+                </select>
+              </label>
+              <p class="lab-units-bar__note">Fuerzas en N; tensiones en MPa. (Giro y velocidad no aplican a este muelle.)</p>
+            </div>
+
+            <div id="springHero"></div>
+
+            <details class="lab-results-details">
+              <summary>Resultados por elemento</summary>
+              <div id="springElementResults" class="lab-element-columns"></div>
+            </details>
+
+            <div class="lab-results-wrap" id="springResultsWrap">
+              <div class="lab-results-computing" aria-hidden="true">
+                <svg class="lab-gear-spin" viewBox="0 0 64 64" aria-hidden="true">
+                  <path
+                    fill="#0f766e"
+                    d="M32 8l2.2 4.4 4.9-1.3 1.3 4.9 4.4 2.2-2.2 4.4 1.3 4.9-4.9 1.3-2.2 4.4-4.4-2.2-4.9 1.3-1.3-4.9-4.4-2.2 2.2-4.4-1.3-4.9 4.9-1.3 4.4-2.2zm0 10a14 14 0 100 28 14 14 0 000-28z"
+                  />
+                </svg>
+                <span class="lab-results-computing__label">Recalculando</span>
+              </div>
+              <details class="lab-results-details">
+                <summary>Resultado completo</summary>
+                <div class="lab-results" id="springResults"></div>
+              </details>
+            </div>
+
+            <div id="springAdvisor" class="lab-alerts"></div>
+
+            <div id="springSubstitution"></div>
+
+            <div id="labPurchaseSuggestions" hidden></div>
+
+            <div class="spring-pro" id="springProBox">
+              <div class="spring-pro__head">
+                <span class="spring-pro__badge">MechSupport Pro</span>
+                <button type="button" class="spring-pro__btn" id="springSimToggle" aria-expanded="false">Simular compresi&oacute;n</button>
+              </div>
+              <div class="spring-pro__body" id="springSimBody" hidden>
+                <div class="spring-pro__slider-row">
+                  <label for="springSimSlider">Deflexi&oacute;n s (mm)</label>
+                  <input type="range" id="springSimSlider" min="0" max="1" step="0.05" value="0" />
+                  <p class="spring-pro__f">F = <span id="springSimF">0</span> N &middot; L = <span id="springSimL">&mdash;</span> mm</p>
+                </div>
+              </div>
+            </div>
+
+            <details class="lab-fluid-formulas" id="springFormulasBlock">
+              <summary>Memoria de c&aacute;lculo (Wahl, k, tau)</summary>
+              <div class="lab-fluid-formulas__body" id="springFormulaBody"></div>
+            </details>
+
+            <div id="labFluidPdfMountSpring" class="premium-pdf-mount"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="js/ui/compressionSpringPage.js?v=20260424h"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
+  </body>
+</html>

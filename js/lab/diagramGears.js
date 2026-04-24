@@ -41,12 +41,12 @@ export function renderGearPairDiagram(el, params) {
   if (!el) return;
   const r = computeSpurGearPair(params);
   const id = uid();
-  const vbW = 720;
-  const marginX = 44;
-  const headerH = 76;
+  const vbW = 668;
+  const marginX = 50;
+  const headerH = 72;
   const dCenter = r.centerDistance_mm;
 
-  let scale = 2.05;
+  let scale = 1.88;
   const fit = (s) => {
     const ra1 = (r.da1 / 2) * s;
     const ra2 = (r.da2 / 2) * s;
@@ -56,7 +56,7 @@ export function renderGearPairDiagram(el, params) {
 
   let L = fit(scale);
   let guard = 0;
-  while (L.span > vbW - 12 && guard++ < 45) {
+  while (L.span > vbW - 20 && guard++ < 50) {
     scale *= 0.93;
     L = fit(scale);
   }
@@ -70,15 +70,19 @@ export function renderGearPairDiagram(el, params) {
   const p1 = toothPaths(cx1, cy, L.rp1, L.ra1, teeth1, r.z1).join(' ');
   const p2 = toothPaths(cx2, cy, L.rp2, L.ra2, teeth2, r.z2).join(' ');
 
-  const pitchBottom = cy + Math.max(L.ra1, L.ra2) + 18;
-  const dimY = pitchBottom + 14;
-  const tagY = dimY + 36;
-  const vbH = tagY + 52;
+  const pitchBottom = cy + Math.max(L.ra1, L.ra2) + 16;
+  const dimY = pitchBottom + 12;
+  const tagY = dimY + 32;
+  const vbH = tagY + 46;
 
   const am = r.centerDistance_mm / 1000;
   const midX = (cx1 + cx2) / 2;
+  const geomLeft = cx1 - L.ra1;
+  const geomRight = cx2 + L.ra2;
+  const shiftX = vbW / 2 - (geomLeft + geomRight) / 2;
 
   el.setAttribute('viewBox', `0 0 ${vbW} ${vbH}`);
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
@@ -98,11 +102,12 @@ export function renderGearPairDiagram(el, params) {
     </defs>
     <rect width="${vbW}" height="${vbH}" fill="url(#${id}Bg)" />
     <rect x="0" y="0" width="${vbW}" height="${headerH - 8}" fill="#fff" opacity="0.55" />
-    <text x="28" y="34" font-size="16" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Engranajes cilíndricos rectos</text>
-    <text x="28" y="56" font-size="10" fill="#475569" font-family="Inter, system-ui, sans-serif">m = ${r.module_mm.toFixed(2)} mm · α = ${r.pressureAngle_deg.toFixed(2)}° · a = ${am.toFixed(2)} m · d₁ (rueda 1) · d₂ (rueda 2)</text>
+    <text x="${vbW / 2}" y="32" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Engranajes cilíndricos rectos</text>
+    <text x="${vbW / 2}" y="52" text-anchor="middle" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">m = ${r.module_mm.toFixed(2)} mm · α = ${r.pressureAngle_deg.toFixed(2)}° · a = ${am.toFixed(2)} m</text>
 
+    <g transform="translate(${shiftX.toFixed(2)}, 0)">
     <line x1="${cx1}" y1="${pitchBottom}" x2="${cx2}" y2="${pitchBottom}" stroke="#94a3b8" stroke-width="1.3" stroke-dasharray="6 5" />
-    <text x="${midX}" y="${pitchBottom - 8}" text-anchor="middle" font-size="10" font-weight="700" fill="#64748b" font-family="Inter, system-ui, sans-serif">línea de centros</text>
+    <text x="${midX}" y="${pitchBottom - 6}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#64748b" font-family="Inter, system-ui, sans-serif">línea de centros</text>
 
     <g filter="url(#${id}Sh)">
       <circle cx="${cx1}" cy="${cy}" r="${L.ra1}" fill="url(#${id}Face)" stroke="#334155" stroke-width="2.2" />
@@ -122,9 +127,10 @@ export function renderGearPairDiagram(el, params) {
     <line x1="${cx1}" y1="${dimY}" x2="${cx2}" y2="${dimY}" stroke="#334155" stroke-width="1.2" marker-start="url(#${id}ArrS)" marker-end="url(#${id}ArrE)" />
     <text x="${midX}" y="${dimY - 7}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">a = ${r.centerDistance_mm.toFixed(2)} mm</text>
 
-    <text x="${cx1}" y="${tagY}" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">rueda 1 · z₁ = ${r.z1} · d₁ = ${r.d1.toFixed(2)} mm</text>
-    <text x="${cx2}" y="${tagY}" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">rueda 2 · z₂ = ${r.z2} · d₂ = ${r.d2.toFixed(2)} mm</text>
+    <text x="${cx1}" y="${tagY}" text-anchor="middle" font-size="10" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">z₁ = ${r.z1} · d₁ = ${r.d1.toFixed(2)} mm</text>
+    <text x="${cx2}" y="${tagY}" text-anchor="middle" font-size="10" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">z₂ = ${r.z2} · d₂ = ${r.d2.toFixed(2)} mm</text>
+    </g>
 
-    <text x="28" y="${vbH - 14}" font-size="9.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">${esc('Círculo discontinuo: primitivo de engrane. Perfil de diente esquemático (no sustituye dibujo de taller).')}</text>
+    <text x="${vbW / 2}" y="${vbH - 12}" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter, system-ui, sans-serif">${esc('Discontinuo: primitivo. Perfil esquemático (no es plano de taller).')}</text>
   `;
 }

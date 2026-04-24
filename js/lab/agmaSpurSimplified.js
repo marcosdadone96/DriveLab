@@ -46,7 +46,7 @@ export function pitchLineVelocity_m_s(d_mm, n_rpm) {
 export function tangentialLoad_N(T_Nm, d_mm) {
   const d_m = d_mm / 1000;
   if (d_m <= 0) return NaN;
-  return T_Nm / d_m;
+  return (2 * T_Nm) / d_m;
 }
 
 /**

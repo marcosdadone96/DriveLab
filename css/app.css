@@ -1,5 +1,5 @@
 /**
- * DriveLab — interfaz clara, orientada a ingeniería.
+ * MechAssist — interfaz clara, orientada a ingeniería.
  */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -91,9 +91,41 @@ body {
 }
 
 .app-header nav {
+  flex: 1;
   display: flex;
-  gap: 1.25rem;
+  flex-wrap: wrap;
   align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem 1.25rem;
+  margin-left: 0.75rem;
+  min-width: min(100%, 180px);
+}
+
+.app-header__nav-start,
+.app-header__nav-end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+/* Misma CTA que en laboratorio (css/lab.css) para coherencia entre módulos */
+.lab-header__nav-cta {
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid var(--accent-dark);
+  background: var(--accent-dark);
+  color: #f8fafc !important;
+  text-decoration: none !important;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.lab-header__nav-cta:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff !important;
+  text-decoration: none !important;
 }
 
 .tier-status-bar {
@@ -646,24 +678,25 @@ body {
   width: 100%;
   font: inherit;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   padding: 0.75rem 1rem;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   cursor: pointer;
-  background: linear-gradient(180deg, #14b8a6 0%, #0d9488 100%);
+  /* Mismo azul oscuro que en sidebar de transportadores (fallbacks si faltan tokens) */
+  background: linear-gradient(165deg, var(--flat-navy-soft, #1e3a5f) 0%, var(--flat-navy, #0f172a) 100%);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
-  transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.25);
+  transition: transform 0.12s ease, filter 0.12s ease, box-shadow 0.12s ease;
 }
 
 .btn-calc:hover {
-  filter: brightness(1.05);
-  box-shadow: 0 6px 20px rgba(13, 148, 136, 0.4);
+  filter: brightness(1.06);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.3);
 }
 
 .btn-calc:active {
-  transform: scale(0.98);
+  transform: translateY(1px);
 }
 
 .calc-hint {
@@ -686,16 +719,93 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 1.1rem;
-  height: 1.1rem;
-  padding: 0 0.3rem;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.28rem;
+  margin-left: 0.15rem;
   border-radius: 999px;
+  border: 1px solid rgba(13, 148, 136, 0.35);
   background: #e0f2fe;
   color: var(--info);
-  font-size: 0.65rem;
+  font-size: 0.72rem;
   font-weight: 800;
+  line-height: 1;
   cursor: help;
   flex-shrink: 0;
+  vertical-align: middle;
+  position: relative;
+  top: -0.05em;
+}
+
+.info-chip:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.info-chip--static {
+  cursor: default;
+  pointer-events: none;
+}
+
+.info-chip-popover {
+  position: fixed;
+  z-index: 80;
+  max-width: min(22rem, calc(100vw - 1.5rem));
+  padding: 0.55rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-lg);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.help-details__lead {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.form-section-lead {
+  margin: -0.35rem 0 0.65rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.form-model-scope {
+  margin: 0.35rem 0 0.65rem;
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.panel-lead {
+  margin: -0.5rem 0 1rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.field-badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.field-badge--optional {
+  background: var(--surface-2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+}
+
+.mounting-config__summary .field-badge {
+  margin-left: 0.5rem;
 }
 
 .diagram-wrap {
@@ -704,14 +814,24 @@ body {
   border-radius: var(--radius);
   padding: 1rem;
   box-shadow: var(--shadow-lg);
-  overflow: auto;
+  overflow: hidden;
 }
 
 .diagram-wrap svg {
   width: 100%;
-  min-width: 560px;
+  min-width: 0;
   height: auto;
   display: block;
+}
+
+@media (max-width: 768px) {
+  .diagram-wrap {
+    padding: 0.7rem;
+  }
+
+  .diagram-duo__schematic {
+    padding: 0.6rem;
+  }
 }
 
 /* Esquema + foto real */
@@ -734,15 +854,50 @@ body {
   border-radius: var(--radius);
   padding: 0.75rem;
   box-shadow: var(--shadow-lg);
-  overflow: auto;
+  overflow: hidden;
   min-width: 0;
 }
 
 .diagram-duo__schematic svg {
   width: 100%;
-  min-width: 520px;
+  min-width: 0;
   height: auto;
   display: block;
+}
+
+.diagram-schematic-note {
+  margin: 0.45rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.42;
+  padding: 0.5rem 0.55rem;
+  border-radius: 8px;
+  background: rgba(13, 148, 136, 0.06);
+  border: 1px solid rgba(13, 148, 136, 0.15);
+}
+
+.field-hint a,
+.form-model-scope a,
+.form-section-lead a {
+  color: var(--info, #0d9488);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.field-hint a:hover,
+.form-model-scope a:hover {
+  text-decoration-thickness: 2px;
+}
+
+#flat-conveyor-assumptions {
+  scroll-margin-top: 5.5rem;
+}
+
+.field-hint--dynamic {
+  margin: 0.2rem 0 0;
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: var(--muted);
 }
 
 .diagram-duo__real {
@@ -958,10 +1113,35 @@ body {
   padding-bottom: 0.15rem;
 }
 
+/* Ascensor tracción: más aire antes del desplegable “resultado completo” (alineado con cintas) */
+#teResults .result-focus-extra {
+  margin-top: 1.35rem;
+}
+#teResults .result-focus-extra .motors-details__summary {
+  padding: 0.55rem 0.4rem 0.6rem;
+  margin-top: 0.2rem;
+}
+#teResults .result-focus-extra .motors-details__text {
+  gap: 0.35rem;
+}
+#teResults .result-focus-grid + .result-focus-extra {
+  margin-top: 1.5rem;
+}
+
 /* Si el host de resultados también es grid, evita que el desplegable quede al lado */
 .results-grid > .result-focus-grid,
-.results-grid > .result-focus-extra {
+.results-grid > .result-focus-extra,
+.results-grid > .flat-kpi-row,
+.results-grid > .flat-kpi-secondary {
   grid-column: 1 / -1;
+}
+
+/* Workbench conveyor: una columna en el host para que filas KPI ocupen todo el ancho */
+html[data-conveyor-tool='flat'] .flat-dashboard .results-grid,
+html[data-conveyor-tool='inclined'] .flat-dashboard .results-grid,
+html[data-conveyor-tool='roller'] .flat-dashboard .results-grid,
+html[data-conveyor-tool='screw'] .flat-dashboard .results-grid {
+  grid-template-columns: 1fr;
 }
 
 .metric--text .value {
@@ -1713,6 +1893,22 @@ body {
 
 .premium-pdf-mount {
   margin-bottom: 1rem;
+}
+
+.machine-config-panel {
+  margin-bottom: 0.9rem;
+}
+
+.machine-config-row {
+  display: grid;
+  grid-template-columns: minmax(180px, 1fr) auto minmax(220px, 1fr) auto auto;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.machine-config-row input,
+.machine-config-row select {
+  min-height: 2.1rem;
 }
 
 .premium-export {
@@ -2676,6 +2872,45 @@ body {
   margin-bottom: 0.15rem;
 }
 
+.premium-gated-details .motors-details__summary,
+.premium-gated-details summary {
+  cursor: not-allowed;
+}
+
+.premium-gate-note {
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
+  padding: 0.75rem 0.85rem;
+}
+
+.premium-gate-note__title {
+  margin: 0 0 0.25rem;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.premium-gate-note__text {
+  margin: 0 0 0.55rem;
+  font-size: 0.72rem;
+  color: #475569;
+}
+
+.premium-gate-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 0.5rem;
+  padding: 0.08rem 0.38rem;
+  border-radius: 999px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
 /* --- Elevador de cangilones (asistente) --- */
 .be-wizard-nav {
   display: flex;
@@ -2773,6 +3008,11 @@ body {
   align-items: start;
 }
 
+/* Si la barra CFG quedara como hijo directo del main, ocuparía una celda y empujaría la columna principal al hueco estrecho. */
+.app-main--be > #machineConfigBar {
+  grid-column: 1 / -1;
+}
+
 .be-main-col {
   min-width: 0;
   display: flex;
@@ -2794,5 +3034,424 @@ body {
   .be-side-col {
     position: static;
   }
+}
+
+/* -------------------------------------------------------------------------- */
+/* Transportadores — workbench «Clean Tech» (plana, inclinada, rodillo, tornillo) */
+/* -------------------------------------------------------------------------- */
+html[data-conveyor-tool='flat'],
+html[data-conveyor-tool='inclined'],
+html[data-conveyor-tool='roller'],
+html[data-conveyor-tool='screw'],
+html[data-machine-tool='car-lift'],
+html[data-tool='pump'],
+html[data-tool='traction'] {
+  --flat-navy: #0f172a;
+  --flat-navy-soft: #1e3a5f;
+  --flat-slate: #334155;
+  --flat-emerald: #059669;
+  --flat-emerald-glow: #10b981;
+  --flat-card-shadow: 0 4px 24px rgba(15, 23, 42, 0.07);
+  --flat-card-shadow-hover: 0 8px 32px rgba(15, 23, 42, 0.1);
+}
+
+.app-main--flat-wb {
+  max-width: 1440px;
+  grid-template-columns: minmax(300px, 400px) 1fr;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+@media (max-width: 1100px) {
+  .app-main--flat-wb {
+    grid-template-columns: 1fr;
+  }
+}
+
+.flat-sidebar {
+  position: sticky;
+  top: 0.75rem;
+  align-self: start;
+  max-height: calc(100vh - 1.5rem);
+  overflow-y: auto;
+  border-radius: 18px;
+  box-shadow: var(--flat-card-shadow);
+  border: 1px solid rgba(30, 58, 95, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  padding: 1.35rem 1.25rem 1.5rem;
+}
+
+@media (max-width: 1100px) {
+  .flat-sidebar {
+    position: static;
+  }
+}
+
+.flat-sidebar__head {
+  margin-bottom: 1rem;
+}
+
+.flat-sidebar__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--flat-emerald);
+}
+
+.flat-sidebar__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--flat-navy);
+}
+
+.flat-sidebar__lead {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+  color: var(--flat-slate);
+}
+
+.flat-help {
+  margin-bottom: 0.85rem;
+  border-radius: 12px;
+}
+
+.flat-accordion {
+  margin: 0 0 0.5rem;
+  border: 1px solid rgba(51, 65, 85, 0.12);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+}
+
+.flat-accordion__summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.75rem 0.9rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  color: var(--flat-navy);
+  background: linear-gradient(90deg, rgba(5, 150, 105, 0.06) 0%, transparent 100%);
+  border-bottom: 1px solid transparent;
+  transition: background 0.15s ease;
+}
+
+.flat-accordion__summary::-webkit-details-marker {
+  display: none;
+}
+
+.flat-accordion__summary::before {
+  content: '▸';
+  font-size: 0.7rem;
+  color: var(--flat-emerald);
+  transition: transform 0.2s ease;
+}
+
+.flat-accordion[open] > .flat-accordion__summary::before {
+  transform: rotate(90deg);
+}
+
+.flat-accordion[open] > .flat-accordion__summary {
+  border-bottom-color: rgba(51, 65, 85, 0.1);
+}
+
+.flat-accordion__summary:hover {
+  background: linear-gradient(90deg, rgba(5, 150, 105, 0.1) 0%, transparent 100%);
+}
+
+.flat-accordion__icon {
+  opacity: 0.55;
+  font-size: 0.65rem;
+}
+
+.flat-accordion__body {
+  padding: 0.85rem 0.9rem 1rem;
+}
+
+.flat-field--slider .flat-slider {
+  width: 100%;
+  height: 6px;
+  margin: 0.35rem 0 0.5rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #e2e8f0 0%, #cbd5e1 100%);
+  accent-color: var(--flat-emerald);
+  cursor: pointer;
+}
+
+.flat-field--slider .flat-slider:hover {
+  accent-color: var(--flat-emerald-glow);
+}
+
+.flat-field__num {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.flat-field__num input[type='number'] {
+  flex: 1;
+  min-width: 0;
+  border-radius: 10px;
+  border: 1px solid rgba(51, 65, 85, 0.18);
+  padding: 0.45rem 0.6rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.flat-field__num input[type='number']:focus {
+  outline: none;
+  border-color: var(--flat-emerald);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
+}
+
+.flat-model-scope {
+  margin-top: 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.04);
+  font-size: 0.78rem;
+}
+
+.flat-calc-hint {
+  font-size: 0.78rem;
+  margin-top: 0.65rem;
+}
+
+.flat-sidebar .btn-calc {
+  margin-top: 0.85rem;
+}
+
+.flat-stage {
+  gap: 1.5rem;
+}
+
+.flat-dashboard {
+  border-radius: 20px;
+  border: 1px solid rgba(30, 58, 95, 0.1);
+  box-shadow: var(--flat-card-shadow);
+  background: linear-gradient(165deg, #ffffff 0%, #f1f5f9 55%, #ecfdf5 100%);
+  padding: 1.35rem 1.4rem 1.5rem;
+}
+
+.flat-dashboard__head {
+  margin-bottom: 1.1rem;
+}
+
+.flat-dashboard__title {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--flat-navy);
+  letter-spacing: -0.02em;
+}
+
+.flat-dashboard__lead {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  max-width: 52rem;
+}
+
+.flat-dashboard__lead a {
+  color: var(--flat-emerald);
+  font-weight: 600;
+}
+
+.flat-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(17.5rem, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.15rem;
+  width: 100%;
+  min-width: 0;
+}
+
+@media (max-width: 520px) {
+  .flat-kpi-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.flat-kpi {
+  border-radius: 16px;
+  padding: 1.15rem 1.25rem;
+  min-width: 0;
+  background: #fff;
+  border: 1px solid rgba(5, 150, 105, 0.22);
+  box-shadow: 0 2px 12px rgba(5, 150, 105, 0.08);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.flat-kpi:hover {
+  box-shadow: var(--flat-card-shadow-hover);
+  transform: translateY(-2px);
+}
+
+.flat-kpi--torque {
+  border-color: rgba(30, 58, 95, 0.2);
+  box-shadow: 0 2px 12px rgba(30, 58, 95, 0.06);
+}
+
+.flat-kpi--power {
+  border-color: rgba(5, 150, 105, 0.35);
+  background: linear-gradient(160deg, #ffffff 0%, #ecfdf5 100%);
+}
+
+.flat-kpi__eyebrow {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--flat-slate);
+  margin-bottom: 0.45rem;
+  line-height: 1.35;
+  max-width: 22rem;
+}
+
+.flat-kpi__value {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.5rem;
+  font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--flat-navy);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.flat-kpi__unit {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--flat-emerald);
+  margin-left: 0;
+  white-space: nowrap;
+}
+
+.flat-kpi__hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.45;
+  max-width: 24rem;
+}
+
+.flat-kpi-secondary {
+  margin-top: 0.25rem;
+}
+
+.flat-visual {
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(51, 65, 85, 0.1);
+  box-shadow: var(--flat-card-shadow);
+  background: #fff;
+}
+
+.flat-visual .diagram-duo__schematic {
+  padding: 0.75rem 0.75rem 0.25rem;
+}
+
+.flat-visual .diagram-duo__schematic svg {
+  max-height: min(68vh, 620px);
+}
+
+html[data-conveyor-tool='flat'] .diagram-metric,
+html[data-conveyor-tool='inclined'] .diagram-metric,
+html[data-conveyor-tool='roller'] .diagram-metric,
+html[data-conveyor-tool='screw'] .diagram-metric {
+  transition: filter 0.18s ease, opacity 0.18s ease;
+}
+
+html[data-conveyor-tool='flat'] .diagram-metric--hover,
+html[data-conveyor-tool='inclined'] .diagram-metric--hover,
+html[data-conveyor-tool='roller'] .diagram-metric--hover,
+html[data-conveyor-tool='screw'] .diagram-metric--hover {
+  filter: drop-shadow(0 0 10px rgba(16, 185, 129, 0.55)) drop-shadow(0 0 4px rgba(30, 58, 95, 0.35));
+}
+
+html[data-conveyor-tool='flat'] #section-motores .motor-card-grid,
+html[data-conveyor-tool='flat'] #motorBlock .motor-card-grid,
+html[data-conveyor-tool='inclined'] #section-motores .motor-card-grid,
+html[data-conveyor-tool='inclined'] #incMotorBlock .motor-card-grid,
+html[data-conveyor-tool='roller'] #section-motores .motor-card-grid,
+html[data-conveyor-tool='roller'] #motorBlock .motor-card-grid,
+html[data-conveyor-tool='screw'] #section-screw-motores .motor-card-grid,
+html[data-conveyor-tool='screw'] #screwMotorBlock .motor-card-grid {
+  display: grid;
+  gap: 0.85rem;
+}
+
+@media (max-width: 1024px) {
+  html[data-conveyor-tool='flat'] #motorBlock table,
+  html[data-conveyor-tool='flat'] .drive-catalog-table,
+  html[data-conveyor-tool='inclined'] #incMotorBlock table,
+  html[data-conveyor-tool='inclined'] .drive-catalog-table,
+  html[data-conveyor-tool='roller'] #motorBlock table,
+  html[data-conveyor-tool='roller'] .drive-catalog-table,
+  html[data-conveyor-tool='screw'] #screwMotorBlock table,
+  html[data-conveyor-tool='screw'] .drive-catalog-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
+    border-radius: 12px;
+  }
+}
+
+.flat-panel--verify .verify-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.85rem;
+}
+
+@media (max-width: 780px) {
+  .flat-panel--verify .verify-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .machine-config-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Language toggle (matches home hub look; used on bucket elevator and similar pages) */
+.app-header .hub-lang {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.14rem;
+  backdrop-filter: blur(6px);
+}
+
+.app-header .hub-lang__btn {
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+  padding: 0.28rem 0.56rem;
+  cursor: pointer;
+}
+
+.app-header .hub-lang__btn--active {
+  background: #0f172a;
+  color: #e2e8f0;
 }
 

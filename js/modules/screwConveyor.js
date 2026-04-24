@@ -7,6 +7,7 @@
 
 import { G, clamp, parsePositive, parseNonNegative } from '../utils/calculations.js';
 import { resolveServiceFactor, LOAD_DUTY_OPTIONS } from './serviceFactorByDuty.js';
+import { applyScrewConveyorEnglish } from './conveyorCalcEn.js';
 
 /**
  * @typedef {import('./serviceFactorByDuty.js').LoadDutyClass} LoadDutyClass
@@ -110,18 +111,35 @@ export function suggestedMaxScrewRpm(D_m, abrasive) {
 /**
  * @param {'low'|'medium'|'high'} rpmVsMax
  */
-export function classifyRpmRisk(n, nMax) {
+export function classifyRpmRisk(n, nMax, lang = 'es') {
+  const en = lang === 'en';
   if (!Number.isFinite(n) || !Number.isFinite(nMax) || nMax <= 0) {
-    return { level: /** @type {const} */ ('ok'), ratio: 0, label: '—' };
+    return { level: /** @type {const} */ ('ok'), ratio: 0, label: '\u2014' };
   }
   const ratio = n / nMax;
   if (ratio > 1.02) {
-    return { level: /** @type {const} */ ('high'), ratio, label: 'RPM elevadas para el Ø y material: riesgo de desgaste y fluidización.' };
+    return {
+      level: /** @type {const} */ ('high'),
+      ratio,
+      label: en
+        ? 'RPM high for diameter and material: wear and fluidization risk.'
+        : 'RPM elevadas para el \u00d8 y material: riesgo de desgaste y fluidizaci\u00f3n.',
+    };
   }
   if (ratio > 0.85) {
-    return { level: /** @type {const} */ ('caution'), ratio, label: 'RPM altas: revisar recomendaciones del fabricante y clase de material.' };
+    return {
+      level: /** @type {const} */ ('caution'),
+      ratio,
+      label: en
+        ? 'RPM on the high side: check vendor guidance and material class.'
+        : 'RPM altas: revisar recomendaciones del fabricante y clase de material.',
+    };
   }
-  return { level: /** @type {const} */ ('ok'), ratio, label: 'RPM dentro de un rango habitual orientativo.' };
+  return {
+    level: /** @type {const} */ ('ok'),
+    ratio,
+    label: en ? 'RPM in a typical indicative range.' : 'RPM dentro de un rango habitual orientativo.',
+  };
 }
 
 /**
@@ -178,7 +196,7 @@ export function computeScrewConveyor(raw) {
   const requiredMotorPower_kW = P_shaft_kW * serviceFactor;
 
   const nMax = suggestedMaxScrewRpm(D_m, abrasive);
-  const rpmRisk = classifyRpmRisk(n_rpm, nMax);
+  const rpmRisk = classifyRpmRisk(n_rpm, nMax, raw.lang === 'en' ? 'en' : 'es');
 
   const v_axial = pitch_m * (n_rpm / 60);
 
@@ -257,7 +275,7 @@ export function computeScrewConveyor(raw) {
     'Límite de RPM es orientativo: priorice tablas del fabricante del tornillo y ensayos de material.',
   ];
 
-  return {
+  const result = {
     designStandard: 'ScrewConveyor',
     loadDuty,
     serviceFactorUsed: serviceFactor,
@@ -289,4 +307,18 @@ export function computeScrewConveyor(raw) {
     explanations,
     assumptions,
   };
+
+  if (raw.lang === 'en') {
+    applyScrewConveyorEnglish(result, {
+      cap_m3h,
+      rho: ρ,
+      lambdaPct: λ * 100,
+      v_axial,
+      n_rpm,
+      nMax,
+      abrasive,
+    });
+  }
+
+  return result;
 }

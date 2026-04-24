@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ISO 286 &middot; Ajustes y tolerancias &middot; Laboratorio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/lab.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-43E5C8TB38"></script>
+    <script src="js/gtag.js"></script>
+  </head>
+  <body class="lab-body">
+    <header class="lab-header">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegaci�n laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo t�cnico multieje (Pro)">Lienzo Pro</a>
+        </div>
+      </nav>
+    </header>
+    <main class="lab-main">
+      <section class="lab-panel">
+        <h2>Ajustes ISO 286-1 (extracto 1-500 mm)</h2>
+        <p class="lab-lead">
+          Calculo orientativo de limites dimensionales y tipo de ajuste (juego, transicion, apriete) a partir del diametro nominal, posicion de tolerancia (agujero
+          A-H, JS; eje a-h, js, k, m, n, p) y grado IT. Basado en tablas tipo ISO 286; no sustituye la norma completa.
+        </p>
+        <div class="lab-calc-layout lab-calc-layout--with-diag">
+          <div class="lab-calc-layout__diagram">
+            <div class="lab-diagram-wrap lab-diagram-wrap--elevated">
+              <p class="lab-diagram-wrap__title">Zonas de tolerancia vs linea cero</p>
+              <svg id="isoDiagram" xmlns="http://www.w3.org/2000/svg" aria-label="Diagrama de tolerancias agujero y eje"></svg>
+              <p class="lab-diagram-caption">
+                Ejemplo de referencia: <strong>25 H7/g6</strong> &rarr; agujero +21/0 um, eje -7/-20 um; juego max. 41 um, min. 7 um.
+              </p>
+            </div>
+          </div>
+          <div class="lab-calc-layout__inputs">
+            <div class="lab-field">
+              <label for="isoD" class="lab-field__label-row">
+                <span class="lab-field__label-text">Diametro nominal d (mm)</span>
+              </label>
+              <input id="isoD" type="number" min="1" max="500" step="any" value="25" />
+              <p class="lab-field-help">Rango tabulado en esta demo: 1 a 500 mm.</p>
+            </div>
+            <div class="lab-field">
+              <label for="isoAppPreset" class="lab-field__label-row">
+                <span class="lab-field__label-text">Aplicacion recomendada</span>
+              </label>
+              <select id="isoAppPreset"></select>
+              <p class="lab-field-help">
+                Rellena automaticamente el ajuste tipico (puede editarlo despues). Abra la tabla inferior para comparar usos cotidianos.
+              </p>
+            </div>
+            <details class="lab-results-details lab-iso-rec-details">
+              <summary>Tabla de aplicaciones cotidianas y ajustes ISO</summary>
+              <div class="lab-iso-rec-wrap">
+                <table class="lab-iso-rec-table" id="isoRecTable">
+                  <thead>
+                    <tr>
+                      <th class="lab-iso-rec-table__col-fit">Cotas</th>
+                      <th class="lab-iso-rec-table__col-use">Uso y ejemplos en maquinas</th>
+                      <th class="lab-iso-rec-table__col-act" aria-label="Aplicar"></th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
+              </div>
+            </details>
+            <div class="lab-grid lab-grid--2">
+              <div class="lab-field">
+                <label for="isoHoleLetter" class="lab-field__label-row">
+                  <span class="lab-field__label-text">Agujero (letra)</span>
+                </label>
+                <select id="isoHoleLetter"></select>
+              </div>
+              <div class="lab-field">
+                <label for="isoHoleIt" class="lab-field__label-row">
+                  <span class="lab-field__label-text">Agujero IT</span>
+                </label>
+                <select id="isoHoleIt"></select>
+              </div>
+              <div class="lab-field">
+                <label for="isoShaftLetter" class="lab-field__label-row">
+                  <span class="lab-field__label-text">Eje (letra)</span>
+                </label>
+                <select id="isoShaftLetter"></select>
+              </div>
+              <div class="lab-field">
+                <label for="isoShaftIt" class="lab-field__label-row">
+                  <span class="lab-field__label-text">Eje IT</span>
+                </label>
+                <select id="isoShaftIt"></select>
+              </div>
+            </div>
+          </div>
+          <div class="lab-calc-layout__out">
+            <div id="isoVerdict" class="lab-verdict-slot"></div>
+            <div id="isoHero"></div>
+            <div class="lab-results-wrap" id="isoResultsWrap">
+              <div class="lab-results-computing" aria-hidden="true">
+                <svg class="lab-gear-spin" viewBox="0 0 64 64" aria-hidden="true">
+                  <path
+                    fill="#0f766e"
+                    d="M32 8l2.2 4.4 4.9-1.3 1.3 4.9 4.4 2.2-2.2 4.4 1.3 4.9-4.9 1.3-2.2 4.4-4.4-2.2-4.9 1.3-1.3-4.9-4.4-2.2 2.2-4.4-1.3-4.9 4.9-1.3 4.4-2.2zm0 10a14 14 0 100 28 14 14 0 000-28z"
+                  />
+                </svg>
+                <span class="lab-results-computing__label">Recalculando</span>
+              </div>
+              <div class="lab-results" id="isoResults"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="js/ui/calcIsoFitPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
+  </body>
+</html>

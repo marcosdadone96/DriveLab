@@ -1,10 +1,8 @@
-import { isFeatureEnabled } from '../config/features.js';
-import { mountSmartDashboard } from './smartDashboard.js';
-
 /**
  * @param {string} [pageHint]
  */
 export function bootSmartDashboardIfEnabled(pageHint) {
-  if (!isFeatureEnabled('smartLabDashboard')) return;
-  mountSmartDashboard({ pageHint });
+  void pageHint;
+  // IA desactivada temporalmente en laboratorio por requerimiento funcional.
+  return;
 }

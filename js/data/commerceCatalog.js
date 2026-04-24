@@ -13,6 +13,7 @@
  * @property {number} priceEUR
  * @property {CommerceStock} stock
  * @property {string} supplierUrl
+ * @property {string} [amazonSearchQuery] - texto de busqueda Amazon (ES), inyectado desde mapa
  */
 
 /** @type {CommerceItem[]} */
@@ -81,12 +82,93 @@ export const COMMERCE_ITEMS = [
 
 const BY_ID = new Map(COMMERCE_ITEMS.map((x) => [x.id, x]));
 
+/** Busquedas sugeridas Amazon por id (orientativas; el usuario valida referencia). */
+const AMAZON_QUERY_BY_ID = /** @type {Record<string, string>} */ ({
+  'belt-v-SPZ': 'correa trapezoidal SPZ industrial',
+  'belt-v-SPA': 'correa trapezoidal SPA',
+  'belt-v-SPB': 'correa trapezoidal SPB',
+  'belt-v-SPC': 'correa trapezoidal SPC',
+  'belt-v-XPZ': 'correa trapecial estrecha XPZ',
+  'belt-v-XPA': 'correa trapecial estrecha XPA',
+  'belt-v-XPB': 'correa trapecial estrecha XPB',
+  'belt-sync-3': 'correa dentada HTD 3M',
+  'belt-sync-5': 'correa dentada HTD 5M',
+  'belt-sync-8': 'correa dentada HTD 8M',
+  'belt-sync-8_at': 'correa dentada AT10',
+  'belt-sync-14': 'correa dentada 14M',
+  'belt-sync-2.032': 'correa dentada paso XL',
+  'belt-flat-std': 'correa plana transmision neopreno',
+  'belt-poly-PJ': 'correa poly v PJ',
+  'belt-poly-PK': 'correa poly v PK',
+  'belt-poly-PL': 'correa poly v PL',
+  'belt-poly-PM': 'correa poly v PM',
+  'chain-iso-04b-1': 'cadena rodillos ISO 04B-1',
+  'chain-iso-05b-1': 'cadena rodillos ISO 05B-1',
+  'chain-iso-06b-1': 'cadena rodillos ISO 06B-1',
+  'chain-iso-08b-1': 'cadena rodillos ISO 08B-1',
+  'chain-iso-10b-1': 'cadena rodillos ISO 10B-1',
+  'chain-iso-12b-1': 'cadena rodillos ISO 12B-1',
+  'chain-iso-16b-1': 'cadena rodillos ISO 16B-1',
+  'chain-iso-20b-1': 'cadena rodillos ISO 20B-1',
+  'chain-iso-24b-1': 'cadena rodillos ISO 24B-1',
+  'chain-ansi-35': 'cadena rodillos ANSI 35',
+  'chain-ansi-40': 'cadena rodillos ANSI 40',
+  'chain-ansi-50': 'cadena rodillos ANSI 50',
+  'chain-ansi-60': 'cadena rodillos ANSI 60',
+  'chain-ansi-80': 'cadena rodillos ANSI 80',
+  'bearing-6205': 'rodamiento 6205 2RS',
+  'bearing-6208': 'rodamiento 6208 2RS',
+  'bearing-6210': 'rodamiento 6210',
+  'bearing-nu208': 'rodamiento cilindrico NU208',
+  'bearing-30208': 'rodamiento conico 30208',
+  'gear-pair-quote': 'engranaje cilindrico recto acero modulo',
+  'shaft-turned-quote': 'eje acero mecanizado torno',
+  'pulley-stock-100': 'polea fundicion 100 mm',
+  'pulley-stock-160': 'polea fundicion 160 mm',
+  'sprocket-kit-17': 'piñon cadena rodillos 17 dientes',
+  'wire-rope-8mm': 'cable acero 8mm elevacion',
+  'wire-rope-9mm': 'cable acero 9mm elevacion',
+  'wire-rope-10mm': 'cable acero 10mm elevacion',
+  'wire-rope-11mm': 'cable acero 11mm elevacion',
+  'wire-rope-12mm': 'cable acero 12mm elevacion',
+  'wire-rope-13mm': 'cable acero 13mm elevacion',
+  'wire-rope-14mm': 'cable acero 14mm elevacion',
+  'traction-motor-7k5-brake': 'motorreductor traccion 7.5 kW freno',
+  'traction-motor-11k-brake': 'motorreductor traccion 11 kW freno',
+  'traction-motor-15k-brake': 'motorreductor traccion 15 kW freno',
+  'traction-motor-22k-brake': 'motorreductor traccion 22 kW freno',
+});
+
 /**
  * @param {string} id
  * @returns {CommerceItem | undefined}
  */
 export function getCommerceItem(id) {
-  return BY_ID.get(id);
+  const base = BY_ID.get(id);
+  if (!base) return undefined;
+  const amazonSearchQuery = AMAZON_QUERY_BY_ID[id];
+  if (amazonSearchQuery) return { ...base, amazonSearchQuery };
+  return base;
+}
+
+/**
+ * Filas para el panel de compra a partir de lineas de carrito del laboratorio.
+ * @param {Array<{ commerceId: string, qty?: number, note?: string }>} lines
+ * @returns {Array<{ label: string, searchQuery: string }>}
+ */
+export function purchaseSuggestionRowsFromShoppingLines(lines) {
+  if (!Array.isArray(lines)) return [];
+  const seen = new Set();
+  /** @type {Array<{ label: string, searchQuery: string }>} */
+  const rows = [];
+  for (const L of lines) {
+    const item = getCommerceItem(L.commerceId);
+    if (!item?.amazonSearchQuery) continue;
+    if (seen.has(item.id)) continue;
+    seen.add(item.id);
+    rows.push({ label: item.label, searchQuery: item.amazonSearchQuery });
+  }
+  return rows;
 }
 
 /**

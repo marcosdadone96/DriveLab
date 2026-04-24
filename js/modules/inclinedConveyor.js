@@ -14,6 +14,7 @@ import {
 } from '../utils/calculations.js';
 import { steadyForceStandardMultiplier, STANDARD_INFO } from './conveyorStandards.js';
 import { resolveServiceFactor } from './serviceFactorByDuty.js';
+import { applyInclinedConveyorEnglish } from './conveyorCalcEn.js';
 
 /**
  * @typedef {Object} CalcStep
@@ -261,7 +262,7 @@ export function computeInclinedConveyor(raw) {
     assumptions.push(`θ obtenido de H=${height_m.toFixed(3)} m y L=${length_m.toFixed(3)} m.`);
   }
 
-  return {
+  const result = {
     designStandard,
     loadDuty,
     efficiency_pct_raw,
@@ -305,6 +306,25 @@ export function computeInclinedConveyor(raw) {
       inertiaStartingFactor,
     },
   };
+
+  if (raw.lang === 'en') {
+    applyInclinedConveyorEnglish(result, {
+      angleFromGeometry,
+      height_m,
+      length_m,
+      beltWidth_m,
+      designStandard,
+      stdMult,
+      loadDuty,
+      serviceFactor,
+      fgPct,
+      fmuPct,
+      FgTot: F_g_load_N + F_g_belt_N,
+      FmuTot: F_mu_load_N + F_mu_belt_N,
+    });
+  }
+
+  return result;
 }
 
 function parseEfficiencyRawInc(v) {

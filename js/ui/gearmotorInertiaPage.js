@@ -2,8 +2,8 @@
  * Inercia carga vs motor — relación J_ext/J_mot y gráfico par motor vs par resistente.
  */
 
-import { GEAR_MOTOR_CATALOG } from '../data/sewMotorsSample.js';
 import { renderInertiaTransmissionLine } from '../lab/diagramCatalogModules.js';
+import { mountCompactLabFieldHelp } from './labHelpCompact.js';
 
 function interpCurve(curve, x) {
   const pts = [...curve].sort((a, b) => a[0] - b[0]);
@@ -17,16 +17,39 @@ function interpCurve(curve, x) {
   return pts[pts.length - 1][1];
 }
 
-function fillMotorSelect() {
-  const sel = document.getElementById('gmMotor');
-  if (!sel) return;
-  sel.innerHTML = GEAR_MOTOR_CATALOG.map((m) => `<option value="${m.id}">${m.label}</option>`).join('');
+function readNum(id, fallback) {
+  const el = document.getElementById(id);
+  const n = parseFloat(el?.value || '');
+  return Number.isFinite(n) ? n : fallback;
 }
 
 function motorTorqueAtSpeed(motor, n_rpm) {
   const ratio = Math.min(0.999, Math.max(0, n_rpm / motor.n_sync));
   const k = interpCurve(motor.curve, ratio);
   return k * motor.T_N_m;
+}
+
+function buildUserMotor() {
+  const J_motor_kgm2 = Math.max(1e-9, readNum('gmJmotor', 0.0012));
+  const J_ratio_max = Math.max(1, readNum('gmJratioMax', 10));
+  const T_N_m = Math.max(0.01, readNum('gmTN', 48));
+  const n_sync = Math.max(100, readNum('gmNsync', 1500));
+  const peak = Math.min(4, Math.max(1, readNum('gmTpeak', 2.2)));
+  return {
+    id: 'user',
+    label: 'Motorreductor definido por usuario',
+    J_motor_kgm2,
+    J_ratio_max,
+    T_N_m,
+    n_sync,
+    curve: [
+      [0, Math.max(1.5, peak * 0.86)],
+      [0.15, peak],
+      [0.55, Math.max(1.05, 0.6 * peak)],
+      [0.9, 0.95],
+      [1, 0],
+    ],
+  };
 }
 
 function drawChart(motor, T_load, n_op) {
@@ -84,11 +107,11 @@ function drawChart(motor, T_load, n_op) {
     <defs><linearGradient id="gmChBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fff"/><stop offset="100%" stop-color="#f8fafc"/></linearGradient></defs>
     <rect fill="url(#gmChBg)" x="0" y="0" width="${W}" height="${H}" rx="8" stroke="#e2e8f0"/>
     ${grid}
-    <text x="${padL}" y="22" font-size="11" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Par T (N·m) frente a n (min⁻¹)</text>
+    <text x="${padL}" y="22" font-size="11" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Par T (N·m) frente a n (rpm)</text>
     <line x1="${padL}" y1="${H - padB}" x2="${W - padR}" y2="${H - padB}" stroke="#64748b" stroke-width="1.5" />
     <line x1="${padL}" y1="${padT}" x2="${padL}" y2="${H - padB}" stroke="#64748b" stroke-width="1.5" />
     ${ticks}
-    <text x="${(padL + W - padR) / 2}" y="${H - 6}" text-anchor="middle" font-size="9" font-weight="600" fill="#475569" font-family="Inter,system-ui,sans-serif">Velocidad n (min⁻¹)</text>
+    <text x="${(padL + W - padR) / 2}" y="${H - 6}" text-anchor="middle" font-size="9" font-weight="600" fill="#475569" font-family="Inter,system-ui,sans-serif">Velocidad n (rpm)</text>
     <text transform="rotate(-90 14 ${(padT + H - padB) / 2})" x="14" y="${(padT + H - padB) / 2}" text-anchor="middle" font-size="9" font-weight="600" fill="#475569" font-family="Inter,system-ui,sans-serif">Par (N·m)</text>
     <path d="${pathD.trim()}" fill="none" stroke="#0d9488" stroke-width="2.8" stroke-linejoin="round" />
     <line x1="${xl}" y1="${padT}" x2="${xl}" y2="${H - padB}" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.95" />
@@ -103,11 +126,10 @@ function render() {
   const Jext = parseFloat(document.getElementById('gmJext')?.value || '0');
   const nOp = parseFloat(document.getElementById('gmN')?.value || '1455');
   const Tload = parseFloat(document.getElementById('gmTload')?.value || '10');
-  const mid = document.getElementById('gmMotor')?.value;
   const out = document.getElementById('gmOut');
   const tbl = document.getElementById('gmTable');
-  const motor = GEAR_MOTOR_CATALOG.find((m) => m.id === mid);
-  if (!out || !tbl || !motor) return;
+  const motor = buildUserMotor();
+  if (!out || !tbl) return;
 
   const ratio = motor.J_motor_kgm2 > 0 ? Jext / motor.J_motor_kgm2 : Infinity;
   const okJ = ratio <= motor.J_ratio_max;
@@ -118,29 +140,32 @@ function render() {
 
   out.innerHTML = `
     <p class="lab-verdict ${okJ ? 'lab-verdict--ok' : 'lab-verdict--err'}">
-      Relación inercias <strong>J<sub>ext</sub>/J<sub>mot</sub></strong> = ${ratio.toFixed(2)} (límite fabricante orientativo: <strong>${motor.J_ratio_max}</strong>) — ${okJ ? 'dentro de referencia' : 'fuera de referencia'}.
+      Relación inercias <strong>J<sub>ext</sub>/J<sub>mot</sub></strong> = ${ratio.toFixed(2)} (límite definido: <strong>${motor.J_ratio_max}</strong>) — ${okJ ? 'dentro de referencia' : 'fuera de referencia'}.
     </p>
     <p class="lab-verdict ${okT ? 'lab-verdict--ok' : 'lab-verdict--err'}">
-      A ${nOp.toFixed(0)} min⁻¹, par motor ≈ <strong>${Tm.toFixed(2)} N·m</strong> vs par resistente <strong>${Tload.toFixed(2)} N·m</strong> — ${okT ? 'margen suficiente (≈5%)' : 'riesgo de stall / sobrecarga'}.
+      A ${nOp.toFixed(0)} rpm, par motor estimado ≈ <strong>${Tm.toFixed(2)} N·m</strong> vs par resistente <strong>${Tload.toFixed(2)} N·m</strong> — ${okT ? 'margen suficiente (≈5%)' : 'riesgo de stall / sobrecarga'}.
     </p>`;
 
   tbl.innerHTML = `
     <table class="lab-catalog-table">
       <thead><tr><th>Parámetro</th><th>Valor</th></tr></thead>
       <tbody>
-        <tr><td>J motor (cat.)</td><td>${motor.J_motor_kgm2.toExponential(3)} kg·m²</td></tr>
+        <tr><td>J motorreductor</td><td>${motor.J_motor_kgm2.toExponential(3)} kg·m²</td></tr>
         <tr><td>J carga reflejada</td><td>${Jext.toExponential(3)} kg·m²</td></tr>
-        <tr><td>T<sub>N</sub> motor</td><td>${motor.T_N_m} N·m</td></tr>
-        <tr><td>n sincrona (4p ref.)</td><td>${motor.n_sync} min⁻¹</td></tr>
+        <tr><td>T<sub>N</sub> nominal</td><td>${motor.T_N_m.toFixed(2)} N·m</td></tr>
+        <tr><td>n síncrona base</td><td>${motor.n_sync.toFixed(0)} rpm</td></tr>
+        <tr><td>Factor pico Tpico/Tn</td><td>${readNum('gmTpeak', 2.2).toFixed(2)}</td></tr>
       </tbody>
     </table>
-    <p class="lab-small-print">Curva y J son modelos educativos; consulte curvas oficiales SEW/Siemens para arranque VFC.</p>`;
+    <p class="lab-small-print">Curva estimada según parámetros introducidos por usuario. Para validación final, use curva real del fabricante de su motorreductor.</p>`;
 }
 
 renderInertiaTransmissionLine(document.getElementById('gmLineDiagram'));
+mountCompactLabFieldHelp();
 
-fillMotorSelect();
-['gmJext', 'gmN', 'gmTload', 'gmMotor'].forEach((id) => document.getElementById(id)?.addEventListener('input', render));
-document.getElementById('gmMotor')?.addEventListener('change', render);
+['gmJmotor', 'gmJratioMax', 'gmTN', 'gmNsync', 'gmTpeak', 'gmJext', 'gmN', 'gmTload'].forEach((id) => {
+  document.getElementById(id)?.addEventListener('input', render);
+  document.getElementById(id)?.addEventListener('change', render);
+});
 
 render();

@@ -27,11 +27,31 @@ export const LOAD_DUTY_OPTIONS = Object.freeze([
   },
   {
     id: 'custom',
-    label: 'Personalizado (editar número)',
-    hint: 'Introduzca el factor manualmente si su norma o fabricante lo exige',
+    label: 'Personalizado (editar factor en datos esenciales)',
+    hint: 'Active esta opción y edite el campo numérico «Factor de servicio» en Datos esenciales',
     sf: null,
   },
 ]);
+
+/** UI copy when language is English (same `id` keys as LOAD_DUTY_OPTIONS). */
+export const LOAD_DUTY_OPTIONS_EN = Object.freeze({
+  uniform: {
+    label: 'Uniform load (light)',
+    hint: 'Smooth starts, stable load — typical SF 1.0–1.2',
+  },
+  moderate: {
+    label: 'Moderate shock',
+    hint: 'Load swings or frequent starts — typical SF 1.2–1.5',
+  },
+  heavy: {
+    label: 'Heavy shock',
+    hint: 'Impacts, occasional stalls, or high irregularity — typical SF 1.5–2.0+',
+  },
+  custom: {
+    label: 'Custom (edit service factor in essentials)',
+    hint: 'Select this option and edit the numeric Service factor field in the essentials section',
+  },
+});
 
 /**
  * @param {LoadDutyClass} duty

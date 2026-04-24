@@ -11,6 +11,7 @@ import {
 } from '../lab/labUnitPrefs.js';
 import { mountCompactLabFieldHelp } from './labHelpCompact.js';
 import { injectLabUnitConverterIfNeeded, mountLabUnitConverter } from '../lab/labUnitConvert.js';
+import { setLabPurchaseFromShoppingLines } from './labPurchaseSuggestions.js';
 import {
   debounce,
   labAlert,
@@ -50,6 +51,13 @@ function esc(s) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function elementCardHtml(title, rows) {
+  const body = rows
+    .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`)
+    .join('');
+  return `<article class="lab-element-card"><h4 class="lab-element-card__title">${esc(title)}</h4><dl class="lab-element-card__kv">${body}</dl></article>`;
 }
 
 function powerKwFromInputs(n1_rpm, Topt, Popt) {
@@ -126,6 +134,26 @@ function refreshCore() {
   }
 
   const i = r.ratio_transmission;
+  const elementBox = document.getElementById('gElementResults');
+  if (elementBox) {
+    elementBox.innerHTML = [
+      elementCardHtml('Rueda 1 · Piñón (motriz)', [
+        ['Dientes (z)', String(r.z1)],
+        ['Diam. primitivo (d)', formatLength(r.d1, u.length)],
+        ['Diam. cabeza (da)', formatLength(r.da1, u.length)],
+        ['Diam. pie (db)', formatLength(r.db1, u.length)],
+        ['Velocidad (n)', formatRotation(r.n1, u.rotation)],
+      ]),
+      elementCardHtml('Rueda 2 · Conducida', [
+        ['Dientes (z)', String(r.z2)],
+        ['Diam. primitivo (d)', formatLength(r.d2, u.length)],
+        ['Diam. cabeza (da)', formatLength(r.da2, u.length)],
+        ['Diam. pie (db)', formatLength(r.db2, u.length)],
+        ['Velocidad (n)', formatRotation(r.n2, u.rotation)],
+      ]),
+    ].join('');
+  }
+
   const box = document.getElementById('gResults');
   if (box) {
     box.innerHTML = [
@@ -271,27 +299,38 @@ function refreshCore() {
     const vps = formatLinearSpeed(r.v_pitch_m_s, u.linear);
     const d1s = formatLength(r.d1, u.length);
     sub.innerHTML = `
-      <div class="calc-substitution">
-        <h3 class="calc-substitution__title">Sustitución — de dientes a velocidad de salida</h3>
-        <p class="calc-substitution__step">
-          Relación cinemática en el primitivo: <code>n₂ = n₁ · z₁ / z₂</code>
-        </p>
-        <p class="calc-substitution__step">
-          En <strong>RPM</strong> (cálculo numérico, rueda 2): <code>n₂ = ${r.n1.toFixed(2)} × ${r.z1} / ${r.z2} = ${n2.toFixed(2)} RPM</code>
-        </p>
-        <p class="calc-substitution__step">
-          Mismo giro de salida en sus unidades elegidas: <strong>${formatRotation(n2, u.rotation)}</strong>
-        </p>
-        <p class="calc-substitution__step">
-          Velocidad en primitivo · rueda 1 (piñón): <strong>${vps}</strong> (<code>d₁ = ${d1s}</code>).
-        </p>
-      </div>`;
+      <details class="calc-substitution">
+        <summary class="calc-substitution__summary">
+          <span class="calc-substitution__title">Sustitución — de dientes a velocidad de salida</span>
+        </summary>
+        <div class="calc-substitution__inner">
+          <p class="calc-substitution__step">
+            Relación cinemática en el primitivo: <code>n₂ = n₁ · z₁ / z₂</code>
+          </p>
+          <p class="calc-substitution__step">
+            En <strong>RPM</strong> (cálculo numérico, rueda 2): <code>n₂ = ${r.n1.toFixed(2)} × ${r.z1} / ${r.z2} = ${n2.toFixed(2)} RPM</code>
+          </p>
+          <p class="calc-substitution__step">
+            Mismo giro de salida en sus unidades elegidas: <strong>${formatRotation(n2, u.rotation)}</strong>
+          </p>
+          <p class="calc-substitution__step">
+            Velocidad en primitivo · rueda 1 (piñón): <strong>${vps}</strong> (<code>d₁ = ${d1s}</code>).
+          </p>
+        </div>
+      </details>`;
   } else if (sub) {
     sub.innerHTML = '';
   }
 
   renderGearPairDiagram(document.getElementById('gDiagram'), p);
 
+  const shoppingLines = [
+    {
+      commerceId: 'gear-pair-quote',
+      qty: 1,
+      note: `m = ${r.module_mm} mm · z₁/z₂ = ${r.z1}/${r.z2}`,
+    },
+  ];
   emitEngineeringSnapshot({
     page: 'calc-gears',
     moduleLabel: 'Engranajes cilíndricos',
@@ -303,15 +342,15 @@ function refreshCore() {
           ]
         : [],
     },
-    shoppingLines: [
-      {
-        commerceId: 'gear-pair-quote',
-        qty: 1,
-        note: `m = ${r.module_mm} mm · z₁/z₂ = ${r.z1}/${r.z2}`,
-      },
-    ],
+    shoppingLines,
     metrics: metricsFromGears(agma),
   });
+  setLabPurchaseFromShoppingLines(document.getElementById('labPurchaseSuggestions'), shoppingLines, [
+    {
+      label: 'Herramientas modulo / engrane',
+      searchQuery: `modulo engranaje ${r.module_mm} mm herramienta`,
+    },
+  ]);
 }
 
 const resultsWrap = document.getElementById('gResultsWrap');

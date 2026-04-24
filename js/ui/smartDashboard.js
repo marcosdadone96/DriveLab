@@ -6,6 +6,8 @@ import { resolveShoppingCart } from '../data/commerceCatalog.js';
 import { getInStockOnly, setInStockOnly } from '../services/commerceStockFilter.js';
 import { MDR_ENGINEERING_SNAPSHOT } from '../services/engineeringSnapshot.js';
 import { buildAdvisorInsights } from '../services/iaAdvisor.js';
+import { LAB_AFFILIATE } from '../config/labAffiliate.js';
+import { amazonAffiliateLinkRel, buildAmazonSearchUrl } from '../lab/amazonAffiliateUrls.js';
 
 const LS_COLLAPSE = 'mdr.smartDash.collapsed';
 
@@ -150,17 +152,21 @@ export function mountSmartDashboard(opts = {}) {
         shopEl.innerHTML = '<p class="mdr-smart-dash__muted">Añada componentes para ver líneas de compra.</p>';
       } else {
         shopEl.innerHTML = `<table class="mdr-shop-table">
-          <thead><tr><th>Artículo</th><th class="num">Ud.</th><th class="num">€</th><th></th></tr></thead>
+          <thead><tr><th>Artículo</th><th class="num">Ud.</th><th class="num">€</th><th>Enlaces</th></tr></thead>
           <tbody>
             ${cart.rows
-              .map(
-                (r) => `<tr>
+              .map((r) => {
+                const amz =
+                  LAB_AFFILIATE.enabled && r.item.amazonSearchQuery
+                    ? `<a class="mdr-shop-link mdr-shop-link--amazon" href="${esc(buildAmazonSearchUrl(r.item.amazonSearchQuery))}" target="_blank" rel="${esc(amazonAffiliateLinkRel())}">Amazon</a>`
+                    : '';
+                return `<tr>
               <td>${esc(r.item.label)}${r.note ? `<span class="mdr-shop-note">${esc(r.note)}</span>` : ''}</td>
               <td class="num">${r.qty}</td>
               <td class="num">${r.lineEUR.toFixed(2)}</td>
-              <td><a class="mdr-shop-link" href="${esc(r.item.supplierUrl)}" target="_blank" rel="noopener">Proveedor</a></td>
-            </tr>`,
-              )
+              <td class="mdr-shop-actions"><a class="mdr-shop-link" href="${esc(r.item.supplierUrl)}" target="_blank" rel="noopener">Proveedor demo</a>${amz ? ` ${amz}` : ''}</td>
+            </tr>`;
+              })
               .join('')}
           </tbody>
         </table>`;

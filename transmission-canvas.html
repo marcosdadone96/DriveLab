@@ -11,12 +11,17 @@
     <script src="js/gtag.js"></script>
   </head>
   <body class="lab-body">
-    <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html">Laboratorio</a>
-        <a href="transmission-canvas.html" aria-current="page">Lienzo técnico</a>
+    <header class="lab-header" role="banner">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+          <a href="transmission-studio.html">Estudio modular</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" class="lab-header__nav-pill" aria-current="page" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
 
@@ -33,7 +38,7 @@
           <span style="color: #64748b"> en la URL.</span>
         </p>
         <p style="margin: 0; font-size: 0.82rem">
-          <a href="transmission-lab.html" style="color: #334155">Volver al laboratorio</a>
+          <a href="transmission-lab.html" style="color: #334155">Laboratorio (gratis)</a>
         </p>
       </div>
     </div>
@@ -90,6 +95,7 @@
             </div>
             <div class="tx-toolbar__row tx-toolbar__row--wrap">
               <button type="button" class="lab-btn tx-btn--secondary" id="txBeltMode">Elegir orden correa</button>
+              <button type="button" class="lab-btn tx-btn--secondary" id="txBeltManual">Trazado manual tangente</button>
             </div>
             <div class="tx-toolbar__row tx-toolbar__row--wrap">
               <button type="button" class="lab-btn" id="txFinishBelt">Cerrar correa V</button>
@@ -144,12 +150,16 @@
         <aside class="lab-panel tx-hud">
           <h2 class="studio-aside-title">Chequeo de entradas</h2>
           <div id="txInputChecks" class="tx-checks"></div>
-          <h2 class="studio-aside-title">Fórmulas en vivo</h2>
-          <div id="txFormulas" class="tx-formulas"></div>
+          <details class="tx-formulas-details">
+            <summary class="studio-aside-title">Fórmulas en vivo</summary>
+            <div id="txFormulas" class="tx-formulas"></div>
+          </details>
           <h2 class="studio-aside-title" style="margin-top: 1rem">Veredicto</h2>
           <div id="txVerdict" class="tx-verdict-strip tx-verdict-strip--ok"></div>
           <h2 class="studio-aside-title" style="margin-top: 1rem">Resultados por elemento</h2>
           <div id="txElementResults" class="tx-element-grid"></div>
+          <h2 class="studio-aside-title" style="margin-top: 1rem">Correas y cadenas</h2>
+          <div id="txRunResults" class="tx-checks"></div>
           <p class="tx-small-print" style="margin-top: 0.75rem">
             Modelos simplificados (Lewis/Hertz orientativos, longitudes comerciales demo, carga cadena estimada). Valide siempre con normas ISO/AGMA y catálogo del fabricante.
           </p>

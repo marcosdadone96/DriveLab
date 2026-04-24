@@ -18,6 +18,7 @@ import { injectLabUnitConverterIfNeeded, mountLabUnitConverter } from '../lab/la
 import { debounce, labAlert, metricHtml, renderResultHero, runCalcWithIndustrialFeedback } from './labCalcUx.js';
 import { commerceIdForBeltSelection } from '../data/commerceCatalog.js';
 import { emitEngineeringSnapshot } from '../services/engineeringSnapshot.js';
+import { setLabPurchaseFromShoppingLines } from './labPurchaseSuggestions.js';
 import { metricsFromBeltType } from '../services/iaAdvisor.js';
 import { bindCommerceFilteredSelect } from './commerceSelectBind.js';
 import { bootSmartDashboardIfEnabled } from './smartDashboardBoot.js';
@@ -54,6 +55,13 @@ function esc(s) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function elementCardHtml(title, rows) {
+  const body = rows
+    .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`)
+    .join('');
+  return `<article class="lab-element-card"><h4 class="lab-element-card__title">${esc(title)}</h4><dl class="lab-element-card__kv">${body}</dl></article>`;
 }
 
 bindCommerceFilteredSelect('bVProfile', V_BELT_PROFILES, 'id', 'label', (o) => `belt-v-${o.id}`);
@@ -173,6 +181,30 @@ function refreshCore() {
 
   renderSpeedVerdictEl(r);
 
+  const elementBox = document.getElementById('bElementResults');
+  if (elementBox) {
+    const p1Rows = [
+      ['Diam. primitivo (d1)', formatLength(r.d1, u.length)],
+      ['Velocidad (n1)', formatRotation(r.n1_rpm, u.rotation)],
+      ['Vel. lineal correa (v)', formatLinearSpeed(r.beltSpeed_m_s, u.linear)],
+    ];
+    const p2Rows = [
+      ['Diam. primitivo (d2)', formatLength(r.d2, u.length)],
+      ['Velocidad (n2)', r.n2_rpm != null ? formatRotation(r.n2_rpm, u.rotation) : '—'],
+      ['Relación (i)', r.ratio_i.toFixed(2)],
+    ];
+    if (bt === 'synchronous' && r.Z1 != null && r.Z2 != null) {
+      p1Rows.unshift(['Dientes (Z1)', String(r.Z1)]);
+      p2Rows.unshift(['Dientes (Z2)', String(r.Z2)]);
+    } else {
+      p2Rows.push(['Deslizamiento (s)', `${r.slip_pct.toFixed(2)} %`]);
+    }
+    elementBox.innerHTML = [
+      elementCardHtml('Polea 1 · Motriz', p1Rows),
+      elementCardHtml('Polea 2 · Conducida', p2Rows),
+    ].join('');
+  }
+
   const box = document.getElementById('bResults');
   if (box) {
     const cells = [
@@ -284,10 +316,14 @@ function refreshCore() {
 
   const alerts = document.getElementById('bAlerts');
   if (alerts) {
-    alerts.innerHTML = labAlert(
-      'info',
-      `${esc(r.profileNote)} · Compruebe tensado, alineación y datos de catálogo para el dimensionado final.`,
-    );
+    if (r.geometryValid === false) {
+      alerts.innerHTML = labAlert('danger', `${esc(r.geometryNote)} Ajuste C o diámetros antes de usar el resultado.`);
+    } else {
+      alerts.innerHTML = labAlert(
+        'info',
+        `${esc(r.profileNote)} · Compruebe tensado, alineación y datos de catálogo para el dimensionado final.`,
+      );
+    }
   }
 
   const sub = document.getElementById('bSubstitution');
@@ -343,10 +379,14 @@ function refreshCore() {
     }
 
     sub.innerHTML = `
-      <div class="calc-substitution">
-        <h3 class="calc-substitution__title">Sustitución — cinemática y velocidad</h3>
-        ${body}
-      </div>`;
+      <details class="calc-substitution">
+        <summary class="calc-substitution__summary">
+          <span class="calc-substitution__title">Sustitución — cinemática y velocidad</span>
+        </summary>
+        <div class="calc-substitution__inner">
+          ${body}
+        </div>
+      </details>`;
   } else if (sub) {
     sub.innerHTML = '';
   }
@@ -359,15 +399,17 @@ function refreshCore() {
     polyProfileId: readSelect('bPolyProfile', 'PK'),
     syncPitchId: readSelect('bSyncPitch', '5'),
   });
+  const shoppingLines = [{ commerceId: beltCommerceId, qty: 1, note: esc(r.profileNote) }];
   emitEngineeringSnapshot({
     page: 'calc-belts',
     moduleLabel: 'Correas',
     advisorContext: {
       belt: { beltType: bt, powerKw: pKw },
     },
-    shoppingLines: [{ commerceId: beltCommerceId, qty: 1, note: esc(r.profileNote) }],
+    shoppingLines,
     metrics: metricsFromBeltType(bt),
   });
+  setLabPurchaseFromShoppingLines(document.getElementById('labPurchaseSuggestions'), shoppingLines);
 }
 
 syncBeltFormUi();

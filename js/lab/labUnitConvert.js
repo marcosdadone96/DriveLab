@@ -1,9 +1,9 @@
 /**
- * Conversor discreto entre unidades del laboratorio (longitud, giro, velocidad lineal, vida L₁₀).
- * Independiente del cálculo principal; solo ayuda a traducir valores.
+ * Conversor de unidades del laboratorio (por calculadora).
+ * Categorias y textos se filtran con data-lab-convert-* en .lab-units-bar.
  */
 
-/** @typedef {'length'|'rotation'|'linear'|'life'} LabConvertCategory */
+/** @typedef {'length'|'rotation'|'linear'|'life'|'force'|'stiffness'|'pressure'|'torque'} LabConvertCategory */
 
 const LENGTH_OPTS = [
   { id: 'mm', label: 'mm' },
@@ -28,12 +28,56 @@ const LIFE_OPTS = [
   { id: 'rev', label: 'vueltas' },
 ];
 
+const FORCE_OPTS = [
+  { id: 'N', label: 'N' },
+  { id: 'kN', label: 'kN' },
+  { id: 'kgf', label: 'kgf (kp)' },
+  { id: 'lbf', label: 'lbf' },
+];
+
+/** Rigidez; base interna N/mm */
+const STIFF_OPTS = [
+  { id: 'N_mm', label: 'N/mm' },
+  { id: 'N_m', label: 'N/m' },
+  { id: 'kN_m', label: 'kN/mm' },
+];
+
+/** Tension/presion; base MPa (= N/mm2) */
+const PRESSURE_OPTS = [
+  { id: 'MPa', label: 'MPa (= N/mm2)' },
+  { id: 'bar', label: 'bar' },
+  { id: 'kPa', label: 'kPa' },
+];
+
+const TORQUE_OPTS = [
+  { id: 'Nm', label: 'N·m' },
+  { id: 'kgf_m', label: 'kgf·m' },
+  { id: 'lbf_ft', label: 'lbf·ft' },
+];
+
+const CAT_LABELS = /** @type {Record<LabConvertCategory, string>} */ ({
+  length: 'Longitud / distancia',
+  rotation: 'Velocidad angular',
+  linear: 'Velocidad lineal',
+  life: 'Vida L10 (horas, Mrev, vueltas)',
+  force: 'Fuerza',
+  stiffness: 'Rigidez de muelle',
+  pressure: 'Tension / presion',
+  torque: 'Par / momento',
+});
+
 const OPTS_BY_CAT = /** @type {Record<LabConvertCategory, { id: string, label: string }[]>} */ ({
   length: LENGTH_OPTS,
   rotation: ROT_OPTS,
   linear: LIN_OPTS,
   life: LIFE_OPTS,
+  force: FORCE_OPTS,
+  stiffness: STIFF_OPTS,
+  pressure: PRESSURE_OPTS,
+  torque: TORQUE_OPTS,
 });
+
+const VALID_CATEGORIES = /** @type {LabConvertCategory[]} */ (Object.keys(OPTS_BY_CAT));
 
 const OUT_SUFFIX = /** @type {Record<string, string>} */ ({
   mm: 'mm',
@@ -47,11 +91,52 @@ const OUT_SUFFIX = /** @type {Record<string, string>} */ ({
   hours: 'h',
   Mrev: 'Mrev',
   rev: 'vueltas',
+  N: 'N',
+  kN: 'kN',
+  kgf: 'kgf',
+  lbf: 'lbf',
+  N_mm: 'N/mm',
+  N_m: 'N/m',
+  kN_m: 'kN/mm',
+  MPa: 'MPa',
+  bar: 'bar',
+  kPa: 'kPa',
+  Nm: 'N·m',
+  kgf_m: 'kgf·m',
+  lbf_ft: 'lbf·ft',
 });
 
 function parseNum(s) {
   const n = parseFloat(String(s).trim().replace(',', '.'));
   return Number.isFinite(n) ? n : null;
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * @param {string | null | undefined} raw
+ * @returns {LabConvertCategory[]}
+ */
+export function parseLabConvertCategories(raw) {
+  if (raw == null || String(raw).trim() === '') return [];
+  const parts = String(raw)
+    .split(/[,;\s]+/)
+    .map((p) => p.trim().toLowerCase())
+    .filter(Boolean);
+  /** @type {LabConvertCategory[]} */
+  const out = [];
+  for (const p of parts) {
+    if (VALID_CATEGORIES.includes(/** @type {LabConvertCategory} */ (p)) && !out.includes(/** @type {LabConvertCategory} */ (p))) {
+      out.push(/** @type {LabConvertCategory} */ (p));
+    }
+  }
+  return out;
 }
 
 function lengthToMm(value, unit) {
@@ -124,6 +209,69 @@ function revToLife(rev, unit, rpm) {
   return null;
 }
 
+/** @param {number} v @param {string} unit */
+function forceToN(v, unit) {
+  if (unit === 'N') return v;
+  if (unit === 'kN') return v * 1000;
+  if (unit === 'kgf') return v * 9.80665;
+  if (unit === 'lbf') return v * 4.4482216152605;
+  return null;
+}
+
+/** @param {number} n @param {string} unit */
+function nToForce(n, unit) {
+  if (unit === 'N') return n;
+  if (unit === 'kN') return n / 1000;
+  if (unit === 'kgf') return n / 9.80665;
+  if (unit === 'lbf') return n / 4.4482216152605;
+  return null;
+}
+
+/** Rigidez en N/mm */
+function stiffToNmm(v, unit) {
+  if (unit === 'N_mm') return v;
+  if (unit === 'N_m') return v / 1000;
+  if (unit === 'kN_m') return v * 1000;
+  return null;
+}
+
+function nmmToStiff(nmm, unit) {
+  if (unit === 'N_mm') return nmm;
+  if (unit === 'N_m') return nmm * 1000;
+  if (unit === 'kN_m') return nmm / 1000;
+  return null;
+}
+
+/** Presion en MPa */
+function pressureToMpa(v, unit) {
+  if (unit === 'MPa') return v;
+  if (unit === 'bar') return v * 0.1;
+  if (unit === 'kPa') return v / 1000;
+  return null;
+}
+
+function mpaToPressure(mpa, unit) {
+  if (unit === 'MPa') return mpa;
+  if (unit === 'bar') return mpa / 0.1;
+  if (unit === 'kPa') return mpa * 1000;
+  return null;
+}
+
+/** Par en N·m */
+function torqueToNm(v, unit) {
+  if (unit === 'Nm') return v;
+  if (unit === 'kgf_m') return v * 9.80665;
+  if (unit === 'lbf_ft') return v * 1.3558179483314004;
+  return null;
+}
+
+function nmToTorque(nm, unit) {
+  if (unit === 'Nm') return nm;
+  if (unit === 'kgf_m') return nm / 9.80665;
+  if (unit === 'lbf_ft') return nm / 1.3558179483314004;
+  return null;
+}
+
 /**
  * @param {LabConvertCategory} cat
  * @param {number} value
@@ -153,6 +301,26 @@ export function convertLabUnits(cat, value, fromId, toId, rpm) {
     if (rev == null) return null;
     return revToLife(rev, /** @type {'hours'|'Mrev'|'rev'} */ (toId), rpm);
   }
+  if (cat === 'force') {
+    const n = forceToN(value, fromId);
+    if (n == null) return null;
+    return nToForce(n, toId);
+  }
+  if (cat === 'stiffness') {
+    const nmm = stiffToNmm(value, fromId);
+    if (nmm == null) return null;
+    return nmmToStiff(nmm, toId);
+  }
+  if (cat === 'pressure') {
+    const mpa = pressureToMpa(value, fromId);
+    if (mpa == null) return null;
+    return mpaToPressure(mpa, toId);
+  }
+  if (cat === 'torque') {
+    const nm = torqueToNm(value, fromId);
+    if (nm == null) return null;
+    return nmToTorque(nm, toId);
+  }
   return null;
 }
 
@@ -170,24 +338,33 @@ function formatOut(cat, unitId, n) {
   return `${n.toFixed(2)} ${suf}`.trim();
 }
 
-export const LAB_UNIT_CONVERTER_HTML = `
-<div class="lab-unit-converter" aria-label="Conversor de unidades del laboratorio">
+/**
+ * @param {{ categories: LabConvertCategory[], title?: string, tip?: string }} opts
+ */
+export function buildLabUnitConverterHtml(opts) {
+  const categories = opts.categories.length ? opts.categories : ['length', 'rotation', 'linear'];
+  const title = opts.title || 'Conversor de unidades';
+  const tip =
+    opts.tip ||
+    'No modifica el calculo principal; solo traduce valores entre las unidades de esta calculadora.';
+
+  const magOptions = categories
+    .map((c) => `<option value="${c}">${escapeHtml(CAT_LABELS[c])}</option>`)
+    .join('');
+
+  return `
+<div class="lab-unit-converter" aria-label="Conversor de unidades del laboratorio" data-lab-convert-cats="${categories.join(',')}">
   <div class="lab-unit-converter__head">
-    <span class="lab-unit-converter__title">Conversor de unidades</span>
+    <span class="lab-unit-converter__title">${escapeHtml(title)}</span>
     <span class="lab-help-hover lab-help-hover--field">
-      <button type="button" class="lab-help-hover__btn" aria-label="Información del conversor">?</button>
-      <span class="lab-help-hover__tip">No altera el cálculo principal; solo traduce valores entre unidades (longitud, giro, velocidad lineal o vida L₁₀).</span>
+      <button type="button" class="lab-help-hover__btn" aria-label="Informacion del conversor">?</button>
+      <span class="lab-help-hover__tip">${escapeHtml(tip)}</span>
     </span>
   </div>
   <div class="lab-unit-converter__grid">
-    <label class="lab-unit-converter__field">
+    <label class="lab-unit-converter__field lab-unit-converter__field--mag">
       <span class="lab-unit-converter__lbl">Magnitud</span>
-      <select class="lab-unit-converter__mag">
-        <option value="length">Longitud / distancia</option>
-        <option value="rotation">Velocidad angular (giro)</option>
-        <option value="linear">Velocidad lineal</option>
-        <option value="life">Vida L₁₀ (horas · Mrev · vueltas)</option>
-      </select>
+      <select class="lab-unit-converter__mag">${magOptions}</select>
     </label>
     <label class="lab-unit-converter__field">
       <span class="lab-unit-converter__lbl">Valor</span>
@@ -210,7 +387,7 @@ export const LAB_UNIT_CONVERTER_HTML = `
       <span class="lab-unit-converter__lbl">RPM del eje</span>
       <span class="lab-help-hover lab-help-hover--field">
         <button type="button" class="lab-help-hover__btn" aria-label="Ayuda RPM">?</button>
-        <span class="lab-help-hover__tip">Necesario si en <strong>vida L₁₀</strong> interviene la unidad <strong>horas</strong> (relación horas ↔ vueltas).</span>
+        <span class="lab-help-hover__tip">Necesario si en <strong>vida L10</strong> interviene la unidad <strong>horas</strong> (horas ↔ vueltas).</span>
       </span>
     </span>
     <input class="lab-unit-converter__rpm" type="text" inputmode="decimal" autocomplete="off" placeholder="p. ej. 1455" />
@@ -220,18 +397,43 @@ export const LAB_UNIT_CONVERTER_HTML = `
     <span class="lab-unit-converter__out">—</span>
   </div>
 </div>`;
+}
+
+/** @deprecated Usar buildLabUnitConverterHtml; conservado por compatibilidad. */
+export const LAB_UNIT_CONVERTER_HTML = buildLabUnitConverterHtml({
+  categories: ['length', 'rotation', 'linear', 'life'],
+  title: 'Conversor de unidades',
+  tip: 'No altera el calculo principal; solo traduce valores entre unidades (longitud, giro, velocidad lineal o vida L10).',
+});
 
 const mounted = new WeakSet();
 
 /**
- * Inserta el panel de conversión justo debajo de la barra de unidades (una vez por página).
+ * Inserta el panel de conversion bajo la barra de unidades.
+ * Atributos opcionales en .lab-units-bar:
+ * - data-lab-convert-categories="length,rotation,linear" (coma o espacio)
+ * - data-lab-convert-title, data-lab-convert-tip
  */
 export function injectLabUnitConverterIfNeeded() {
   const bar = document.querySelector('.lab-calc-layout__out > .lab-units-bar');
   if (!bar) return;
   const next = bar.nextElementSibling;
   if (next instanceof HTMLElement && next.classList.contains('lab-unit-converter')) return;
-  bar.insertAdjacentHTML('afterend', LAB_UNIT_CONVERTER_HTML);
+
+  const rawCats = bar.getAttribute('data-lab-convert-categories');
+  let categories = parseLabConvertCategories(rawCats);
+  if (!categories.length) {
+    const hasLife = document.getElementById('labUnitLife');
+    categories = hasLife
+      ? ['length', 'rotation', 'linear', 'life']
+      : ['length', 'rotation', 'linear'];
+  }
+
+  const title = bar.getAttribute('data-lab-convert-title') || undefined;
+  const tip = bar.getAttribute('data-lab-convert-tip') || undefined;
+
+  const html = buildLabUnitConverterHtml({ categories, title, tip });
+  bar.insertAdjacentHTML('afterend', html);
 }
 
 /**
@@ -243,6 +445,7 @@ export function mountLabUnitConverter() {
     mounted.add(root);
 
     const mag = root.querySelector('.lab-unit-converter__mag');
+    const magField = root.querySelector('.lab-unit-converter__field--mag');
     const valIn = root.querySelector('.lab-unit-converter__val');
     const fromSel = root.querySelector('.lab-unit-converter__from');
     const toSel = root.querySelector('.lab-unit-converter__to');
@@ -267,10 +470,19 @@ export function mountLabUnitConverter() {
     function fillUnitSelects(cat) {
       const c = /** @type {LabConvertCategory} */ (cat);
       const opts = OPTS_BY_CAT[c];
+      if (!opts) return;
       fromSel.innerHTML = opts.map((o) => `<option value="${o.id}">${o.label}</option>`).join('');
       toSel.innerHTML = opts.map((o) => `<option value="${o.id}">${o.label}</option>`).join('');
       fromSel.selectedIndex = 0;
       toSel.selectedIndex = Math.min(1, opts.length - 1);
+    }
+
+    function toggleMagVisibility() {
+      const single = mag.options.length <= 1;
+      if (magField instanceof HTMLElement) {
+        magField.classList.toggle('is-hidden', single);
+        magField.setAttribute('aria-hidden', single ? 'true' : 'false');
+      }
     }
 
     function updateRpmVisibility() {
@@ -310,6 +522,7 @@ export function mountLabUnitConverter() {
 
     mag.addEventListener('change', () => {
       fillUnitSelects(mag.value);
+      toggleMagVisibility();
       updateRpmVisibility();
       recalc();
     });
@@ -331,6 +544,7 @@ export function mountLabUnitConverter() {
     });
 
     fillUnitSelects(mag.value);
+    toggleMagVisibility();
     updateRpmVisibility();
     recalc();
   });

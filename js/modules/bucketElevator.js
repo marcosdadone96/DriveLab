@@ -11,14 +11,71 @@
  * @type {Array<{ id: string, label: string, volume_L: number, minBelt_mm: number, typicalPitch_mm: number }>}
  */
 export const BUCKET_CATALOG = [
-  { id: 'b05', label: 'Profundo ligero · ~0,5 L', volume_L: 0.5, minBelt_mm: 200, typicalPitch_mm: 280 },
-  { id: 'b1', label: 'Profundo · ~1 L', volume_L: 1.0, minBelt_mm: 250, typicalPitch_mm: 320 },
-  { id: 'b2', label: 'Profundo · ~2 L', volume_L: 2.0, minBelt_mm: 300, typicalPitch_mm: 380 },
-  { id: 'b3', label: 'Profundo · ~3 L', volume_L: 3.0, minBelt_mm: 350, typicalPitch_mm: 430 },
-  { id: 'b5', label: 'Profundo · ~5 L', volume_L: 5.0, minBelt_mm: 400, typicalPitch_mm: 500 },
-  { id: 'b8', label: 'Profundo · ~8 L', volume_L: 8.0, minBelt_mm: 500, typicalPitch_mm: 560 },
-  { id: 'b12', label: 'Profundo · ~12 L', volume_L: 12.0, minBelt_mm: 600, typicalPitch_mm: 630 },
+  {
+    id: 'b05',
+    label: 'Profundo ligero · ~0,5 L',
+    labelEn: 'Deep light · ~0.5 L',
+    volume_L: 0.5,
+    minBelt_mm: 200,
+    typicalPitch_mm: 280,
+  },
+  {
+    id: 'b1',
+    label: 'Profundo · ~1 L',
+    labelEn: 'Deep · ~1 L',
+    volume_L: 1.0,
+    minBelt_mm: 250,
+    typicalPitch_mm: 320,
+  },
+  {
+    id: 'b2',
+    label: 'Profundo · ~2 L',
+    labelEn: 'Deep · ~2 L',
+    volume_L: 2.0,
+    minBelt_mm: 300,
+    typicalPitch_mm: 380,
+  },
+  {
+    id: 'b3',
+    label: 'Profundo · ~3 L',
+    labelEn: 'Deep · ~3 L',
+    volume_L: 3.0,
+    minBelt_mm: 350,
+    typicalPitch_mm: 430,
+  },
+  {
+    id: 'b5',
+    label: 'Profundo · ~5 L',
+    labelEn: 'Deep · ~5 L',
+    volume_L: 5.0,
+    minBelt_mm: 400,
+    typicalPitch_mm: 500,
+  },
+  {
+    id: 'b8',
+    label: 'Profundo · ~8 L',
+    labelEn: 'Deep · ~8 L',
+    volume_L: 8.0,
+    minBelt_mm: 500,
+    typicalPitch_mm: 560,
+  },
+  {
+    id: 'b12',
+    label: 'Profundo · ~12 L',
+    labelEn: 'Deep · ~12 L',
+    volume_L: 12.0,
+    minBelt_mm: 600,
+    typicalPitch_mm: 630,
+  },
 ];
+
+/**
+ * @param {{ label: string; labelEn?: string }} b
+ * @param {'es'|'en'} lang
+ */
+export function displayBucketLabel(b, lang) {
+  return lang === 'en' && b.labelEn ? b.labelEn : b.label;
+}
 
 /**
  * Factor de llenado φ (orientativo) según fluidez y naturaleza del material.
@@ -43,14 +100,34 @@ export function fillFactorForMaterial(fluidity, nature, particle_mm) {
  * Banda de velocidad recomendada (m/s) según material.
  * @returns {{ vMin: number, vMax: number, vNominal: number, label: string }}
  */
-export function recommendedBeltSpeedRange(nature) {
+/**
+ * @param {MaterialNature} nature
+ * @param {'es'|'en'} [lang]
+ */
+export function recommendedBeltSpeedRange(nature, lang = 'es') {
+  const en = lang === 'en';
   if (nature === 'fragile_abrasive') {
-    return { vMin: 0.85, vMax: 1.6, vNominal: 1.2, label: 'Baja (frágil / abrasivo)' };
+    return {
+      vMin: 0.85,
+      vMax: 1.6,
+      vNominal: 1.2,
+      label: en ? 'Low (fragile / abrasive)' : 'Baja (fr\u00e1gil / abrasivo)',
+    };
   }
   if (nature === 'fluid_light') {
-    return { vMin: 2.0, vMax: 3.6, vNominal: 2.8, label: 'Alta (fluido / ligero)' };
+    return {
+      vMin: 2.0,
+      vMax: 3.6,
+      vNominal: 2.8,
+      label: en ? 'High (fluid / light)' : 'Alta (fluido / ligero)',
+    };
   }
-  return { vMin: 1.2, vMax: 2.6, vNominal: 1.9, label: 'Media (granel estándar)' };
+  return {
+    vMin: 1.2,
+    vMax: 2.6,
+    vNominal: 1.9,
+    label: en ? 'Medium (standard bulk)' : 'Media (granel est\u00e1ndar)',
+  };
 }
 
 /**
@@ -127,7 +204,12 @@ export function approximateWorkingTension_N(Q_tph, H_m, v_m_s, kWrap) {
  * @param {number} [p.kBootDrag] — fracción sobre P_e arrastre/bota CEMA-style (default 0,18)
  * @param {number} [p.etaTransmission] — reductor/acoplamiento (default 0,96)
  */
-export function computeBucketElevator(p) {
+/**
+ * @param {object} p
+ * @param {'es'|'en'} [lang]
+ */
+export function computeBucketElevator(p, lang = 'es') {
+  const en = lang === 'en';
   const rho = Math.max(200, Number(p.bulkDensity_kg_m3) || 800);
   const H = Math.max(0.5, Number(p.liftHeight_m) || 10);
   const C = Math.max(H, Number(p.centerDistance_m) || H);
@@ -150,7 +232,7 @@ export function computeBucketElevator(p) {
       : 'normal';
 
   const phi = fillFactorForMaterial(fluidity, nature, Number(p.particle_mm) || 5);
-  const speedRec = recommendedBeltSpeedRange(nature);
+  const speedRec = recommendedBeltSpeedRange(nature, lang);
 
   const P_e = pureLiftPower_kW(Q, H, etaElev);
   const P_drag = P_e * kBoot;
@@ -232,6 +314,86 @@ export function computeBucketElevator(p) {
     });
   }
 
+  const assumptions = [
+    'Modelo orientativo de elevador vertical de cangilones (2 tambores, descarga en cabeza).',
+    'Capacidad calculada con phi de llenado orientativo segun fluidez/naturaleza del producto.',
+    'Potencia util de elevacion segun expresion habitual P ~ Q*H/(367*eta).',
+    'Arrastre en bota representado como fraccion k sobre potencia util (no sustituye ensayo real).',
+    'Tension de banda y parametro centrifugo son chequeos de orden de magnitud; validar con CEMA y fabricante.',
+  ];
+
+  const explanations = [
+    `Velocidad recomendada para este material: ${speedRec.vMin.toFixed(1)}-${speedRec.vMax.toFixed(1)} m/s (nominal ${speedRec.vNominal.toFixed(1)} m/s).`,
+    `Uso de tension estimado: ${(tensionRatio * 100).toFixed(1)} % del limite admisible de banda.`,
+    `Parametro de eyeccion K = v^2/(gR): ${K_cent.toFixed(2)} (umbral orientativo ${K_warn.toFixed(2)}).`,
+  ];
+
+  const steps = [
+    {
+      id: 'fill',
+      title: 'Factor de llenado',
+      formula: 'phi = f(fluidez, naturaleza, granulometria)',
+      substitution: `${fluidity} / ${nature} / d50=${(Number(p.particle_mm) || 0).toFixed(1)} mm`,
+      value: phi,
+      unit: '%',
+      meaning: 'Coeficiente volumetrico de carga efectiva del cangilon.',
+    },
+    {
+      id: 'pitch',
+      title: 'Paso minimo cangilones',
+      formula: 'Q = 3.6*(v/p)*rho*(V/1000)*phi',
+      substitution: `Q=${Q.toFixed(2)} tph; v=${v.toFixed(2)} m/s; rho=${rho.toFixed(0)}; V=${V_L.toFixed(2)} L`,
+      value: pitch_mm,
+      unit: 'mm',
+      meaning: 'Distancia teorica entre cangilones para la capacidad solicitada.',
+    },
+    {
+      id: 'pe',
+      title: 'Potencia elevacion pura',
+      formula: 'P_e ~ Q*H/(367*eta)',
+      substitution: `Q=${Q.toFixed(2)}; H=${H.toFixed(2)}; eta=${etaElev.toFixed(2)}`,
+      value: P_e,
+      unit: 'kW',
+      meaning: 'Potencia util para elevar material sin extras.',
+    },
+    {
+      id: 'drag',
+      title: 'Potencia arrastre bota',
+      formula: 'P_drag = k_boot * P_e',
+      substitution: `k_boot=${kBoot.toFixed(2)}`,
+      value: P_drag,
+      unit: 'kW',
+      meaning: 'Incremento por dragado y resistencias en pie.',
+    },
+    {
+      id: 'shaft',
+      title: 'Potencia eje reductor',
+      formula: 'P_shaft = (P_e + P_drag)/eta_trans',
+      substitution: `eta_trans=${etaTrans.toFixed(2)}`,
+      value: P_shaft_kW,
+      unit: 'kW',
+      meaning: 'Potencia mecanica de dimensionamiento en eje.',
+    },
+    {
+      id: 'kcent',
+      title: 'Parametro centrifugo',
+      formula: 'K = v^2/(g*R)',
+      substitution: `v=${v.toFixed(2)}; R=${(D_head / 2).toFixed(3)} m`,
+      value: K_cent,
+      unit: 's',
+      meaning: 'Indicador orientativo de eyeccion en tambor de cabeza.',
+    },
+    {
+      id: 'tension',
+      title: 'Tension de trabajo',
+      formula: 'T_work ~ k*mdot*g*H/v',
+      substitution: `mdot=${((Q * 1000) / 3600).toFixed(2)} kg/s; k=1.28`,
+      value: T_work,
+      unit: 'N',
+      meaning: 'Chequeo simplificado de orden de magnitud de tension en rama cargada.',
+    },
+  ];
+
   return {
     inputs: {
       rho,
@@ -268,8 +430,9 @@ export function computeBucketElevator(p) {
       admissible_N: T_adm,
       ratio: tensionRatio,
       ok: tensionOk,
-      piK_note:
-        'Relación trabajo/admisible orientativa; el factor Pi real de proyecto requiere radio de tambor, embridado y norma de banda.',
+      piK_note: en
+        ? 'Indicative working/allowable ratio; real project Pi needs drum geometry, splicing and belt standard.'
+        : 'Relaci\u00f3n trabajo/admisible orientativa; el factor Pi real de proyecto requiere radio de tambor, embridado y norma de banda.',
     },
     centrifugal: {
       K: K_cent,
@@ -277,9 +440,13 @@ export function computeBucketElevator(p) {
       K_danger,
       drumDiameter_m: D_head,
     },
+    assumptions,
+    explanations,
+    steps,
     verdicts,
-    disclaimer:
-      'Modelo educativo basado en expresiones habituales (capacidad, P≈Q·H/(367·η), arrastre en bota). No sustituye el diseño CEMA completo.',
+    disclaimer: en
+      ? 'Educational model using common practice (capacity, P\u2248Q\u00b7H/(367\u00b7\u03b7), boot drag). It does not replace a full CEMA design.'
+      : 'Modelo educativo basado en expresiones habituales (capacidad, P\u2248Q\u00b7H/(367\u00b7\u03b7), arrastre en bota). No sustituye el dise\u00f1o CEMA completo.',
   };
 }
 

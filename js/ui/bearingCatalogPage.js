@@ -7,7 +7,8 @@ import { renderCatalogDeepGrooveSection } from '../lab/diagramCatalogModules.js'
 
 function l10_revolutions(C, P) {
   if (P <= 0) return Infinity;
-  return Math.pow(C / P, 3);
+  // ISO 281: L10 [revoluciones] = (C/P)^p * 10^6 (bolas p=3)
+  return Math.pow(C / P, 3) * 1e6;
 }
 
 function l10_hours(L10_rev, n_rpm) {
@@ -56,11 +57,17 @@ function render() {
   const C = b.C_N;
   const Puse = Math.max(1, P);
   const Lrev = l10_revolutions(C, Puse);
-  const Lh = l10_hours(Lrev, Math.max(1, n));
+  const nUse = Number.isFinite(n) && n > 0 ? n : null;
+  const Lh = nUse != null ? l10_hours(Lrev, nUse) : NaN;
+  if (nUse == null) {
+    out.innerHTML = '<p class=\"lab-verdict lab-verdict--err\">Entrada no válida: use n &gt; 0 min⁻¹.</p>';
+    tbl.innerHTML = '';
+    return;
+  }
   const ok = Lh >= Lreq;
 
   if (ok) {
-    out.innerHTML = `<p class="lab-verdict lab-verdict--ok">El rodamiento <strong>${b.designation}</strong> cumple con las <strong>${Lreq.toLocaleString('es-ES')} h</strong> solicitadas (L<sub>10h</sub> ≈ ${Lh.toFixed(0)} h a P=${Puse} N, n=${n} min⁻¹).</p>`;
+    out.innerHTML = `<p class="lab-verdict lab-verdict--ok">El rodamiento <strong>${b.designation}</strong> cumple con las <strong>${Lreq.toLocaleString('es-ES')} h</strong> solicitadas (L<sub>10h</sub> ≈ ${Lh.toFixed(0)} h a P=${Puse} N, n=${nUse} min⁻¹).</p>`;
   } else {
     out.innerHTML = `<p class="lab-verdict lab-verdict--err">El rodamiento <strong>${b.designation}</strong> <strong>no</strong> alcanza ${Lreq.toLocaleString('es-ES')} h (L<sub>10h</sub> ≈ ${Lh.toFixed(0)} h). Elija mayor C o menor P.</p>`;
   }
@@ -74,7 +81,7 @@ function render() {
         <tr><td>C (dinámica)</td><td>${C.toLocaleString('es-ES')} N</td></tr>
         <tr><td>C₀</td><td>${b.Co_N.toLocaleString('es-ES')} N</td></tr>
         <tr><td>P equivalente</td><td>${Puse.toLocaleString('es-ES')} N</td></tr>
-        <tr><td>n trabajo</td><td>${n.toFixed(0)} min⁻¹</td></tr>
+        <tr><td>n trabajo</td><td>${nUse.toFixed(0)} min⁻¹</td></tr>
         <tr><td>L<sub>10</sub> (mill. rev)</td><td>${(Lrev / 1e6).toFixed(3)}</td></tr>
         <tr><td>L<sub>10h</sub></td><td><strong>${Lh.toFixed(0)} h</strong></td></tr>
       </tbody>

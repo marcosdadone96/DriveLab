@@ -12,19 +12,29 @@
   </head>
   <body class="lab-body">
     <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html">Laboratorio</a>
-        <a href="transmission-canvas.html">Lienzo técnico Pro</a>
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
     <main class="lab-main">
       <section class="lab-panel lab-panel--accent">
-        <h2>Inercia de carga vs motor · catálogo SEW/Siemens (demo)</h2>
+        <h2>Inercia de carga vs motorreductor · datos introducidos por usuario</h2>
         <p class="lab-lead">
-          <strong>J<sub>ext</sub></strong> reflejada al eje motor (kg·m²). Se valida <strong>J<sub>ext</sub>/J<sub>mot</sub></strong> frente al límite típico del fabricante y el
-          <strong>par motor</strong> frente al par resistente a régimen.
+          Introduzca los parámetros de su <strong>motorreductor</strong> y de la carga. Se valida la relación
+          <strong>J<sub>ext</sub>/J<sub>mot</sub></strong> frente al límite definido por usted y el
+          <strong>par disponible</strong> frente al par resistente en el punto de operación.
+        </p>
+        <p class="lab-lead" style="margin-top: -0.35rem">
+          Esta parte sirve para comprobar, de forma rápida, si el motorreductor podrá <strong>arrancar sin problemas</strong> y
+          mantener el régimen sin sobrecarga. Si la relación de inercias o el par no cumplen, conviene reajustar relación,
+          tamaño de motorreductor o estrategia de arranque.
         </p>
         <div class="lab-calc-layout lab-calc-layout--with-diag">
           <div class="lab-calc-layout__diagram">
@@ -34,7 +44,7 @@
               <p class="lab-diagram-caption">Referencia para el criterio <strong>J<sub>ext</sub>/J<sub>mot</sub></strong>; el límite numérico depende del motor seleccionado.</p>
             </div>
             <div class="lab-diagram-wrap lab-diagram-wrap--elevated">
-              <p class="lab-diagram-wrap__title">Curva de par del catálogo vs par resistente</p>
+              <p class="lab-diagram-wrap__title">Curva de par estimada del motorreductor vs par resistente</p>
               <div class="lab-chart-wrap" style="margin: 0; border: none; padding: 0.25rem 0 0">
                 <svg id="gmChart" xmlns="http://www.w3.org/2000/svg" aria-label="Par motor vs par resistente"></svg>
               </div>
@@ -46,21 +56,53 @@
           </div>
           <div class="lab-calc-layout__inputs">
             <div class="lab-grid lab-grid--2">
+              <div class="lab-field">
+                <label for="gmJmotor">J motorreductor (kg·m²)</label>
+                <input id="gmJmotor" type="number" min="0.000001" step="any" value="0.0012" />
+                <span class="hint">Inercia del eje rápido del motorreductor</span>
+                <p class="lab-field-help">Dato clave para comparar contra la inercia reflejada de la carga. Use el valor del fabricante o de su hoja de cálculo.</p>
+              </div>
+              <div class="lab-field">
+                <label for="gmJratioMax">Límite admisible Jext/Jmot</label>
+                <input id="gmJratioMax" type="number" min="1" step="0.5" value="10" />
+                <span class="hint">Relación máxima permitida</span>
+                <p class="lab-field-help">Criterio de diseño para arranque estable. Si no tiene dato del fabricante, use un valor conservador.</p>
+              </div>
+              <div class="lab-field">
+                <label for="gmTN">Par nominal Tn (N·m)</label>
+                <input id="gmTN" type="number" min="0.1" step="any" value="48" />
+                <span class="hint">Par continuo nominal</span>
+                <p class="lab-field-help">Par que el motorreductor puede entregar de forma continua cerca de su régimen nominal.</p>
+              </div>
+              <div class="lab-field">
+                <label for="gmNsync">Velocidad síncrona base (rpm)</label>
+                <input id="gmNsync" type="number" min="100" step="1" value="1500" />
+                <span class="hint">Referencia para la curva T(n)</span>
+                <p class="lab-field-help">Velocidad base para escalar la curva de par estimada. Normalmente 1500 rpm o 3000 rpm según polos.</p>
+              </div>
               <div class="lab-field lab-field--wide">
-                <label for="gmMotor">Motor / tamaño (catálogo demo)</label>
-                <select id="gmMotor"></select>
+                <label for="gmTpeak">Factor de pico de par (Tpico/Tn)</label>
+                <input id="gmTpeak" type="number" min="1" max="4" step="0.05" value="2.2" />
+                <span class="hint">Pico de arranque relativo al nominal</span>
+                <p class="lab-field-help">Define cuánta sobrecarga transitoria tiene el motorreductor al arrancar. Un valor mayor implica más capacidad inicial.</p>
               </div>
               <div class="lab-field">
                 <label for="gmJext">J carga reflejada (kg·m²)</label>
                 <input id="gmJext" type="number" min="0" step="any" value="0.008" />
+                <span class="hint">Inercia equivalente vista por el motor</span>
+                <p class="lab-field-help">Debe estar reflejada al eje del motorreductor. Incluye inercia de carga, transmisión y elementos rotativos acoplados.</p>
               </div>
               <div class="lab-field">
-                <label for="gmN">Velocidad operación (min⁻¹)</label>
+                <label for="gmN">Velocidad operación (rpm)</label>
                 <input id="gmN" type="number" min="1" step="1" value="1455" />
+                <span class="hint">Punto real de trabajo</span>
+                <p class="lab-field-help">Velocidad donde compara par disponible y par resistente. Use la velocidad objetivo durante operación normal.</p>
               </div>
               <div class="lab-field lab-field--wide">
                 <label for="gmTload">Par resistente de carga (N·m)</label>
                 <input id="gmTload" type="number" min="0" step="any" value="12" />
+                <span class="hint">Par exigido por la máquina</span>
+                <p class="lab-field-help">Par que necesita la carga en el punto de operación. Si hay picos, use el valor más severo para una validación conservadora.</p>
               </div>
             </div>
           </div>
@@ -72,5 +114,6 @@
       </section>
     </main>
     <script type="module" src="js/ui/gearmotorInertiaPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
   </body>
 </html>

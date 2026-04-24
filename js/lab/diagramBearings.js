@@ -15,11 +15,12 @@ export function renderBearingSectionDiagram(el, opts) {
   const type = opts?.type === 'roller' ? 'roller' : 'ball';
   const id = uid();
   const roller = type === 'roller';
-  el.setAttribute('viewBox', '0 0 720 420');
+  el.setAttribute('viewBox', '0 0 560 300');
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
-      <linearGradient id="${id}Bg" x1="0" y1="0" x2="720" y2="420" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${id}Bg" x1="0" y1="0" x2="560" y2="300" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#f1f5f9" />
         <stop offset="100%" stop-color="#e8eef4" />
       </linearGradient>
@@ -32,11 +33,11 @@ export function renderBearingSectionDiagram(el, opts) {
         <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.16" />
       </filter>
     </defs>
-    <rect width="720" height="420" fill="url(#${id}Bg)" />
-    <text x="28" y="38" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Rodamiento ${roller ? 'de rodillos' : 'rígido de bolas'} · sección</text>
-    <text x="28" y="60" font-size="10.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Aros interior/exterior · ${roller ? 'rodillos' : 'bolas'} · jaula (simplificada)</text>
+    <rect width="560" height="300" fill="url(#${id}Bg)" />
+    <text x="280" y="30" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Rodamiento ${roller ? 'de rodillos' : 'rígido de bolas'} · sección</text>
+    <text x="280" y="46" text-anchor="middle" font-size="10" fill="#475569" font-family="Inter, system-ui, sans-serif">Aros interior/exterior · ${roller ? 'rodillos' : 'bolas'} · jaula (simplificada)</text>
 
-    <g transform="translate(360, 218)" filter="url(#${id}Sh)">
+    <g transform="translate(280, 168)" filter="url(#${id}Sh)">
       <path d="M -150,-38 L 150,-38 L 162,0 L 150,38 L -150,38 L -162,0 Z" fill="url(#${id}Steel)" stroke="#334155" stroke-width="2.2" />
       <path d="M -92,-24 L 92,-24 L 100,0 L 92,24 L -92,24 L -100,0 Z" fill="url(#${id}Steel)" stroke="#1e293b" stroke-width="2" />
       ${
@@ -54,6 +55,6 @@ export function renderBearingSectionDiagram(el, opts) {
       }
       <ellipse cx="0" cy="0" rx="124" ry="30" fill="none" stroke="#0d9488" stroke-width="1.2" stroke-dasharray="5 4" opacity="0.75" />
     </g>
-    <text x="28" y="390" font-size="9.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">C y L₁₀ según ISO 281 y catálogo; factores térmicos y fiabilidad no incluidos en la calculadora rápida.</text>
+    <text x="280" y="286" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter, system-ui, sans-serif">C y L₁₀ según ISO 281 y catálogo; sin factores térmicos ni fiabilidad ≠ 90%.</text>
   `;
 }

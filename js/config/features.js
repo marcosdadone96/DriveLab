@@ -1,5 +1,5 @@
 /**
- * Feature flags — DriveLab
+ * Feature flags — MechAssist
  * ---------------------------------------------------------------------------
  * Freemium: un calculador gratuito y el otro Pro (`whichCalculatorIsFree`).
  * Pruebas sin tocar código: `?freeTool=flat|inclined`, sesión Pro `?pro=1`, o botones en la pantalla de bloqueo.
@@ -53,6 +53,38 @@ export const FEATURES = Object.freeze({
 
   /** Placeholder: Stripe — client should only receive publishable key; Checkout via backend */
   stripePayments: false,
+
+  /**
+   * URL de donacion (Ko-fi, PayPal.me, enlace Stripe, etc.) para el pie de las calculadoras gratuitas del laboratorio.
+   * Cadena vacia: se muestra el texto de apoyo sin boton externo.
+   */
+  labDonationUrl: '',
+
+  /**
+   * Enlaces de compra Amazon / panel laboratorio: ver `js/config/labAffiliate.js` (tag Associates, dominio).
+   */
+
+  /**
+   * Monetization matrix (prepared, opt-in by flag).
+   * Keep all false until rollout. Each machine can enable Pro gates independently.
+   */
+  monetization: Object.freeze({
+    flat: Object.freeze({
+      scenarioCompare: false,
+      advancedMotorCompare: false,
+      premiumPresets: false,
+    }),
+    roller: Object.freeze({
+      scenarioCompare: false,
+      advancedMotorCompare: false,
+      premiumPresets: false,
+    }),
+    carLift: Object.freeze({
+      scenarioCompare: false,
+      advancedMotorCompare: false,
+      safetyChecklist: false,
+    }),
+  }),
 });
 
 /**

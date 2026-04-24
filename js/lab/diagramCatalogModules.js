@@ -13,63 +13,113 @@ function uid() {
 export function renderCouplingAssemblyDiagram(el) {
   if (!(el instanceof SVGSVGElement)) return;
   const g = uid();
-  el.setAttribute('viewBox', '0 0 720 400');
+  el.setAttribute('viewBox', '0 0 720 356');
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
-      <linearGradient id="${g}bg" x1="0" y1="0" x2="720" y2="400"><stop offset="0%" stop-color="#f0fdfa"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>
-      <linearGradient id="${g}hub" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#cbd5e1"/><stop offset="100%" stop-color="#64748b"/></linearGradient>
-      <filter id="${g}sh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.18"/></filter>
-      <marker id="${g}arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#b45309"/></marker>
+      <linearGradient id="${g}bg" x1="0" y1="0" x2="720" y2="356">
+        <stop offset="0%" stop-color="#f8fafc"/>
+        <stop offset="100%" stop-color="#e2e8f0"/>
+      </linearGradient>
+      <linearGradient id="${g}shaft" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#94a3b8"/>
+        <stop offset="100%" stop-color="#64748b"/>
+      </linearGradient>
+      <linearGradient id="${g}hub" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#334155"/>
+        <stop offset="100%" stop-color="#0f172a"/>
+      </linearGradient>
+      <linearGradient id="${g}elast" x1="0%" y1="0%" x2="0%" y2="100%">
+        <stop offset="0%" stop-color="#99f6e4"/>
+        <stop offset="100%" stop-color="#2dd4bf"/>
+      </linearGradient>
+      <filter id="${g}sh"><feDropShadow dx="0" dy="2" stdDeviation="2.2" flood-opacity="0.16"/></filter>
+      <marker id="${g}arrFlow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto">
+        <path d="M0,0 L9,4.5 L0,9 Z" fill="#2563eb"/>
+      </marker>
+      <marker id="${g}arrTorque" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+        <path d="M0,0 L8,4 L0,8 Z" fill="#b45309"/>
+      </marker>
     </defs>
-    <rect width="720" height="400" fill="url(#${g}bg)"/>
-    <text x="24" y="34" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Acoplamiento flexible tipo mandíbula / estrella</text>
-    <text x="24" y="54" font-size="10.5" fill="#475569" font-family="Inter,system-ui,sans-serif">Bridas en ambos extremos · elemento elástico intermedio · transmisión de par T</text>
+    <rect width="720" height="356" fill="url(#${g}bg)"/>
+    <text x="360" y="32" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Acoplamiento flexible (tipo mandíbula + elastómero)</text>
+    <text x="360" y="50" text-anchor="middle" font-size="10" fill="#475569" font-family="Inter,system-ui,sans-serif">Eje motor → cubo izq. → elastómero → cubo dcho. → eje conducido</text>
+
+    <!-- Flujo de potencia superior (separado del arco de par) -->
+    <path d="M 84 78 L 636 78" stroke="#2563eb" stroke-width="2.3" marker-end="url(#${g}arrFlow)"/>
+    <text x="84" y="68" font-size="10" font-weight="700" fill="#1d4ed8" font-family="Inter,system-ui,sans-serif">Flujo de potencia</text>
+    <text x="640" y="82" font-size="10" font-weight="700" fill="#1d4ed8" font-family="Inter,system-ui,sans-serif">Salida</text>
+
+    <!-- Línea de eje -->
+    <line x1="56" y1="188" x2="664" y2="188" stroke="#94a3b8" stroke-width="6" stroke-linecap="round"/>
 
     <!-- Eje motor -->
-    <g transform="translate(48,200)" filter="url(#${g}sh)">
-      <rect x="-40" y="-14" width="120" height="28" rx="3" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
-      <text x="22" y="5" font-size="10" fill="#f8fafc" font-family="Inter,system-ui,sans-serif" text-anchor="middle">Eje motor</text>
+    <g transform="translate(66,188)" filter="url(#${g}sh)">
+      <rect x="-24" y="-16" width="120" height="32" rx="4" fill="url(#${g}shaft)" stroke="#475569" stroke-width="1.6"/>
+      <text x="36" y="5" text-anchor="middle" font-size="10" font-weight="700" fill="#f8fafc" font-family="Inter,system-ui,sans-serif">Eje motor</text>
     </g>
-    <!-- Brida izq -->
-    <g transform="translate(168,200)" filter="url(#${g}sh)">
-      <rect x="0" y="-48" width="22" height="96" fill="url(#${g}hub)" stroke="#334155" stroke-width="2"/>
-      <circle cx="11" cy="-28" r="5" fill="#1e293b" stroke="#0f172a"/>
-      <circle cx="11" cy="0" r="5" fill="#1e293b" stroke="#0f172a"/>
-      <circle cx="11" cy="28" r="5" fill="#1e293b" stroke="#0f172a"/>
+
+    <!-- Cubo izquierdo -->
+    <g transform="translate(230,188)" filter="url(#${g}sh)">
+      <rect x="-22" y="-54" width="44" height="108" rx="5" fill="url(#${g}hub)" stroke="#020617" stroke-width="1.8"/>
+      <rect x="-9" y="-54" width="18" height="108" fill="#475569" opacity="0.42"/>
+      <circle cx="0" cy="-26" r="4.4" fill="#0f172a"/>
+      <circle cx="0" cy="0" r="4.4" fill="#0f172a"/>
+      <circle cx="0" cy="26" r="4.4" fill="#0f172a"/>
     </g>
-    <!-- Elástico -->
-    <g transform="translate(210,200)" filter="url(#${g}sh)">
-      <path d="M0,-42 C35,-50 55,-20 55,0 C55,20 35,50 0,42 C-35,50 -55,20 -55,0 C-55,-20 -35,-50 0,-42 Z"
-        fill="#5eead4" fill-opacity="0.55" stroke="#0d9488" stroke-width="2.5"/>
-      <path d="M0,-28 L18,-8 L0,12 L-18,-8 Z" fill="#99f6e4" stroke="#0f766e" stroke-width="1.2"/>
-      <path d="M0,-8 L18,12 L0,32 L-18,12 Z" fill="#99f6e4" stroke="#0f766e" stroke-width="1.2"/>
-      <text x="0" y="-58" text-anchor="middle" font-size="9" font-weight="700" fill="#0f766e" font-family="Inter,system-ui,sans-serif">Elemento elástico</text>
+
+    <!-- Elastómero -->
+    <g transform="translate(360,188)" filter="url(#${g}sh)">
+      <rect x="-56" y="-48" width="112" height="96" rx="18" fill="url(#${g}elast)" stroke="#0f766e" stroke-width="2.2"/>
+      <path d="M-40,-18 h18 l8,18 l-8,18 h-18 l-8,-18 z" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.2"/>
+      <path d="M16,-18 h18 l8,18 l-8,18 h-18 l-8,-18 z" fill="#ccfbf1" stroke="#0f766e" stroke-width="1.2"/>
+      <text x="0" y="-58" text-anchor="middle" font-size="10" font-weight="800" fill="#0f766e" font-family="Inter,system-ui,sans-serif">Elemento elástico</text>
+      <text x="0" y="62" text-anchor="middle" font-size="8.5" fill="#0f766e" font-family="Inter,system-ui,sans-serif">Amortigua vibración · desalineación leve</text>
     </g>
-    <!-- Brida der -->
-    <g transform="translate(488,200)" filter="url(#${g}sh)">
-      <rect x="0" y="-48" width="22" height="96" fill="url(#${g}hub)" stroke="#334155" stroke-width="2"/>
-      <circle cx="11" cy="-28" r="5" fill="#1e293b" stroke="#0f172a"/>
-      <circle cx="11" cy="0" r="5" fill="#1e293b" stroke="#0f172a"/>
-      <circle cx="11" cy="28" r="5" fill="#1e293b" stroke="#0f172a"/>
+
+    <!-- Cubo derecho -->
+    <g transform="translate(490,188)" filter="url(#${g}sh)">
+      <rect x="-22" y="-54" width="44" height="108" rx="5" fill="url(#${g}hub)" stroke="#020617" stroke-width="1.8"/>
+      <rect x="-9" y="-54" width="18" height="108" fill="#475569" opacity="0.42"/>
+      <circle cx="0" cy="-26" r="4.4" fill="#0f172a"/>
+      <circle cx="0" cy="0" r="4.4" fill="#0f172a"/>
+      <circle cx="0" cy="26" r="4.4" fill="#0f172a"/>
     </g>
+
     <!-- Eje conducido -->
-    <g transform="translate(552,200)" filter="url(#${g}sh)">
-      <rect x="0" y="-14" width="120" height="28" rx="3" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
-      <text x="60" y="5" font-size="10" fill="#f8fafc" font-family="Inter,system-ui,sans-serif" text-anchor="middle">Eje conducido</text>
+    <g transform="translate(554,188)" filter="url(#${g}sh)">
+      <rect x="0" y="-16" width="120" height="32" rx="4" fill="url(#${g}shaft)" stroke="#475569" stroke-width="1.6"/>
+      <text x="60" y="5" text-anchor="middle" font-size="10" font-weight="700" fill="#f8fafc" font-family="Inter,system-ui,sans-serif">Eje conducido</text>
     </g>
 
-    <!-- Par T -->
-    <path d="M 320 115 A 42 42 0 1 1 380 130" fill="none" stroke="#b45309" stroke-width="2.5" marker-end="url(#${g}arr)"/>
-    <text x="330" y="108" font-size="12" font-weight="800" fill="#b45309" font-family="Inter,system-ui,sans-serif">T</text>
-    <text x="400" y="95" font-size="10" fill="#64748b" font-family="Inter,system-ui,sans-serif">T = P / ω = 9550·P(kW)/n(rpm)</text>
+    <!-- Par (más alto que las leyendas de cubo para no solaparse) -->
+    <path d="M 308 108 A 42 42 0 1 1 396 108" fill="none" stroke="#b45309" stroke-width="2.4" marker-end="url(#${g}arrTorque)"/>
+    <text x="352" y="92" font-size="12" font-weight="800" fill="#b45309" text-anchor="middle" font-family="Inter,system-ui,sans-serif">Par T</text>
+    <text x="408" y="100" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">T = 9550 · P / n</text>
 
-    <!-- Potencia -->
-    <rect x="24" y="300" width="200" height="52" rx="8" fill="#fff" stroke="#99f6e4" stroke-width="1.5"/>
-    <text x="34" y="322" font-size="10" font-weight="700" fill="#0f766e" font-family="Inter,system-ui,sans-serif">Entrada de datos</text>
-    <text x="34" y="340" font-size="9.5" fill="#475569" font-family="Inter,system-ui,sans-serif">P · n · K  →  T diseño vs T nom catálogo</text>
+    <!-- Llamadas a cubos (debajo del arco de par) -->
+    <line x1="230" y1="148" x2="230" y2="158" stroke="#334155" stroke-width="1.3"/>
+    <text x="230" y="144" text-anchor="middle" font-size="9.5" font-weight="700" fill="#334155" font-family="Inter,system-ui,sans-serif">Cubo izquierdo</text>
+    <line x1="490" y1="148" x2="490" y2="158" stroke="#334155" stroke-width="1.3"/>
+    <text x="490" y="144" text-anchor="middle" font-size="9.5" font-weight="700" fill="#334155" font-family="Inter,system-ui,sans-serif">Cubo derecho</text>
 
-    <text x="24" y="388" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">Esquema didáctico; geometría real según placa del fabricante.</text>
+    <!-- Caja de uso -->
+    <rect x="24" y="258" width="320" height="62" rx="9" fill="#ffffff" stroke="#bfdbfe" stroke-width="1.3"/>
+    <text x="36" y="278" font-size="10" font-weight="800" fill="#1d4ed8" font-family="Inter,system-ui,sans-serif">Qué revisar para elegir modelo</text>
+    <text x="36" y="296" font-size="9.3" fill="#334155" font-family="Inter,system-ui,sans-serif">1) T_diseño = (9550·P/n)·K   2) T_diseño ≤ T_nom catálogo</text>
+    <text x="36" y="312" font-size="9.3" fill="#334155" font-family="Inter,system-ui,sans-serif">3) Diámetro de eje admitido y nota de servicio</text>
+
+    <!-- Mini leyenda -->
+    <rect x="474" y="258" width="222" height="62" rx="9" fill="#ffffff" stroke="#d1d5db" stroke-width="1.2"/>
+    <rect x="488" y="272" width="14" height="10" rx="2" fill="#111827"/>
+    <text x="508" y="281" font-size="9.2" fill="#334155" font-family="Inter,system-ui,sans-serif">Cubo metálico</text>
+    <rect x="488" y="290" width="14" height="10" rx="2" fill="#5eead4" stroke="#0f766e"/>
+    <text x="508" y="299" font-size="9.2" fill="#334155" font-family="Inter,system-ui,sans-serif">Elastómero</text>
+    <line x1="488" y1="309" x2="502" y2="309" stroke="#2563eb" stroke-width="2.2"/>
+    <text x="508" y="312" font-size="9.2" fill="#334155" font-family="Inter,system-ui,sans-serif">Flujo potencia</text>
+
+    <text x="360" y="342" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter,system-ui,sans-serif">Esquema didáctico (no a escala). Geometría según fabricante.</text>
   `;
 }
 
@@ -82,26 +132,32 @@ export function renderParallelKeyShaftDiagram(el, p) {
   if (!(el instanceof SVGSVGElement)) return;
   const g = uid();
   const { d, b, h, t1, t2, L } = p;
-  const cx = 220;
-  const cy = 210;
-  const R = Math.min(88, Math.max(48, d * 1.35));
+  const cx = 198;
+  const cy = 202;
+  const R = Math.min(82, Math.max(46, d * 1.28));
   const scale = R / (d / 2);
   const bw = (b / 2) * scale * 0.95;
   const keyH = h * scale * 0.9;
   const kwDepth = t1 * scale * 0.95;
+  const sideW = Math.min(200, L * 2);
+  const artRight = 408 + sideW;
+  const artLeft = Math.min(cx - bw - 44, cx - R);
+  const artShift = 320 - (artLeft + artRight) / 2;
 
-  el.setAttribute('viewBox', '0 0 720 420');
+  el.setAttribute('viewBox', '0 0 640 360');
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
-      <linearGradient id="${g}bg" x1="0" y1="0" x2="720" y2="420"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>
+      <linearGradient id="${g}bg" x1="0" y1="0" x2="640" y2="360"><stop offset="0%" stop-color="#f8fafc"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>
       <linearGradient id="${g}shaft" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#64748b"/></linearGradient>
       <filter id="${g}sh"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.15"/></filter>
     </defs>
-    <rect width="720" height="420" fill="url(#${g}bg)"/>
-    <text x="24" y="32" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Chaveta paralela forma A · DIN 6885-1 (referencia)</text>
-    <text x="24" y="52" font-size="10.5" fill="#475569" font-family="Inter,system-ui,sans-serif">Corte por eje: profundidad ranura t₁ · altura chaveta h · ancho b · longitud útil L</text>
+    <rect width="640" height="360" fill="url(#${g}bg)"/>
+    <text x="320" y="28" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Chaveta paralela forma A · DIN 6885-1 (referencia)</text>
+    <text x="320" y="44" text-anchor="middle" font-size="10" fill="#475569" font-family="Inter,system-ui,sans-serif">Corte: t₁ · h · b · longitud útil L</text>
 
+    <g transform="translate(${artShift.toFixed(2)}, 0)">
     <!-- Eje circular -->
     <circle cx="${cx}" cy="${cy}" r="${R}" fill="url(#${g}shaft)" stroke="#334155" stroke-width="2.5" filter="url(#${g}sh)"/>
     <!-- Ranura (wedge cut top) -->
@@ -120,18 +176,18 @@ export function renderParallelKeyShaftDiagram(el, p) {
     <line x1="${cx + bw}" y1="${cy - R - keyH - 32}" x2="${cx + bw}" y2="${cy - R - keyH - 22}" stroke="#0d9488"/>
     <text x="${cx}" y="${cy - R - keyH - 36}" text-anchor="middle" font-size="11" font-weight="700" fill="#0f766e" font-family="Inter,system-ui,sans-serif">b</text>
 
-    <text x="${cx + R + 18}" y="${cy + 6}" font-size="12" font-weight="800" fill="#334155" font-family="Inter,system-ui,sans-serif">Ø d = ${d.toFixed(1)} mm</text>
-    <text x="${cx + R + 18}" y="${cy + 26}" font-size="10" fill="#64748b" font-family="Inter,system-ui,sans-serif">t₁ = ${t1} mm · t₂ (cubo) = ${t2} mm</text>
+    <text x="${Math.min(cx + R + 14, 410)}" y="${cy - 8}" font-size="11" font-weight="800" fill="#334155" font-family="Inter,system-ui,sans-serif">Ø d = ${d.toFixed(1)} mm</text>
+    <text x="${Math.min(cx + R + 14, 410)}" y="${cy + 10}" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">t₁ = ${t1} mm · t₂ = ${t2} mm</text>
 
-    <!-- Vista lateral longitud L -->
-    <g transform="translate(460, 160)" filter="url(#${g}sh)">
-      <rect x="0" y="0" width="${Math.min(220, L * 2.2)}" height="36" rx="4" fill="#64748b" stroke="#334155" stroke-width="2"/>
-      <rect x="20" y="-14" width="${Math.min(180, L * 2.2 - 40)}" height="14" fill="#fbbf24" stroke="#b45309" stroke-width="1.5"/>
-      <text x="${Math.min(110, L * 1.1)}" y="-22" text-anchor="middle" font-size="11" font-weight="700" fill="#b45309" font-family="Inter,system-ui,sans-serif">L ≈ ${L} mm</text>
-      <text x="8" y="54" font-size="10" fill="#475569" font-family="Inter,system-ui,sans-serif">Vista lateral · chaveta sobre eje</text>
+    <!-- Vista lateral longitud L (encajada a la derecha sin salir del viewBox) -->
+    <g transform="translate(408, 148)" filter="url(#${g}sh)">
+      <rect x="0" y="0" width="${Math.min(200, L * 2)}" height="34" rx="4" fill="#64748b" stroke="#334155" stroke-width="2"/>
+      <rect x="18" y="-12" width="${Math.min(164, Math.max(40, L * 2 - 36))}" height="12" fill="#fbbf24" stroke="#b45309" stroke-width="1.5"/>
+      <text x="${(Math.min(200, L * 2) / 2).toFixed(1)}" y="-20" text-anchor="middle" font-size="10" font-weight="700" fill="#b45309" font-family="Inter,system-ui,sans-serif">L ≈ ${L} mm</text>
+      <text x="6" y="50" font-size="9" fill="#475569" font-family="Inter,system-ui,sans-serif">Vista lateral</text>
     </g>
 
-    <text x="24" y="400" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">Aplastamiento: modelo σ ≈ 2|T| / (d · L · h/2); verificar con norma y tolerancias de taller.</text>
+    <text x="20" y="342" font-size="9" fill="#64748b" font-family="Inter,system-ui,sans-serif">Aplastamiento: σ ≈ 2|T| / (d · L · h/2); verificar norma y tolerancias.</text>
   `;
 }
 
@@ -146,20 +202,21 @@ export function renderBoltedJointDiagram(el, d_mm) {
   const sh = Math.max(14, Math.min(36, d_mm * 1.4));
   const head = sh * 1.15;
 
-  el.setAttribute('viewBox', '0 0 720 380');
+  el.setAttribute('viewBox', '0 0 720 340');
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
-      <linearGradient id="${g}bg" x1="0" y1="0" x2="720" y2="380"><stop offset="0%" stop-color="#fefce8"/><stop offset="100%" stop-color="#e7e5e4"/></linearGradient>
+      <linearGradient id="${g}bg" x1="0" y1="0" x2="720" y2="340"><stop offset="0%" stop-color="#fefce8"/><stop offset="100%" stop-color="#e7e5e4"/></linearGradient>
       <linearGradient id="${g}bolt" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#d6d3d1"/><stop offset="100%" stop-color="#78716c"/></linearGradient>
       <filter id="${g}sh"><feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.14"/></filter>
     </defs>
-    <rect width="720" height="380" fill="url(#${g}bg)"/>
-    <text x="24" y="32" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Unión pretensada · tornillo métrico ISO</text>
-    <text x="24" y="52" font-size="10.5" fill="#475569" font-family="Inter,system-ui,sans-serif">Platinas rígidas · precarga F_V · tracción de cálculo F · rosca a resistencia</text>
+    <rect width="720" height="340" fill="url(#${g}bg)"/>
+    <text x="360" y="30" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Unión pretensada · tornillo métrico ISO</text>
+    <text x="360" y="48" text-anchor="middle" font-size="10" fill="#475569" font-family="Inter,system-ui,sans-serif">Platinas · precarga F_V · tracción F · rosca a resistencia</text>
 
     <!-- Platinas -->
-    <g transform="translate(360, 200)" filter="url(#${g}sh)">
+    <g transform="translate(340, 188)" filter="url(#${g}sh)">
       <rect x="-140" y="-55" width="280" height="28" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
       <rect x="-140" y="27" width="280" height="28" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
       <!-- Tornillo -->
@@ -171,21 +228,21 @@ export function renderBoltedJointDiagram(el, d_mm) {
       <line x1="${-sh * 0.35}" y1="-20" x2="${-sh * 0.35}" y2="40" stroke="#292524" stroke-width="0.8" stroke-dasharray="2 2"/>
     </g>
 
-    <!-- Fuerza F -->
-    <g transform="translate(520, 200)">
+    <!-- Fuerza F (separada del vástago para lectura clara) -->
+    <g transform="translate(498, 188)">
       <line x1="0" y1="-40" x2="0" y2="40" stroke="#dc2626" stroke-width="3" marker-start="url(#${g}ar1)" marker-end="url(#${g}ar2)"/>
       <defs>
         <marker id="${g}ar1" markerWidth="7" markerHeight="7" refX="1" refY="3.5" orient="auto"><path d="M7,0 L0,3.5 L7,7 Z" fill="#dc2626"/></marker>
         <marker id="${g}ar2" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#dc2626"/></marker>
       </defs>
-      <text x="14" y="6" font-size="12" font-weight="800" fill="#dc2626" font-family="Inter,system-ui,sans-serif">F</text>
+      <text x="12" y="5" font-size="11" font-weight="800" fill="#dc2626" font-family="Inter,system-ui,sans-serif">F</text>
     </g>
 
-    <rect x="24" y="285" width="240" height="62" rx="8" fill="#fff" stroke="#fca5a5" stroke-width="1.2"/>
-    <text x="34" y="308" font-size="10" font-weight="700" fill="#991b1b" font-family="Inter,system-ui,sans-serif">M${d_mm} · Área tensión A_s · Rp (grado)</text>
-    <text x="34" y="328" font-size="9.5" fill="#475569" font-family="Inter,system-ui,sans-serif">Par apriete T ≈ K · F_V · d (K orientativo 0,20)</text>
+    <rect x="24" y="248" width="240" height="56" rx="8" fill="#fff" stroke="#fca5a5" stroke-width="1.2"/>
+    <text x="34" y="268" font-size="9.5" font-weight="700" fill="#991b1b" font-family="Inter,system-ui,sans-serif">M${d_mm} · A_s · Rp (grado)</text>
+    <text x="34" y="288" font-size="9" fill="#475569" font-family="Inter,system-ui,sans-serif">T apriete ≈ K · F_V · d (K ≈ 0,20)</text>
 
-    <text x="24" y="368" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">No incluye interacción placa/placa ni rosca en fatiga; ver EN 1993-1-8 / montaje.</text>
+    <text x="360" y="322" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter,system-ui,sans-serif">Sin fatiga de rosca detallada; ver EN 1993-1-8 / montaje.</text>
   `;
 }
 
@@ -198,8 +255,8 @@ export function renderCatalogDeepGrooveSection(el, p) {
   if (!(el instanceof SVGSVGElement)) return;
   const g = uid();
   const { d, D, B, designation } = p;
-  const cx = 360;
-  const cy = 215;
+  const cx = 280;
+  const cy = 168;
   const k = 118 / D;
   const ri = (d / 2) * k;
   const ro = (D / 2) * k;
@@ -208,7 +265,8 @@ export function renderCatalogDeepGrooveSection(el, p) {
   const rm = (ri + ro) / 2;
   const rb = Math.max(4, (ro - ri) * 0.32);
 
-  el.setAttribute('viewBox', '0 0 720 430');
+  el.setAttribute('viewBox', '0 0 560 300');
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   let balls = '';
   for (let i = 0; i < nBalls; i++) {
@@ -220,13 +278,13 @@ export function renderCatalogDeepGrooveSection(el, p) {
 
   el.innerHTML = `
     <defs>
-      <linearGradient id="${g}bg" x1="0" y1="0" x2="720" y2="430"><stop offset="0%" stop-color="#f1f5f9"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>
+      <linearGradient id="${g}bg" x1="0" y1="0" x2="560" y2="300"><stop offset="0%" stop-color="#f1f5f9"/><stop offset="100%" stop-color="#e2e8f0"/></linearGradient>
       <linearGradient id="${g}steel" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" stop-color="#e2e8f0"/><stop offset="50%" stop-color="#94a3b8"/><stop offset="100%" stop-color="#64748b"/></linearGradient>
       <filter id="${g}sh"><feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.16"/></filter>
     </defs>
-    <rect width="720" height="430" fill="url(#${g}bg)"/>
-    <text x="24" y="34" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Rodamiento rígido de bolas · ${designation}</text>
-    <text x="24" y="54" font-size="10.5" fill="#475569" font-family="Inter,system-ui,sans-serif">Sección esquemática · d × D × B según fila catálogo · bolas en surco</text>
+    <rect width="560" height="300" fill="url(#${g}bg)"/>
+    <text x="20" y="30" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Rodamiento rígido de bolas · ${designation}</text>
+    <text x="20" y="46" font-size="10" fill="#475569" font-family="Inter,system-ui,sans-serif">Sección esquemática · d × D × B · bolas en surco</text>
 
     <g filter="url(#${g}sh)">
       <path d="M ${cx - ro},${cy - halfB} L ${cx + ro},${cy - halfB} L ${cx + ro + 8},${cy} L ${cx + ro},${cy + halfB} L ${cx - ro},${cy + halfB} L ${cx - ro - 8},${cy} Z"
@@ -237,12 +295,12 @@ export function renderCatalogDeepGrooveSection(el, p) {
       <ellipse cx="${cx}" cy="${cy}" rx="${(ri + ro) / 2 + 2}" ry="${((ri + ro) / 2) * 0.38}" fill="none" stroke="#0d9488" stroke-width="1.3" stroke-dasharray="5 4"/>
     </g>
 
-    <text x="24" y="120" font-size="10" fill="#334155" font-family="Inter,system-ui,sans-serif">d = ${d} mm</text>
-    <text x="24" y="138" font-size="10" fill="#334155" font-family="Inter,system-ui,sans-serif">D = ${D} mm</text>
-    <text x="24" y="156" font-size="10" fill="#334155" font-family="Inter,system-ui,sans-serif">B = ${B} mm</text>
-    <text x="24" y="180" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">C dinámica y L₁₀ con P, n en el formulario</text>
+    <text x="24" y="92" font-size="10" fill="#334155" font-family="Inter,system-ui,sans-serif">d = ${d} mm</text>
+    <text x="24" y="108" font-size="10" fill="#334155" font-family="Inter,system-ui,sans-serif">D = ${D} mm</text>
+    <text x="24" y="124" font-size="10" fill="#334155" font-family="Inter,system-ui,sans-serif">B = ${B} mm</text>
+    <text x="24" y="142" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">C dinámica y L₁₀ con P, n en el formulario</text>
 
-    <text x="24" y="408" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">Ilustración didáctica; geometría y radios de curvatura según catálogo SKF/FAG.</text>
+    <text x="280" y="286" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter,system-ui,sans-serif">Ilustración didáctica; geometría según catálogo SKF/FAG.</text>
   `;
 }
 
@@ -253,40 +311,41 @@ export function renderCatalogDeepGrooveSection(el, p) {
 export function renderInertiaTransmissionLine(el) {
   if (!(el instanceof SVGSVGElement)) return;
   const g = uid();
-  el.setAttribute('viewBox', '0 0 720 200');
+  el.setAttribute('viewBox', '0 0 560 172');
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
-      <linearGradient id="${g}bg" x1="0" y1="0" x2="720" y2="200"><stop offset="0%" stop-color="#ecfdf5"/><stop offset="100%" stop-color="#e0e7ff"/></linearGradient>
+      <linearGradient id="${g}bg" x1="0" y1="0" x2="560" y2="172"><stop offset="0%" stop-color="#ecfdf5"/><stop offset="100%" stop-color="#e0e7ff"/></linearGradient>
       <filter id="${g}sh"><feDropShadow dx="0" dy="1" stdDeviation="1.5" flood-opacity="0.12"/></filter>
       <marker id="${g}a" markerWidth="7" markerHeight="7" refX="6" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7 Z" fill="#64748b"/></marker>
     </defs>
-    <rect width="720" height="200" fill="url(#${g}bg)"/>
-    <text x="24" y="28" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Cadena de inercias (referencia al eje motor)</text>
-    <text x="24" y="48" font-size="10" fill="#475569" font-family="Inter,system-ui,sans-serif">Criterio fabricante: J_ext / J_mot &lt; límite típico (10…15) para arranque con variador</text>
+    <rect width="560" height="172" fill="url(#${g}bg)"/>
+    <text x="280" y="24" text-anchor="middle" font-size="13" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">Cadena de inercias (eje motor)</text>
+    <text x="280" y="40" text-anchor="middle" font-size="9" fill="#475569" font-family="Inter,system-ui,sans-serif">J_ext / J_mot &lt; límite típ. (10…15) con variador</text>
 
-    <g transform="translate(90, 120)" filter="url(#${g}sh)">
-      <rect x="-50" y="-35" width="100" height="70" rx="6" fill="#0d9488" stroke="#0f766e" stroke-width="2"/>
-      <text x="0" y="6" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="Inter,system-ui,sans-serif">Motor</text>
-      <text x="0" y="22" text-anchor="middle" font-size="9" fill="#ccfbf1" font-family="Inter,system-ui,sans-serif">J_mot</text>
+    <g transform="translate(72, 102)" filter="url(#${g}sh)">
+      <rect x="-44" y="-30" width="88" height="60" rx="6" fill="#0d9488" stroke="#0f766e" stroke-width="2"/>
+      <text x="0" y="5" text-anchor="middle" font-size="10" font-weight="800" fill="#fff" font-family="Inter,system-ui,sans-serif">Motor</text>
+      <text x="0" y="20" text-anchor="middle" font-size="8.5" fill="#ccfbf1" font-family="Inter,system-ui,sans-serif">J_mot</text>
     </g>
-    <line x1="145" y1="120" x2="235" y2="120" stroke="#64748b" stroke-width="2" marker-end="url(#${g}a)"/>
-    <text x="175" y="108" font-size="9" fill="#64748b" font-family="Inter,system-ui,sans-serif">eje</text>
+    <line x1="120" y1="102" x2="188" y2="102" stroke="#64748b" stroke-width="2" marker-end="url(#${g}a)"/>
+    <text x="148" y="92" font-size="8.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">eje</text>
 
-    <g transform="translate(290, 120)" filter="url(#${g}sh)">
-      <rect x="-40" y="-28" width="80" height="56" rx="4" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
-      <text x="0" y="6" text-anchor="middle" font-size="10" font-weight="700" fill="#fff" font-family="Inter,system-ui,sans-serif">Acople</text>
-    </g>
-
-    <line x1="335" y1="120" x2="420" y2="120" stroke="#64748b" stroke-width="2" marker-end="url(#${g}a)"/>
-
-    <g transform="translate(500, 120)" filter="url(#${g}sh)">
-      <circle cx="0" cy="0" r="48" fill="#cbd5e1" stroke="#475569" stroke-width="2.5"/>
-      <circle cx="0" cy="0" r="18" fill="#64748b" stroke="#334155"/>
-      <text x="0" y="-58" text-anchor="middle" font-size="10" font-weight="800" fill="#334155" font-family="Inter,system-ui,sans-serif">Carga</text>
-      <text x="0" y="72" text-anchor="middle" font-size="9" fill="#475569" font-family="Inter,system-ui,sans-serif">J_ext reflejada</text>
+    <g transform="translate(232, 102)" filter="url(#${g}sh)">
+      <rect x="-36" y="-24" width="72" height="48" rx="4" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      <text x="0" y="5" text-anchor="middle" font-size="9.5" font-weight="700" fill="#fff" font-family="Inter,system-ui,sans-serif">Acople</text>
     </g>
 
-    <text x="24" y="178" font-size="9.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">El gráfico inferior compara par motor disponible vs par resistente a régimen.</text>
+    <line x1="272" y1="102" x2="332" y2="102" stroke="#64748b" stroke-width="2" marker-end="url(#${g}a)"/>
+
+    <g transform="translate(404, 102)" filter="url(#${g}sh)">
+      <circle cx="0" cy="0" r="40" fill="#cbd5e1" stroke="#475569" stroke-width="2.2"/>
+      <circle cx="0" cy="0" r="15" fill="#64748b" stroke="#334155"/>
+      <text x="0" y="-50" text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155" font-family="Inter,system-ui,sans-serif">Carga</text>
+      <text x="0" y="52" text-anchor="middle" font-size="8.5" fill="#475569" font-family="Inter,system-ui,sans-serif">J_ext reflejada</text>
+    </g>
+
+    <text x="280" y="162" text-anchor="middle" font-size="8.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">Abajo: par motor vs par resistente a régimen.</text>
   `;
 }

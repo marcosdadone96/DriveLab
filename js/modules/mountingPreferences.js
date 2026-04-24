@@ -3,6 +3,8 @@
  * Términos: B3 patas, B5 brida grande, B14 brida compacta, eje hueco (accionamiento sobre eje máquina).
  */
 
+import { getCurrentLang } from '../config/locales.js';
+
 /**
  * @typedef {'B3' | 'B5' | 'B14' | 'hollowShaft'} MountingType
  */
@@ -36,6 +38,30 @@ export const MOUNTING_GUIDE = Object.freeze({
     title: 'Montaje sobre eje (eje hueco)',
     pros: 'El reductor “envuelve” el eje del tambor/árbol: menos elementos de acoplamiento, buen encaje en rodillos motrices.',
     cons: 'Exige diámetro de eje y chaveta / fijación compatibles; suele necesitarse brazo de reacción o fijación antitorque.',
+  },
+});
+
+/** @type {typeof MOUNTING_GUIDE} */
+export const MOUNTING_GUIDE_EN = Object.freeze({
+  B3: {
+    title: 'Foot-mounted (IEC B3)',
+    pros: 'Stable, easy to align and tension; common on frames and plant floors.',
+    cons: 'Larger footprint than a flange mount; mounting height must match the drive line.',
+  },
+  B5: {
+    title: 'Large flange (IEC B5)',
+    pros: 'Compact front mount on a wall or bracket normal to the shaft; common with cub gearmotors.',
+    cons: 'Needs a flat, load-sharing flange face; bolt access can be tight.',
+  },
+  B14: {
+    title: 'Compact flange (IEC B14)',
+    pros: 'Smaller interface than B5 when radial space is limited.',
+    cons: 'Less bearing surface: watch bending and parasitic loads; not all sizes offer B14.',
+  },
+  hollowShaft: {
+    title: 'Hollow shaft on machine shaft',
+    pros: 'Gear unit wraps the drum shaft: fewer coupling parts; common on drum drives.',
+    cons: 'Shaft diameter and locking must match; often needs a torque arm or anti-rotation fix.',
   },
 });
 
@@ -108,34 +134,55 @@ function isWormLikeModel(model) {
  * @returns {import('../modules/motorVerify.js').VerifyResult}
  */
 export function augmentVerifyWithMounting(req, model, base) {
+  const lang = getCurrentLang();
+  const en = lang === 'en';
+  const hollowLbl = en ? 'hollow shaft' : 'eje hueco';
   const checks = [...base.checks];
   const warnings = [...base.warnings];
   const blockers = [...base.blockers];
 
   const mt = req.mountingType;
   if (mt && !modelMatchesMounting(model, mt)) {
-    const label = mt === 'hollowShaft' ? 'eje hueco' : mt;
-    blockers.push(`Montaje solicitado (${label}) no coincide con las opciones típicas de este modelo de catálogo ejemplo.`);
-    checks.push(`Montaje: solicitado ${label} → modelo no catalogado así en la demo → NO compatible`);
+    const label = mt === 'hollowShaft' ? hollowLbl : mt;
+    blockers.push(
+      en
+        ? `Requested mounting (${label}) does not match typical options for this demo catalog model.`
+        : `Montaje solicitado (${label}) no coincide con las opciones típicas de este modelo de catálogo ejemplo.`,
+    );
+    checks.push(
+      en
+        ? `Mounting: requested ${label} → model not listed that way in demo → NOT compatible`
+        : `Montaje: solicitado ${label} → modelo no catalogado así en la demo → NO compatible`,
+    );
   } else if (mt) {
     if (model.userManual) {
       checks.push(
-        `Montaje: ${mt === 'hollowShaft' ? 'eje hueco' : mt} → no verificado automáticamente en modo manual (confirme con su documentación).`,
+        en
+          ? `Mounting: ${mt === 'hollowShaft' ? hollowLbl : mt} → not auto-checked in manual mode (confirm with your documentation).`
+          : `Montaje: ${mt === 'hollowShaft' ? hollowLbl : mt} → no verificado automáticamente en modo manual (confirme con su documentación).`,
       );
     } else {
-      checks.push(`Montaje: ${mt === 'hollowShaft' ? 'eje hueco' : mt} → incluido en variantes del modelo (demo)`);
+      checks.push(
+        en
+          ? `Mounting: ${mt === 'hollowShaft' ? hollowLbl : mt} → included in model variants (demo)`
+          : `Montaje: ${mt === 'hollowShaft' ? hollowLbl : mt} → incluido en variantes del modelo (demo)`,
+      );
     }
   }
 
   if (req.orientation === 'vertical' && isWormLikeModel(model)) {
     warnings.push(
-      'Montaje vertical con reductor sinfín-cubo: revisar nivel de aceite, juntas y límites del fabricante (lubricación distinta a horizontal).',
+      en
+        ? 'Vertical mounting with worm/cub gearbox: check oil level, seals, and manufacturer limits (lubrication differs from horizontal).'
+        : 'Montaje vertical con reductor sinfín-cubo: revisar nivel de aceite, juntas y límites del fabricante (lubricación distinta a horizontal).',
     );
   }
 
   if (req.spaceConstraint && String(req.spaceConstraint).trim().length > 3) {
     warnings.push(
-      'Restricción de espacio indicada: confirme longitud total motor+reductor, alturas de aleta y gálibos con el fabricante.',
+      en
+        ? 'Space constraint noted: confirm total motor+gearbox length, fin heights, and envelopes with the supplier.'
+        : 'Restricción de espacio indicada: confirme longitud total motor+reductor, alturas de aleta y gálibos con el fabricante.',
     );
   }
 
@@ -145,7 +192,9 @@ export function augmentVerifyWithMounting(req, model, base) {
     if (model.outputShaft.kind === 'hollow' && Number.isFinite(dCat) && dCat > 0) {
       if (dM > dCat * 0.97) {
         warnings.push(
-          `Ø eje máquina (${dM} mm) cercano o mayor al hueco nominal de catálogo (~${dCat} mm): comprobar holgura, chaveta y tolerancias ISO.`,
+          en
+            ? `Machine shaft OD (${dM} mm) is close to or above catalog hollow bore (~${dCat} mm): check clearance, keying, and ISO tolerances.`
+            : `Ø eje máquina (${dM} mm) cercano o mayor al hueco nominal de catálogo (~${dCat} mm): comprobar holgura, chaveta y tolerancias ISO.`,
         );
       }
     }
@@ -153,7 +202,9 @@ export function augmentVerifyWithMounting(req, model, base) {
       const delta = Math.abs(dM - dCat);
       if (delta > 3 && dM > 15) {
         warnings.push(
-          `Ø eje introducido (${dM} mm) difiere del Ø de salida orientativo del modelo (~${dCat} mm): valide acoplamiento, buje o engrane.`,
+          en
+            ? `Entered shaft OD (${dM} mm) differs from indicative output shaft (~${dCat} mm): validate coupling, bush, or gearing.`
+            : `Ø eje introducido (${dM} mm) difiere del Ø de salida orientativo del modelo (~${dCat} mm): valide acoplamiento, buje o engrane.`,
         );
       }
     }
@@ -163,7 +214,9 @@ export function augmentVerifyWithMounting(req, model, base) {
   const suitable = base.suitable && !hadExtraBlocker;
   let verdict = base.verdict;
   if (hadExtraBlocker) {
-    verdict = 'NO se recomienda: el montaje o eje solicitados no encajan con este modelo de ejemplo.';
+    verdict = en
+      ? 'NOT recommended: requested mounting or shaft does not fit this demo model.'
+      : 'NO se recomienda: el montaje o eje solicitados no encajan con este modelo de ejemplo.';
   }
 
   return {
@@ -181,17 +234,24 @@ export function augmentVerifyWithMounting(req, model, base) {
  * @param {MountingPreferences} pref
  */
 export function explainMountingFit(model, pref) {
-  const g = MOUNTING_GUIDE[pref.mountingType] || MOUNTING_GUIDE.B3;
+  const en = getCurrentLang() === 'en';
+  const g = (en ? MOUNTING_GUIDE_EN : MOUNTING_GUIDE)[pref.mountingType] || (en ? MOUNTING_GUIDE_EN.B3 : MOUNTING_GUIDE.B3);
   const parts = [];
   parts.push(g.title);
   if (model.flangeLabel) parts.push(model.flangeLabel);
   if (model.shaftConfigLabel) parts.push(model.shaftConfigLabel);
   const why =
     pref.mountingType === 'hollowShaft'
-      ? 'Adecuado cuando el par se introduce directamente sobre el eje de la máquina; reduce acoplamientos.'
+      ? en
+        ? 'Suited when torque is applied directly on the machine shaft; fewer couplings.'
+        : 'Adecuado cuando el par se introduce directamente sobre el eje de la máquina; reduce acoplamientos.'
       : pref.mountingType === 'B5' || pref.mountingType === 'B14'
-        ? 'Encaje frontal útil cuando el motorreductor cuelga de un panel o bastidor perpendicular al eje de salida.'
-        : 'Montaje a patas: referencia clásica para alineación con bandas y bases de hormigón o chapa.';
+        ? en
+          ? 'Useful front mount when the gearmotor hangs from a panel or bracket normal to the output shaft.'
+          : 'Encaje frontal útil cuando el motorreductor cuelga de un panel o bastidor perpendicular al eje de salida.'
+        : en
+          ? 'Foot mount: classic reference for alignment with belts and concrete or steel bases.'
+          : 'Montaje a patas: referencia clásica para alineación con bandas y bases de hormigón o chapa.';
   return { headline: parts.filter(Boolean).join(' · '), why, guide: g };
 }
 

@@ -3,6 +3,7 @@
  */
 
 import { clamp } from '../utils/calculations.js';
+import { getCurrentLang } from '../config/locales.js';
 
 const VB_W = 860;
 const VB_H = 480;
@@ -21,6 +22,23 @@ function esc(s) {
  */
 export function renderScrewConveyorDiagram(svg, p) {
   if (!svg) return;
+
+  const lang = p.lang ?? getCurrentLang();
+  const en = lang === 'en';
+  const T = {
+    title: en ? 'Screw conveyor' : 'Transportador de tornillo helicoidal',
+    sub: en
+      ? 'Side view · bulk flow and screw rotation'
+      : 'Vista lateral clara · flujo de material y giro del conjunto',
+    materialFlow: en ? 'Bulk flow' : 'Flujo material',
+    inlet: en ? 'Inlet' : 'Entrada',
+    outlet: en ? 'Discharge' : 'Descarga',
+    geomPanel: en ? 'Geometry (inputs)' : 'Geometría (entrada)',
+    screwDia: en ? 'Screw OD ~' : 'Ø tornillo ≈',
+    pitch: en ? 'Helix pitch ~' : 'Paso helicoidal ≈',
+    troughLoad: en ? 'Trough fill:' : 'Carga canal:',
+    cap: en ? 'Capacity:' : 'Capacidad:',
+  };
 
   const Lm = clamp(Number(p.length_m) || 10, 1, 120);
   const Dmm = clamp(Number(p.diameter_mm) || 250, 80, 1500);
@@ -64,8 +82,8 @@ export function renderScrewConveyorDiagram(svg, p) {
     </defs>
     <rect width="${VB_W}" height="${VB_H}" fill="url(#bgScrew)" />
     <rect x="12" y="12" width="${VB_W - 24}" height="52" rx="12" fill="#0f766e" fill-opacity="0.1" stroke="#0d9488" stroke-width="1.5" />
-    <text x="26" y="36" font-size="16" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Transportador de tornillo helicoidal</text>
-    <text x="26" y="53" font-size="11" fill="#475569" font-family="Inter, system-ui, sans-serif">Vista lateral simplificada · flujo y giro para interpretación rápida</text>
+    <text x="26" y="36" font-size="16" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">${esc(T.title)}</text>
+    <text x="26" y="53" font-size="11" fill="#475569" font-family="Inter, system-ui, sans-serif">${esc(T.sub)}</text>
 
     <line x1="38" y1="${y0 + troughH + 34}" x2="${VB_W - 40}" y2="${y0 + troughH + 34}" stroke="#64748b" stroke-width="2.5" />
 
@@ -91,23 +109,23 @@ export function renderScrewConveyorDiagram(svg, p) {
 
     <!-- Flujo -->
     <line x1="${x0 + 10}" y1="${y0 + troughH * 0.17}" x2="${x1 - 16}" y2="${y1 + troughH * 0.17}" stroke="#0f766e" stroke-width="2.5" marker-end="url(#arrArrow)" />
-    <text x="${midX - 24}" y="${midY - sideOffset}" font-size="10.5" font-weight="700" fill="#0f766e" font-family="Inter, system-ui, sans-serif">Flujo material</text>
+    <text x="${midX - 24}" y="${midY - sideOffset}" font-size="10.5" font-weight="700" fill="#0f766e" font-family="Inter, system-ui, sans-serif">${esc(T.materialFlow)}</text>
 
     <!-- Etiquetas de proceso -->
-    <text x="${x0 - 4}" y="${y0 - 12}" font-size="10.5" font-weight="700" fill="#334155" font-family="Inter, system-ui, sans-serif">Entrada</text>
-    <text x="${x1 - 10}" y="${y1 - 12}" font-size="10.5" font-weight="700" fill="#334155" text-anchor="end" font-family="Inter, system-ui, sans-serif">Descarga</text>
+    <text x="${x0 - 4}" y="${y0 - 12}" font-size="10.5" font-weight="700" fill="#334155" font-family="Inter, system-ui, sans-serif">${esc(T.inlet)}</text>
+    <text x="${x1 - 10}" y="${y1 - 12}" font-size="10.5" font-weight="700" fill="#334155" text-anchor="end" font-family="Inter, system-ui, sans-serif">${esc(T.outlet)}</text>
     <text x="${x0 - 20}" y="${y0 + troughH + 50}" font-size="11" font-weight="700" fill="#334155" font-family="Inter, system-ui, sans-serif">L ≈ ${Lm.toFixed(1)} m</text>
     <text x="${x1 + 10}" y="${midY + 6}" font-size="11" font-weight="700" fill="#9a3412" font-family="Inter, system-ui, sans-serif">θ = ${deg.toFixed(0)}°</text>
 
     <!-- Panel de datos -->
-    <rect x="510" y="90" width="312" height="134" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" />
-    <text x="536" y="114" font-size="10" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Geometría (entrada)</text>
-    <text x="536" y="134" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Ø tornillo ≈ ${Dmm.toFixed(0)} mm</text>
-    <text x="536" y="151" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Paso hélice ≈ ${pitchMm.toFixed(0)} mm</text>
-    <text x="536" y="168" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Carga canal: ${λLabel}</text>
-    <text x="536" y="185" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Capacidad: ${capLabel}</text>
+    <rect x="510" y="90" width="312" height="134" rx="12" fill="#ffffff" fill-opacity="0.96" stroke="#cbd5e1" stroke-width="1.5" />
+    <text x="536" y="114" font-size="10" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">${esc(T.geomPanel)}</text>
+    <text x="536" y="134" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${esc(T.screwDia)} ${Dmm.toFixed(0)} mm</text>
+    <text x="536" y="151" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${esc(T.pitch)} ${pitchMm.toFixed(0)} mm</text>
+    <text x="536" y="168" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${esc(T.troughLoad)} ${λLabel}</text>
+    <text x="536" y="185" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${esc(T.cap)} ${capLabel}</text>
     <text x="536" y="202" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${
-      Number.isFinite(n) ? `n ≈ ${n.toFixed(1)} min⁻¹` : 'n —'
+      Number.isFinite(n) ? `n ≈ ${n.toFixed(1)} rpm` : 'n —'
     }</text>
   `;
 }

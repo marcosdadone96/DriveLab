@@ -3,21 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DriveLab</title>
+    <title>MechAssist</title>
     <meta
       name="description"
-      content="DriveLab: calculadoras y laboratorio de transmisión — cintas, bombas, engranajes, correas y más."
+      content="MechAssist: calculadoras y laboratorio de transmisión — cintas, bombas, engranajes, correas y más."
     />
     <link rel="canonical" href="https://sage-souffle-7c50c7.netlify.app/" />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://sage-souffle-7c50c7.netlify.app/" />
-    <meta property="og:title" content="DriveLab" />
+    <meta property="og:title" content="MechAssist" />
     <meta
       property="og:description"
       content="Calculadoras industriales y laboratorio de transmisión mecánica."
     />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="DriveLab" />
+    <meta name="twitter:title" content="MechAssist" />
     <meta name="theme-color" content="#0f172a" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -29,12 +29,21 @@
   </head>
   <body class="hub-body">
     <header class="hub-header">
-      <span class="hub-header__title">Drive<em>Lab</em></span>
-      <span class="hub-header__tag">Transmisión</span>
+      <span class="hub-header__title">Mech<em>Assist</em></span>
+      <div class="hub-header__right">
+        <span class="hub-header__tag" data-i18n="header.tag">Transmisión</span>
+        <div class="hub-lang" role="group" aria-label="Language selector" data-i18n="aria.langSelector" data-i18n-attr="aria-label">
+          <button type="button" class="hub-lang__btn" data-lang="es">ES</button>
+          <button type="button" class="hub-lang__btn" data-lang="en">EN</button>
+        </div>
+      </div>
     </header>
 
     <main class="hub-main">
-      <h2 class="hub-zone__title">Máquinas</h2>
+      <div class="hub-zones-grid">
+      <div class="hub-zone hub-zone--machines">
+      <h2 class="hub-zone__title" data-i18n="zone.machines">Máquinas</h2>
+      <p class="hub-zone__sub hub-zone__sub--ghost" aria-hidden="true">.</p>
       <div class="hub-scene">
         <!-- Radios y radios: viewBox 0 0 100 100 -->
         <svg class="hub-wires" viewBox="0 0 100 100" aria-hidden="true">
@@ -99,19 +108,20 @@
           </svg>
         </div>
 
-        <nav class="hub-rim hub-rim--machines" aria-label="Sistemas disponibles">
+        <nav class="hub-rim hub-rim--machines" aria-label="Sistemas disponibles" data-i18n="aria.machineSystems" data-i18n-attr="aria-label">
           <!-- k=0 top -90° -->
           <div class="hub-arm" style="--a: -90deg">
             <div class="hub-arm__inner">
               <a class="hub-node hub-node--go" href="centrifugal-pump.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 28c0-8 6-14 14-14h6c8 0 14 6 14 14v6H10v-6z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" />
-                    <circle cx="24" cy="22" r="5" stroke="currentColor" stroke-width="1.5" />
-                    <path d="M24 17v-6M18 14l-3-3M30 14l3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                    <path d="M8 30h8l3-10h10l3 10h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                    <circle cx="24" cy="20" r="5.5" stroke="currentColor" stroke-width="1.6" />
+                    <path d="M24 14v-4M17.5 16.5L15 14M30.5 16.5L33 14" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
+                    <path d="M11 34h26" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Bomba</span>
+                <span class="hub-node__label" data-i18n="machine.pump">Bomba</span>
               </a>
             </div>
           </div>
@@ -120,12 +130,13 @@
               <a class="hub-node hub-node--go" href="roller-conveyor.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <ellipse cx="24" cy="26" rx="14" ry="8" stroke="currentColor" stroke-width="1.5" />
-                    <path d="M24 18v-8M18 12l6 6 6-6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
-                    <circle cx="24" cy="18" r="3" stroke="currentColor" stroke-width="1.3" />
+                    <line x1="7" y1="20" x2="41" y2="20" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" />
+                    <circle cx="13" cy="27" r="3.4" stroke="currentColor" stroke-width="1.35" />
+                    <circle cx="24" cy="27" r="3.4" stroke="currentColor" stroke-width="1.35" />
+                    <circle cx="35" cy="27" r="3.4" stroke="currentColor" stroke-width="1.35" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Rodillos</span>
+                <span class="hub-node__label" data-i18n="machine.rollerConveyor">Rodillos</span>
               </a>
             </div>
           </div>
@@ -138,7 +149,7 @@
                     <path d="M14 22c4-2 8 2 12 0s8-2 12 0M14 28c4 2 8-2 12 0s8 2 12 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Extrusor</span>
+                <span class="hub-node__label" data-i18n="machine.extruder">Extrusor</span>
               </span>
             </div>
           </div>
@@ -147,41 +158,42 @@
               <a class="hub-node hub-node--go" href="flat-conveyor.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M8 30h32" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    <circle cx="12" cy="30" r="4" stroke="currentColor" stroke-width="1.5" />
-                    <circle cx="36" cy="30" r="4" stroke="currentColor" stroke-width="1.5" />
-                    <path d="M10 22h28" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" opacity="0.85" />
+                    <line x1="8" y1="31" x2="40" y2="31" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    <circle cx="12" cy="31" r="3.7" stroke="currentColor" stroke-width="1.45" />
+                    <circle cx="36" cy="31" r="3.7" stroke="currentColor" stroke-width="1.45" />
+                    <rect x="10.5" y="20.5" width="27" height="5.5" rx="2.7" stroke="currentColor" stroke-width="1.35" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Cinta plana</span>
+                <span class="hub-node__label" data-i18n="machine.flatConveyor">Cinta plana</span>
               </a>
             </div>
           </div>
           <div class="hub-arm" style="--a: 54deg">
             <div class="hub-arm__inner">
-              <a class="hub-node hub-node--go" href="car-lift-screw.html">
+              <a class="hub-node hub-node--go" href="bucket-elevator.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M16 8v32M32 8v32" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" />
-                    <rect x="12" y="34" width="24" height="6" rx="1" stroke="currentColor" stroke-width="1.5" />
-                    <path d="M24 12c-2 4-2 8 0 12M24 16c2 3 2 7 0 10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                    <line x1="24" y1="8" x2="24" y2="36" stroke="currentColor" stroke-width="1.45" stroke-linecap="round" />
+                    <path d="M16 14h-4v6h4zM30 22h-4v6h4zM20 30h-4v6h4z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round" />
+                    <line x1="14" y1="39" x2="34" y2="39" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Elevador coches</span>
+                <span class="hub-node__label" data-i18n="machine.bucketElevator">Elev. cangilones</span>
               </a>
             </div>
           </div>
           <div class="hub-arm" style="--a: 90deg">
             <div class="hub-arm__inner">
-              <a class="hub-node hub-node--go" href="bucket-elevator.html">
+              <a class="hub-node hub-node--go" href="car-lift-screw.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M24 8v28" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
-                    <path d="M16 12h-4v6h4M28 20h-4v6h4M20 28h-4v6h4" stroke="currentColor" stroke-width="1.35" stroke-linejoin="round" />
-                    <path d="M14 36h20" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                    <line x1="15" y1="8" x2="15" y2="40" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <line x1="33" y1="8" x2="33" y2="40" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <rect x="10" y="33.5" width="28" height="6.5" rx="1.6" stroke="currentColor" stroke-width="1.4" />
+                    <path d="M24 12v14M20 17h8M20 21h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Elevador</span>
+                <span class="hub-node__label" data-i18n="machine.carLift">Elevador coches</span>
               </a>
             </div>
           </div>
@@ -190,11 +202,12 @@
               <a class="hub-node hub-node--go" href="screw-conveyor.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="10" y="32" width="28" height="6" rx="1" stroke="currentColor" stroke-width="1.4" />
-                    <path d="M14 30c8-6 16-12 20-18M16 26c6-5 12-10 18-15M18 22c5-4 10-8 15-12" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
+                    <rect x="10" y="33" width="28" height="5.5" rx="1.3" stroke="currentColor" stroke-width="1.35" />
+                    <path d="M13 30c8-6 15-12 21-18M16 28c7-5 13-10 19-15M19 26c5-4 10-8 15-12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+                    <circle cx="12.5" cy="35.8" r="1.6" fill="currentColor" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Tornillo</span>
+                <span class="hub-node__label" data-i18n="machine.screwConveyor">Tornillo</span>
               </a>
             </div>
           </div>
@@ -207,7 +220,7 @@
                     <path d="M24 12v8M24 28v8M12 24h8M28 24h8M15 15l6 6M27 27l6 6M33 15l-6 6M21 27l-6 6" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Ventilador</span>
+                <span class="hub-node__label" data-i18n="machine.fan">Ventilador</span>
               </span>
             </div>
           </div>
@@ -216,12 +229,13 @@
               <a class="hub-node hub-node--go" href="traction-elevator.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="30" cy="14" r="5" stroke="currentColor" stroke-width="1.4" />
-                    <path d="M30 19v18M18 37h24" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
-                    <path d="M14 20v14M22 20v14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.75" />
+                    <circle cx="30" cy="14" r="5.2" stroke="currentColor" stroke-width="1.4" />
+                    <line x1="30" y1="19.5" x2="30" y2="36.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                    <line x1="16" y1="37" x2="36" y2="37" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" />
+                    <path d="M15 20v14M22 20v14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.78" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Ascensor</span>
+                <span class="hub-node__label" data-i18n="machine.tractionElevator">Ascensor</span>
               </a>
             </div>
           </div>
@@ -230,25 +244,27 @@
               <a class="hub-node hub-node--go" href="inclined-conveyor.html">
                 <span class="hub-node__icon" aria-hidden="true">
                   <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 36h28" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-                    <circle cx="14" cy="36" r="3.5" stroke="currentColor" stroke-width="1.4" />
-                    <circle cx="38" cy="36" r="3.5" stroke="currentColor" stroke-width="1.4" />
-                    <path d="M12 34l22-18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <line x1="10" y1="36" x2="38" y2="36" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+                    <circle cx="14" cy="36" r="3.3" stroke="currentColor" stroke-width="1.35" />
+                    <circle cx="38" cy="36" r="3.3" stroke="currentColor" stroke-width="1.35" />
+                    <path d="M12 33l22-17.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                    <path d="M15 28h8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" />
                   </svg>
                 </span>
-                <span class="hub-node__label">Cinta ↗</span>
+                <span class="hub-node__label" data-i18n="machine.inclinedConveyor">Cinta inclinada</span>
               </a>
             </div>
           </div>
         </nav>
       </div>
+      </div>
 
       <div class="hub-zone hub-zone--lab">
-        <h2 class="hub-zone__title">Laboratorio</h2>
+        <h2 class="hub-zone__title" data-i18n="zone.lab">Laboratorio</h2>
         <p class="hub-zone__sub">
-          <a href="transmission-lab.html">Índice</a>
+          <a href="transmission-lab.html" data-i18n="lab.index">Índice</a>
           <span class="hub-zone__dot" aria-hidden="true">·</span>
-          <a href="transmission-canvas.html">Lienzo Pro</a>
+          <a href="transmission-canvas.html" data-i18n="lab.canvasPro">Lienzo Pro</a>
         </p>
         <div class="hub-scene hub-scene--lab">
           <svg class="hub-wires hub-wires--lab" viewBox="0 0 100 100" aria-hidden="true">
@@ -307,7 +323,7 @@
               </g>
             </svg>
           </div>
-          <nav class="hub-rim hub-rim--lab" aria-label="Calculadoras de transmisión">
+          <nav class="hub-rim hub-rim--lab" aria-label="Calculadoras de transmisión" data-i18n="aria.transmissionCalcs" data-i18n-attr="aria-label">
             <div class="hub-arm hub-arm--lab" style="--a: -90deg">
               <div class="hub-arm__inner hub-arm__inner--lab">
                 <a class="hub-node hub-node--go hub-node--lab" href="calc-gears.html">
@@ -319,7 +335,7 @@
                       <path d="M33 17v-2.5M33 31v2.5M26 24h2.5M37.5 24h2.5" stroke="currentColor" stroke-width="1.15" stroke-linecap="round" />
                     </svg>
                   </span>
-                  <span class="hub-node__label">Engranajes</span>
+                  <span class="hub-node__label" data-i18n="lab.gears">Engranajes</span>
                 </a>
               </div>
             </div>
@@ -333,7 +349,7 @@
                       <path d="M21 18c4 2 8 2 12 0M21 30c4-2 8-2 12 0" stroke="currentColor" stroke-width="1.35" stroke-linecap="round" />
                     </svg>
                   </span>
-                  <span class="hub-node__label">Correas</span>
+                  <span class="hub-node__label" data-i18n="lab.belts">Correas</span>
                 </a>
               </div>
             </div>
@@ -347,7 +363,7 @@
                       <path d="M20 20h2v2h-2zM26 20h2v2h-2zM22 26h2v2h-2" stroke="currentColor" stroke-width="1.1" />
                     </svg>
                   </span>
-                  <span class="hub-node__label">Cadenas</span>
+                  <span class="hub-node__label" data-i18n="lab.chains">Cadenas</span>
                 </a>
               </div>
             </div>
@@ -361,7 +377,7 @@
                       <circle cx="24" cy="24" r="3.5" fill="currentColor" opacity="0.25" />
                     </svg>
                   </span>
-                  <span class="hub-node__label">Rodamientos</span>
+                  <span class="hub-node__label" data-i18n="lab.bearings">Rodamientos</span>
                 </a>
               </div>
             </div>
@@ -375,7 +391,7 @@
                       <path d="M8 20v8M40 20v8" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" opacity="0.7" />
                     </svg>
                   </span>
-                  <span class="hub-node__label">Eje</span>
+                  <span class="hub-node__label" data-i18n="lab.shaft">Eje</span>
                 </a>
               </div>
             </div>
@@ -390,7 +406,7 @@
                       <rect x="26" y="26" width="10" height="10" rx="1" stroke="currentColor" stroke-width="1.25" />
                     </svg>
                   </span>
-                  <span class="hub-node__label">Más</span>
+                  <span class="hub-node__label" data-i18n="lab.more">Más</span>
                 </a>
               </div>
             </div>
@@ -398,8 +414,126 @@
         </div>
       </div>
 
-      <p class="hub-footnote">Activos en verde · Cintas: free/Pro según pantalla</p>
+      <div class="hub-zone hub-zone--fluids">
+        <h2 class="hub-zone__title" data-i18n="zone.fluids">Hidráulica y neumática</h2>
+        <p class="hub-zone__sub" data-i18n="fluids.subtitle">Nuevos cálculos del bloque de fluidos</p>
+        <div class="hub-scene hub-scene--fluid">
+          <svg class="hub-wires hub-wires--fluid" viewBox="0 0 100 100" aria-hidden="true">
+            <defs>
+              <filter id="glowLineFluid" x="-50%" y="-50%" width="200%" height="200%">
+                <feGaussianBlur stdDeviation="0.35" result="b" />
+                <feMerge>
+                  <feMergeNode in="b" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+            </defs>
+            <circle class="hub-wires__orbit hub-wires__orbit--fluid" cx="50" cy="50" r="34" fill="none" />
+            <g class="hub-wires__spokes hub-wires__spokes--fluid" stroke-linecap="round" filter="url(#glowLineFluid)">
+              <line x1="50" y1="50" x2="50" y2="16" />
+              <line x1="50" y1="50" x2="79.4" y2="33" />
+              <line x1="50" y1="50" x2="79.4" y2="67" />
+              <line x1="50" y1="50" x2="50" y2="84" />
+              <line x1="50" y1="50" x2="20.6" y2="67" />
+              <line x1="50" y1="50" x2="20.6" y2="33" />
+            </g>
+          </svg>
+          <div class="hub-core hub-core--fluid" aria-hidden="true">
+            <div class="hub-core__pulse hub-core__pulse--fluid"></div>
+            <div class="hub-core__ring hub-core__ring--fluid"></div>
+            <div class="hub-core__body hub-core__body--fluid"></div>
+            <svg class="hub-core__mesh hub-core__mesh--fluid" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+              <path d="M30 66c10-15 26-15 38 0" fill="none" stroke="#67e8f9" stroke-width="4" stroke-linecap="round"/>
+              <circle cx="50" cy="42" r="9.5" fill="#0f172a" stroke="#67e8f9" stroke-width="2"/>
+              <path d="M50 33v18M41 42h18" stroke="#22d3ee" stroke-width="1.5" stroke-linecap="round"/>
+            </svg>
+          </div>
+          <nav class="hub-rim hub-rim--fluid" aria-label="Calculadoras de hidráulica y neumática" data-i18n="aria.fluidCalcs" data-i18n-attr="aria-label">
+            <div class="hub-arm hub-arm--fluid" style="--a: -90deg">
+              <div class="hub-arm__inner hub-arm__inner--fluid">
+                <a class="hub-node hub-node--go hub-node--fluid" href="calc-hydraulic-pump.html">
+                  <span class="hub-node__icon hub-node__icon--fluid" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M8 30h8l3-10h10l3 10h8" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+                      <circle cx="24" cy="20" r="5.5" stroke="currentColor" stroke-width="1.6" />
+                    </svg>
+                  </span>
+                  <span class="hub-node__label" data-i18n="fluids.pump">Bomba hidráulica</span>
+                </a>
+              </div>
+            </div>
+            <div class="hub-arm hub-arm--fluid" style="--a: -30deg">
+              <div class="hub-arm__inner hub-arm__inner--fluid">
+                <span class="hub-node hub-node--fluid hub-node--soon">
+                  <span class="hub-node__icon hub-node__icon--fluid" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="12" y="18" width="24" height="12" rx="3" stroke="currentColor" stroke-width="1.4"/>
+                      <path d="M36 24h4M8 24h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                  <span class="hub-node__label" data-i18n="fluids.compressor">Compresor neumatico</span>
+                </span>
+              </div>
+            </div>
+            <div class="hub-arm hub-arm--fluid" style="--a: 30deg">
+              <div class="hub-arm__inner hub-arm__inner--fluid">
+                <a class="hub-node hub-node--go hub-node--fluid" href="calc-pneumatic-cylinder.html">
+                  <span class="hub-node__icon hub-node__icon--fluid" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="14" y="12" width="20" height="24" rx="3" stroke="currentColor" stroke-width="1.4"/>
+                      <line x1="24" y1="12" x2="24" y2="36" stroke="currentColor" stroke-width="1.2"/>
+                    </svg>
+                  </span>
+                  <span class="hub-node__label" data-i18n="fluids.cylinder">Cilindro neumático</span>
+                </a>
+              </div>
+            </div>
+            <div class="hub-arm hub-arm--fluid" style="--a: 90deg">
+              <div class="hub-arm__inner hub-arm__inner--fluid">
+                <a class="hub-node hub-node--go hub-node--fluid" href="calc-hydraulic-cylinder.html">
+                  <span class="hub-node__icon hub-node__icon--fluid" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <rect x="11" y="14" width="26" height="20" rx="2.5" stroke="currentColor" stroke-width="1.35"/>
+                      <path d="M15 24h18" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                  <span class="hub-node__label" data-i18n="fluids.hydraulicCylinder">Cilindro hidraulico</span>
+                </a>
+              </div>
+            </div>
+            <div class="hub-arm hub-arm--fluid" style="--a: 150deg">
+              <div class="hub-arm__inner hub-arm__inner--fluid">
+                <span class="hub-node hub-node--fluid hub-node--soon">
+                  <span class="hub-node__icon hub-node__icon--fluid" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M24 10c5 7 8 11 8 15a8 8 0 1 1-16 0c0-4 3-8 8-15z" stroke="currentColor" stroke-width="1.4"/>
+                    </svg>
+                  </span>
+                  <span class="hub-node__label" data-i18n="fluids.valves">Válvulas</span>
+                </span>
+              </div>
+            </div>
+            <div class="hub-arm hub-arm--fluid" style="--a: -150deg">
+              <div class="hub-arm__inner hub-arm__inner--fluid">
+                <a class="hub-node hub-node--go hub-node--fluid" href="calc-hydraulic-press.html">
+                  <span class="hub-node__icon hub-node__icon--fluid" aria-hidden="true">
+                    <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="24" cy="24" r="11" stroke="currentColor" stroke-width="1.4"/>
+                      <path d="M24 24l8-4M24 24l-7 5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/>
+                    </svg>
+                  </span>
+                  <span class="hub-node__label" data-i18n="fluids.press">Prensa hidráulica</span>
+                </a>
+              </div>
+            </div>
+          </nav>
+        </div>
+      </div>
+      </div>
+
+      <p class="hub-footnote" data-i18n="footnote">Verde = activo · Cintas: Gratis o Pro según el módulo</p>
     </main>
+    <script type="module" src="js/ui/homeI18n.js"></script>
     <script type="module" src="js/ui/hubFreemium.js"></script>
   </body>
 </html>

@@ -6,7 +6,8 @@ import { COUPLING_BRANDS } from '../data/couplingsCatalog.js';
 import { renderCouplingAssemblyDiagram } from '../lab/diagramCatalogModules.js';
 
 function torqueFromPower_kW_nm(P_kW, n_rpm) {
-  const w = (2 * Math.PI * Math.max(1, n_rpm)) / 60;
+  if (!(Number.isFinite(P_kW) && P_kW >= 0 && Number.isFinite(n_rpm) && n_rpm > 0)) return NaN;
+  const w = (2 * Math.PI * n_rpm) / 60;
   return (P_kW * 1000) / w;
 }
 
@@ -32,17 +33,22 @@ function findSuggestedModel(brandId, T_req_Nm) {
 }
 
 function render() {
-  const P = parseFloat(document.getElementById('cpPower')?.value || '0');
-  const n = parseFloat(document.getElementById('cpRpm')?.value || '0');
-  const K = parseFloat(document.getElementById('cpK')?.value || '1.25');
+  const P = parseFloat((document.getElementById('cpPower')?.value || '0').replace(',', '.'));
+  const n = parseFloat((document.getElementById('cpRpm')?.value || '0').replace(',', '.'));
+  const K = parseFloat((document.getElementById('cpK')?.value || '1.25').replace(',', '.'));
   const brandId = document.getElementById('cpBrand')?.value;
   const model = document.getElementById('cpSeries')?.value;
   const out = document.getElementById('cpOut');
   const tbl = document.getElementById('cpTable');
   if (!out || !tbl) return;
 
-  const T_ap = torqueFromPower_kW_nm(Math.max(0, P), Math.max(1, n));
-  const T_des = T_ap * Math.max(1, K);
+  if (!(Number.isFinite(P) && P >= 0 && Number.isFinite(n) && n > 0 && Number.isFinite(K) && K >= 1)) {
+    out.innerHTML = '<p class="lab-verdict lab-verdict--err"><strong>Entrada no válida:</strong> use P ≥ 0, n > 0 y K ≥ 1.</p>';
+    tbl.innerHTML = '';
+    return;
+  }
+  const T_ap = torqueFromPower_kW_nm(P, n);
+  const T_des = T_ap * K;
   const brand = COUPLING_BRANDS.find((b) => b.id === brandId);
   const row = brand?.series.find((s) => s.model === model);
 
@@ -90,5 +96,14 @@ document.getElementById('cpBrand')?.addEventListener('change', (e) => {
 });
 document.getElementById('cpSeries')?.addEventListener('change', render);
 ['cpPower', 'cpRpm', 'cpK'].forEach((id) => document.getElementById(id)?.addEventListener('input', render));
+document.querySelectorAll('.cp-ka-btn').forEach((btn) => {
+  btn.addEventListener('click', () => {
+    const input = document.getElementById('cpK');
+    const ka = Number(btn.getAttribute('data-ka'));
+    if (!(input instanceof HTMLInputElement) || !Number.isFinite(ka) || ka < 1) return;
+    input.value = ka.toFixed(2);
+    render();
+  });
+});
 
 render();

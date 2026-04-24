@@ -47,11 +47,11 @@ export function renderChainDriveDiagram(el, params) {
   if (!el) return;
   const r = computeRollerChain(params);
   const id = uid();
-  const vbW = 720;
-  const headerH = 74;
-  let k = 0.42;
-  const y = 252;
-  let xL = 102;
+  const vbW = 668;
+  const headerH = 68;
+  let k = 0.38;
+  const y = 244;
+  let xL = 94;
 
   let RpL = (r.pitchDiameter2_mm / 2) * k;
   let RpR = (r.pitchDiameter1_mm / 2) * k;
@@ -61,7 +61,7 @@ export function renderChainDriveDiagram(el, params) {
 
   let RouterL = RpL + pPx * 0.42;
   let guard = 0;
-  while (xR + RpR + pPx * 0.5 > vbW - 36 && guard++ < 35) {
+  while (xR + RpR + pPx * 0.5 > vbW - 48 && guard++ < 40) {
     k *= 0.92;
     RpL = (r.pitchDiameter2_mm / 2) * k;
     RpR = (r.pitchDiameter1_mm / 2) * k;
@@ -85,12 +85,16 @@ export function renderChainDriveDiagram(el, params) {
   const pathL = sprocketPolygon(xL, y, RouterL, RvalL, Math.min(r.z2, 36));
   const pathR = sprocketPolygon(xR, y, RouterR, RvalR, Math.min(r.z1, 36));
 
-  const bodyBottom = y + Math.max(RouterL, RouterR) + 20;
-  const dimY = bodyBottom + 18;
-  const tagY = dimY + 32;
-  const vbH = tagY + 44;
+  const bodyBottom = y + Math.max(RouterL, RouterR) + 16;
+  const dimY = bodyBottom + 14;
+  const tagY = dimY + 28;
+  const vbH = tagY + 40;
+  const geomLeft = xL - RouterL;
+  const geomRight = xR + RouterR;
+  const shiftX = vbW / 2 - (geomLeft + geomRight) / 2;
 
   el.setAttribute('viewBox', `0 0 ${vbW} ${vbH}`);
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
@@ -109,12 +113,13 @@ export function renderChainDriveDiagram(el, params) {
       <marker id="${id}Cs" markerWidth="8" markerHeight="8" refX="0" refY="4" orient="auto"><path d="M8,0 L0,4 L8,8 Z" fill="#475569"/></marker>
     </defs>
     <rect width="${vbW}" height="${vbH}" fill="url(#${id}Bg)" />
-    <rect x="0" y="0" width="${vbW}" height="${headerH - 6}" fill="#fff" opacity="0.55" />
-    <text x="28" y="32" font-size="16" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Cadena de rodillos · primitivo</text>
-    <text x="28" y="54" font-size="10" fill="#475569" font-family="Inter, system-ui, sans-serif">p = ${r.pitch_mm.toFixed(2)} mm · L ≈ ${r.chainLength_pitches.toFixed(2)} pasos (${r.chainLength_pitches_roundUp} al alza) · D = p/sin(π/z)</text>
+    <rect x="0" y="0" width="${vbW}" height="${headerH - 8}" fill="#fff" opacity="0.55" />
+    <text x="${vbW / 2}" y="28" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Cadena de rodillos · primitivo</text>
+    <text x="${vbW / 2}" y="46" text-anchor="middle" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">p = ${r.pitch_mm.toFixed(2)} mm · L ≈ ${r.chainLength_pitches.toFixed(2)} pasos (${r.chainLength_pitches_roundUp} al alza)</text>
 
-    <line x1="${xL}" y1="${y + RouterL + 6}" x2="${xL}" y2="${y + RouterL + 52}" stroke="#64748b" stroke-width="4" stroke-linecap="round" />
-    <line x1="${xR}" y1="${y + RouterR + 6}" x2="${xR}" y2="${y + RouterR + 52}" stroke="#64748b" stroke-width="4" stroke-linecap="round" />
+    <g transform="translate(${shiftX.toFixed(2)}, 0)">
+    <line x1="${xL}" y1="${y + RouterL + 4}" x2="${xL}" y2="${y + RouterL + 44}" stroke="#64748b" stroke-width="3.5" stroke-linecap="round" />
+    <line x1="${xR}" y1="${y + RouterR + 4}" x2="${xR}" y2="${y + RouterR + 44}" stroke="#64748b" stroke-width="3.5" stroke-linecap="round" />
 
     <circle cx="${xL}" cy="${y}" r="${RpL}" fill="none" stroke="#0d9488" stroke-width="1.25" stroke-dasharray="5 4" opacity="0.88" />
     <circle cx="${xR}" cy="${y}" r="${RpR}" fill="none" stroke="#0d9488" stroke-width="1.25" stroke-dasharray="5 4" opacity="0.88" />
@@ -131,9 +136,10 @@ export function renderChainDriveDiagram(el, params) {
     <line x1="${xL}" y1="${dimY}" x2="${xR}" y2="${dimY}" stroke="#334155" stroke-width="1.2" marker-start="url(#${id}Cs)" marker-end="url(#${id}Ce)" />
     <text x="${(xL + xR) / 2}" y="${dimY - 6}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">C = ${r.center_mm.toFixed(2)} mm</text>
 
-    <text x="${xL}" y="${tagY}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">z₂ · piñón 2 = ${r.z2}</text>
-    <text x="${xR}" y="${tagY}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">z₁ · piñón 1 = ${r.z1}</text>
+    <text x="${xL}" y="${tagY}" text-anchor="middle" font-size="10" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">z₂ = ${r.z2}</text>
+    <text x="${xR}" y="${tagY}" text-anchor="middle" font-size="10" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">z₁ = ${r.z1}</text>
+    </g>
 
-    <text x="28" y="${vbH - 12}" font-size="9.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">Rodillos solo en tramos rectos (esquema). Montaje y paso real: ISO / DIN / fabricante.</text>
+    <text x="${vbW / 2}" y="${vbH - 10}" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter, system-ui, sans-serif">Rodillos en tramos rectos (esquema). ISO / DIN / fabricante.</text>
   `;
 }

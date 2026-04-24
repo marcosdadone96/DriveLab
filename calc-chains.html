@@ -12,11 +12,15 @@
   </head>
   <body class="lab-body">
     <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html">Laboratorio</a>
-        <a href="transmission-canvas.html">Lienzo técnico Pro</a>
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
     <main class="lab-main">
@@ -133,7 +137,14 @@
             </div>
           </div>
           <div class="lab-calc-layout__out">
-            <div class="lab-units-bar" role="group" aria-label="Unidades de los resultados">
+            <div
+              class="lab-units-bar"
+              role="group"
+              aria-label="Unidades de los resultados"
+              data-lab-convert-categories="length rotation linear"
+              data-lab-convert-title="Conversor (cadenas de rodillos)"
+              data-lab-convert-tip="Paso y cotas en mm; RPM del piñon o cadena; velocidad lineal de la cadena."
+            >
               <span class="lab-units-bar__title">Cómo ver los resultados</span>
               <label class="lab-units-bar__field">
                 <span class="lab-units-bar__lbl">Distancias</span>
@@ -160,6 +171,10 @@
               </label>
             </div>
             <div id="cHero"></div>
+            <details class="lab-results-details">
+              <summary>Resultados por elemento</summary>
+              <div id="cElementResults" class="lab-element-columns"></div>
+            </details>
             <div class="lab-results-wrap" id="cResultsWrap">
               <div class="lab-results-computing" aria-hidden="true">
                 <svg class="lab-gear-spin" viewBox="0 0 64 64" aria-hidden="true">
@@ -170,15 +185,20 @@
                 </svg>
                 <span class="lab-results-computing__label">Recalculando</span>
               </div>
-              <div class="lab-results" id="cResults"></div>
+              <details class="lab-results-details">
+                <summary>Resultado completo</summary>
+                <div class="lab-results" id="cResults"></div>
+              </details>
             </div>
             <div id="cAlerts" class="lab-alerts"></div>
             <div id="cSubstitution"></div>
             <div class="lab-results lab-results--note" id="cAssembly"></div>
+            <div id="labPurchaseSuggestions" hidden></div>
           </div>
         </div>
       </section>
     </main>
     <script type="module" src="js/ui/calcChainsPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
   </body>
 </html>

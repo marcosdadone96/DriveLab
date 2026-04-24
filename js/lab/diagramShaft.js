@@ -15,11 +15,12 @@ export function renderShaftTorsionDiagram(el, opts) {
   const d = Number(opts?.diameter_mm) || 45;
   const id = uid();
   const dm = d / 1000;
-  el.setAttribute('viewBox', '0 0 720 400');
+  el.setAttribute('viewBox', '0 0 560 288');
+  el.setAttribute('preserveAspectRatio', 'xMidYMid meet');
   el.setAttribute('role', 'img');
   el.innerHTML = `
     <defs>
-      <linearGradient id="${id}Bg" x1="0" y1="0" x2="720" y2="400" gradientUnits="userSpaceOnUse">
+      <linearGradient id="${id}Bg" x1="0" y1="0" x2="560" y2="288" gradientUnits="userSpaceOnUse">
         <stop offset="0%" stop-color="#f1f5f9" />
         <stop offset="100%" stop-color="#e8eef4" />
       </linearGradient>
@@ -33,19 +34,19 @@ export function renderShaftTorsionDiagram(el, opts) {
         <feDropShadow dx="0" dy="2" stdDeviation="2" flood-opacity="0.12" />
       </filter>
     </defs>
-    <rect width="720" height="400" fill="url(#${id}Bg)" />
-    <text x="28" y="36" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Eje macizo · torsión</text>
-    <text x="28" y="58" font-size="10.5" fill="#475569" font-family="Inter, system-ui, sans-serif">τ = 16T / (πd³) · sin concentración ni fatiga detallada</text>
+    <rect width="560" height="288" fill="url(#${id}Bg)" />
+    <text x="280" y="30" text-anchor="middle" font-size="15" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Eje macizo · torsión</text>
+    <text x="280" y="48" text-anchor="middle" font-size="10" fill="#475569" font-family="Inter, system-ui, sans-serif">τ = 16T / (πd³) · sin concentración ni fatiga detallada</text>
 
-    <g transform="translate(96, 210)" filter="url(#${id}Sh)">
-      <rect x="0" y="-30" width="528" height="60" rx="8" fill="url(#${id}Shaft)" stroke="#334155" stroke-width="2" />
-      <rect x="132" y="-30" width="16" height="11" fill="#1e293b" />
-      <line x1="0" y1="-44" x2="0" y2="52" stroke="#0d9488" stroke-width="2.2" />
-      <line x1="528" y1="-44" x2="528" y2="52" stroke="#0d9488" stroke-width="2.2" />
-      <path d="M -34,-12 L 0,0 L -34,12" fill="none" stroke="#c2410c" stroke-width="3.2" marker-end="url(#${id}Arr)" />
-      <text x="248" y="-52" font-size="12" font-weight="700" fill="#9a3412" font-family="Inter, system-ui, sans-serif">T</text>
+    <g transform="translate(72, 154)" filter="url(#${id}Sh)">
+      <rect x="0" y="-26" width="416" height="52" rx="8" fill="url(#${id}Shaft)" stroke="#334155" stroke-width="2" />
+      <rect x="104" y="-26" width="14" height="9" fill="#1e293b" />
+      <line x1="0" y1="-38" x2="0" y2="44" stroke="#0d9488" stroke-width="2.2" />
+      <line x1="416" y1="-38" x2="416" y2="44" stroke="#0d9488" stroke-width="2.2" />
+      <path d="M -28,-10 L 0,0 L -28,10" fill="none" stroke="#c2410c" stroke-width="3" marker-end="url(#${id}Arr)" />
+      <text x="200" y="-44" font-size="11" font-weight="700" fill="#9a3412" font-family="Inter, system-ui, sans-serif">T</text>
     </g>
-    <text x="28" y="328" font-size="12" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Ø mín. ≈ ${dm.toFixed(5)} m (${d.toFixed(2)} mm)</text>
-    <text x="28" y="368" font-size="9.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">Suba a medida comercial; valide deflexión, crítico de velocidad y acople según norma.</text>
+    <text x="280" y="238" text-anchor="middle" font-size="11" font-weight="700" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Ø mín. ≈ ${dm.toFixed(5)} m (${d.toFixed(2)} mm)</text>
+    <text x="280" y="268" text-anchor="middle" font-size="9" fill="#64748b" font-family="Inter, system-ui, sans-serif">Medida comercial; valide deflexión, crítico y acople.</text>
   `;
 }

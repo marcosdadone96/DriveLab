@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Prensa hidraulica industrial - Laboratorio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/lab.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-43E5C8TB38"></script>
+    <script src="js/gtag.js"></script>
+    <style>
+      .hpp-more-details {
+        grid-column: 1 / -1;
+        margin-top: 0.2rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #fff;
+        overflow: hidden;
+      }
+      .hpp-more-details > summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.58rem 0.75rem;
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        border-bottom: 1px solid #e2e8f0;
+        font-size: 0.92rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+      .hpp-more-details > summary::-webkit-details-marker {
+        display: none;
+      }
+      .hpp-more-details > summary::before {
+        content: '?';
+        font-size: 0.92rem;
+        color: #0f766e;
+      }
+      .hpp-more-details[open] > summary::before {
+        content: '?';
+      }
+      .hpp-more-details__body {
+        padding: 0.62rem;
+      }
+      .hpp-more-details__body .lab-results {
+        margin-top: 0;
+      }
+      #hppResults > .lab-metric {
+        align-self: start;
+      }
+      #hpPressDiagram {
+        max-height: 245px;
+      }
+      .lab-field--auto input,
+      .lab-field--auto select {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+      }
+      .lab-field[hidden] {
+        display: none;
+      }
+    </style>
+  </head>
+  <body class="lab-body">
+    <header class="lab-header">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="lab-main">
+      <section class="lab-panel lab-panel--accent">
+        <h2>Prensa hidraulica industrial - tonelaje, caudal y estructura</h2>
+        <p class="lab-lead">
+          Calcula el diametro de piston, caudal de bomba, potencia motriz y chequeo basico de columnas para una prensa de 4 columnas con criterio de productividad.
+        </p>
+
+        <div class="lab-calc-layout lab-calc-layout--with-diag">
+          <div class="lab-calc-layout__diagram">
+            <div class="lab-diagram-wrap lab-diagram-wrap--elevated">
+              <p class="lab-diagram-wrap__title">Prensa hidraulica de 4 columnas (esquema funcional)</p>
+              <svg id="hpPressDiagram" xmlns="http://www.w3.org/2000/svg" aria-label="Esquema de prensa hidraulica con cilindro, plato movil y mesa fija"></svg>
+              <p class="lab-diagram-caption">Se muestra aplicacion de presion sobre el plato movil y trayectoria de prensado.</p>
+            </div>
+          </div>
+
+          <div class="lab-calc-layout__inputs">
+            <div class="lab-grid lab-grid--2">
+              <div class="lab-field lab-field--wide">
+                <label for="hppLabTier">Nivel de detalle memoria</label>
+                <select id="hppLabTier">
+                  <option value="basic" selected>Aula (basico)</option>
+                  <option value="project">Proyecto (detallado + pandeo columnas)</option>
+                </select>
+                <span class="hint">Formulas y campos extra</span>
+                <p class="lab-field-help">Proyecto activa pandeo Euler en columnas (longitud libre + K) y amplia la memoria de calculo y el PDF.</p>
+              </div>
+              <div class="lab-field lab-field--wide" id="hppProjectPanel" hidden>
+                <p class="lab-field-help" style="margin:0 0 0.5rem;font-weight:700;color:#0f766e">Columnas - pandeo (Euler)</p>
+                <div class="lab-grid lab-grid--2" style="gap:0.65rem">
+                  <div class="lab-field">
+                    <label for="hppColLengthMm">Longitud libre columna L (mm)</label>
+                    <input id="hppColLengthMm" type="number" min="200" step="any" value="2200" />
+                    <span class="hint">Entre guias / longitud no arriostrada</span>
+                  </div>
+                  <div class="lab-field">
+                    <label for="hppColK">Coeficiente K (longitud efectiva)</label>
+                    <select id="hppColK">
+                      <option value="0.5">0.5 - empotrado-libre</option>
+                      <option value="0.7" selected>0.7 - recomendado conservador</option>
+                      <option value="1">1.0 - bi-articulado</option>
+                      <option value="1.4">1.4 - un extremo empotrado</option>
+                      <option value="2">2.0 - libre-libre guiado</option>
+                    </select>
+                  </div>
+                  <div class="lab-field">
+                    <label for="hppEGpa">Modulo E columnas (GPa)</label>
+                    <input id="hppEGpa" type="number" min="70" max="220" step="any" value="210" />
+                    <span class="hint">Acero tipico 200-210</span>
+                  </div>
+                </div>
+              </div>
+              <div class="lab-field lab-field--wide">
+                <label for="hppMode">¿Qué quieres calcular?</label>
+                <select id="hppMode">
+                  <option value="design" selected>Diseñar nueva maquina</option>
+                  <option value="diagnostic">Diagnosticar maquina existente</option>
+                </select>
+                <span class="hint">Cambia el flujo de calculo</span>
+                <p class="lab-field-help">Diseno: Fuerza objetivo -> IA sugiere diametro/presion. Diagnostico: Diametro + presion -> IA calcula tonelaje real.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hppForceTon">Fuerza de prensado requerida (t)</label>
+                <input id="hppForceTon" type="number" min="1" step="any" value="120" />
+                <span class="hint">Carga de trabajo objetivo</span>
+                <p class="lab-field-help">Toneladas requeridas en el punto de prensado real.</p>
+              </div>
+              <div class="lab-field" id="hppDiagPistonField" hidden>
+                <label for="hppDiagPistonMm">Diametro piston existente (mm)</label>
+                <input id="hppDiagPistonMm" type="number" min="20" step="any" value="250" />
+                <span class="hint">Dato real de maquina instalada</span>
+                <p class="lab-field-help">En diagnostico se usa junto con la presion para calcular la fuerza/tonelaje real disponible.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hppPressureBar">Presion maxima del sistema (bar)</label>
+                <input id="hppPressureBar" type="number" min="50" step="any" value="210" />
+                <span class="hint">Limite hidraulico nominal</span>
+                <p class="lab-field-help">La combinacion fuerza-presion define el diametro minimo del piston.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hppStrokeMm">Carrera del cilindro (mm)</label>
+                <input id="hppStrokeMm" type="number" min="20" step="any" value="450" />
+                <span class="hint">Recorrido util vertical</span>
+                <p class="lab-field-help">Influye en tiempo, caudal y volumen total desplazado.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hppCycleS">Tiempo de ciclo deseado (s)</label>
+                <input id="hppCycleS" type="number" min="1" step="any" value="12" />
+                <span class="hint">Objetivo de productividad</span>
+                <p class="lab-field-help">Tiempo total aproximado por ciclo completo.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hppApproachFactor">Factor velocidad aproximacion</label>
+                <input id="hppApproachFactor" type="number" min="1" max="6" step="any" value="2.5" />
+                <span class="hint">Aproximacion mas rapida que prensado</span>
+                <p class="lab-field-help">
+                  Es la relacion entre la velocidad de bajada rapida (sin carga) y la velocidad de prensado (con carga). Ejemplo: 2.5 significa que en aproximacion el
+                  plato baja 2.5 veces mas rapido que en trabajo. Valores mayores mejoran productividad, pero exigen mas caudal instantaneo y mas potencia hidraulica.
+                </p>
+              </div>
+              <div class="lab-field">
+                <label for="hppPumpFlowLmin">Caudal de bomba actual (L/min)</label>
+                <input id="hppPumpFlowLmin" type="number" min="1" step="any" value="120" />
+                <span class="hint">Para comparar contra requerido</span>
+                <p class="lab-field-help">Si es insuficiente, el advisor sugiere el caudal minimo necesario.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hppColumns">Numero de columnas</label>
+                <select id="hppColumns">
+                  <option value="4" selected>4 columnas</option>
+                  <option value="2">2 columnas</option>
+                </select>
+                <span class="hint">Modelo estructural simplificado</span>
+                <p class="lab-field-help">Se reparte carga por columna para estimar diametro minimo elastico.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hppSteelMpa">Tension admisible columna (MPa)</label>
+                <input id="hppSteelMpa" type="number" min="80" step="any" value="160" />
+                <span class="hint">Depende del acero y factor de diseno</span>
+                <p class="lab-field-help">Valor conservador para chequeo basico de seccion en columnas.</p>
+              </div>
+              <div class="lab-field" id="hppDiagColField" hidden>
+                <label for="hppDiagColumnMm">Diametro real de columnas (mm)</label>
+                <input id="hppDiagColumnMm" type="number" min="20" step="any" value="110" />
+                <span class="hint">Para veredicto estructural en diagnostico</span>
+                <p class="lab-field-help">Permite estimar el maximo tonelaje soportado por tus columnas actuales antes de deformacion elastica.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lab-calc-layout__out">
+            <details class="lab-fluid-formulas" id="hppFormulasBlock">
+              <summary>Memoria de calculo, formulas y supuestos</summary>
+              <div id="hppFormulaBody" class="lab-fluid-formulas__body"></div>
+            </details>
+            <div id="hppResults" class="lab-results"></div>
+            <div id="hppAdvisor" class="lab-alerts"></div>
+            <p id="hppVerdict" class="lab-verdict lab-verdict--ok">SISTEMA APTO</p>
+            <div id="labFluidPdfMount" class="premium-pdf-mount"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="js/ui/hydraulicPressPage.js?v=20260424a"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
+  </body>
+</html>

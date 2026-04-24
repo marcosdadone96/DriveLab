@@ -3,7 +3,9 @@
  */
 
 import { mountTierStatusBar } from './paywallMount.js';
+import { mountMachineConfigBar } from './machineConfigMount.js';
 
 mountTierStatusBar();
 await import('./carLiftScrewPage.js');
+mountMachineConfigBar();
 

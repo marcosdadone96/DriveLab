@@ -85,17 +85,17 @@ export function buildResultPhaseAlerts(p) {
   if (P > 100 && D < 630) {
     out.push({
       level: 'warn',
-      text: `Potencia de eje ≈ ${P.toFixed(1)} kW con tambor Ø ${D} mm: diámetro habitualmente pequeño para esa clase de potencia; riesgo de vida útil de banda y contacto Hertz. Consulte tablas de tambor mínimo del fabricante de banda.`,
+      text: `Potencia de eje ≈ ${P.toFixed(2)} kW con tambor Ø ${D} mm: diámetro habitualmente pequeño para esa clase de potencia; riesgo de vida útil de banda y contacto Hertz. Consulte tablas de tambor mínimo del fabricante de banda.`,
     });
   } else if (P > 30 && D < 400) {
     out.push({
       level: 'warn',
-      text: `Ø ${D} mm frente a ≈ ${P.toFixed(1)} kW: valide radio mínimo de curvatura de la banda y presión en el contacto.`,
+      text: `Ø ${D} mm frente a ≈ ${P.toFixed(2)} kW: valide radio mínimo de curvatura de la banda y presión en el contacto.`,
     });
   } else if (P > 5 && D < 250) {
     out.push({
       level: 'info',
-      text: `Tambor Ø ${D} mm con ≈ ${P.toFixed(1)} kW: aceptable en equipos ligeros; confirme si la banda exige diámetro mínimo mayor.`,
+      text: `Tambor Ø ${D} mm con ≈ ${P.toFixed(2)} kW: aceptable en equipos ligeros; confirme si la banda exige diámetro mínimo mayor.`,
     });
   }
 

@@ -96,8 +96,8 @@ export function renderCentrifugalPumpDiagram(svg, p) {
 
     <rect width="${VB_W}" height="${VB_H}" fill="url(#bgPump)" />
     <rect x="14" y="14" width="${VB_W - 28}" height="52" rx="12" fill="#0f766e" fill-opacity="0.1" stroke="#0d9488" stroke-width="1.5" />
-    <text x="28" y="38" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, Segoe UI, sans-serif">Bomba centrífuga</text>
-    <text x="28" y="56" font-size="11.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Esquema: depósito · succión · bomba · impulsión · H manométrica total (datos del punto de trabajo)</text>
+    <text x="28" y="38" font-size="17" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, Segoe UI, sans-serif">Bomba centrifuga</text>
+    <text x="28" y="56" font-size="11.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Deposito · succion · bomba · impulsion · altura manometrica total</text>
 
     <!-- Suelo -->
     <line x1="40" y1="${yGround}" x2="${VB_W - 40}" y2="${yGround}" stroke="#64748b" stroke-width="2.5" />
@@ -108,7 +108,7 @@ export function renderCentrifugalPumpDiagram(svg, p) {
     <rect x="${xTankL + 4}" y="${yLiquid - 20}" width="${xTankR - xTankL - 8}" height="28" fill="url(#liquidPump)" opacity="0.85" />
     <path d="M ${xTankL + 6} ${yLiquid - 22} Q ${(xTankL + xTankR) / 2} ${yLiquid - 34} ${xTankR - 6} ${yLiquid - 22}" fill="none" stroke="#0ea5e9" stroke-width="2" opacity="0.7" />
     <text x="${(xTankL + xTankR) / 2 - 42}" y="${yLiquid - 88}" font-size="11" font-weight="700" fill="#334155" font-family="Inter, system-ui, sans-serif">Depósito / pozo</text>
-    <text x="${(xTankL + xTankR) / 2 - 38}" y="${yLiquid + 8}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">NPSH disponible: validar aparte</text>
+    <text x="${(xTankL + xTankR) / 2 - 38}" y="${yLiquid + 8}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">NPSH disponible: validar por separado</text>
 
     <!-- Tubería succión -->
     <path d="M ${xTankR - 4} ${yLiquid - 6} L ${cxPump - rVolute - 6} ${yLiquid - 6} L ${cxPump - rVolute - 6} ${cyPump + 8}" fill="none" stroke="#334155" stroke-width="14" stroke-linejoin="round" />
@@ -134,7 +134,7 @@ export function renderCentrifugalPumpDiagram(svg, p) {
       <path d="M ${cxPump - 8} ${cyPump - rVolute * 0.2} A ${rVolute * 0.55} ${rVolute * 0.55} 0 1 1 ${cxPump + 10} ${cyPump + rVolute * 0.35}" fill="none" stroke="#1e293b" stroke-width="3" opacity="0.45" />
       <circle cx="${cxPump - 4}" cy="${cyPump}" r="${rVolute * 0.38}" fill="#0ea5e9" fill-opacity="0.25" stroke="#0369a1" stroke-width="2" />
       <text x="${cxPump - 6}" y="${cyPump + rVolute + 22}" text-anchor="middle" font-size="11" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Bomba</text>
-      <text x="${cxPump - 6}" y="${cyPump + rVolute + 38}" text-anchor="middle" font-size="9.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">n = ${n.toFixed(0)} min⁻¹</text>
+      <text x="${cxPump - 6}" y="${cyPump + rVolute + 38}" text-anchor="middle" font-size="9.5" fill="#64748b" font-family="Inter, system-ui, sans-serif">n = ${n.toFixed(0)} rpm</text>
     </g>
 
     <!-- Impulsión -->
@@ -149,10 +149,10 @@ export function renderCentrifugalPumpDiagram(svg, p) {
     <text x="${xDisEnd + 58}" y="${(yDisBottom + yDisTop) / 2}" font-size="12" font-weight="800" fill="#9a3412" font-family="Inter, system-ui, sans-serif">H = ${H.toFixed(1)} m</text>
 
     <!-- Caja datos -->
-    <rect x="56" y="${yGround - 168}" width="268" height="108" rx="12" fill="#ffffff" fill-opacity="0.92" stroke="#cbd5e1" stroke-width="1.5" />
+    <rect x="56" y="${yGround - 168}" width="286" height="108" rx="12" fill="#ffffff" fill-opacity="0.94" stroke="#cbd5e1" stroke-width="1.5" />
     <text x="72" y="${yGround - 142}" font-size="10" font-weight="800" fill="#0f172a" font-family="Inter, system-ui, sans-serif">Punto de trabajo (modelo)</text>
-    <text x="72" y="${yGround - 122}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">P_h ≈ ${Number.isFinite(Ph) ? Ph.toFixed(3) : '—'} kW · P_eje ≈ ${Number.isFinite(Ps) ? Ps.toFixed(3) : '—'} kW</text>
-    <text x="72" y="${yGround - 104}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">η bomba (declarada) ≈ ${eta.toFixed(0)} %</text>
+    <text x="72" y="${yGround - 122}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">P_h ≈ ${Number.isFinite(Ph) ? Ph.toFixed(3) : '—'} kW · P eje ≈ ${Number.isFinite(Ps) ? Ps.toFixed(3) : '—'} kW</text>
+    <text x="72" y="${yGround - 104}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">Eficiencia declarada ≈ ${eta.toFixed(0)} %</text>
     ${
       fluidShort
         ? `<text x="72" y="${yGround - 86}" font-size="9.5" fill="#475569" font-family="Inter, system-ui, sans-serif">${fluidShort}</text>`

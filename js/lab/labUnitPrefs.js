@@ -110,7 +110,10 @@ export function bindLabUnitSelectors(onChange, opts = {}) {
   life?.addEventListener('change', fire);
 }
 
-/** HTML reutilizable (insertar antes del héroe de resultados) */
+/**
+ * HTML reutilizable (insertar antes del heroe de resultados).
+ * En paginas reales, anadir data-lab-convert-categories / title / tip en el div para el conversor (ver labUnitConvert.js).
+ */
 export const LAB_UNITS_BAR_HTML = `
 <div class="lab-units-bar" role="group" aria-label="Unidades de los resultados">
   <span class="lab-units-bar__title">Cómo ver los resultados</span>

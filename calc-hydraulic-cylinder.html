@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cilindro hidraulico - Laboratorio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/lab.css" />
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-43E5C8TB38"></script>
+    <script src="js/gtag.js"></script>
+    <style>
+      .hc-more-details {
+        grid-column: 1 / -1;
+        margin-top: 0.2rem;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        background: #fff;
+        overflow: hidden;
+      }
+      .hc-more-details > summary {
+        list-style: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.58rem 0.75rem;
+        background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+        border-bottom: 1px solid #e2e8f0;
+      }
+      .hc-more-details > summary::-webkit-details-marker {
+        display: none;
+      }
+      .hc-more-details > summary::before {
+        content: '▸';
+        font-size: 0.92rem;
+        color: #0f766e;
+        transform: translateY(-0.02em);
+      }
+      .hc-more-details[open] > summary::before {
+        content: '▾';
+      }
+      .hc-more-details__title {
+        font-size: 0.9rem;
+        font-weight: 800;
+        color: #0f172a;
+      }
+      .hc-more-details__hint {
+        font-size: 0.72rem;
+        color: #64748b;
+        font-weight: 600;
+      }
+      .hc-more-details__body {
+        padding: 0.62rem;
+      }
+      .hc-more-details__body .lab-results {
+        margin-top: 0;
+      }
+      .lab-field--auto input,
+      .lab-field--auto select {
+        background: #f1f5f9;
+        border-color: #cbd5e1;
+      }
+    </style>
+  </head>
+  <body class="lab-body">
+    <header class="lab-header">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
+      </nav>
+    </header>
+
+    <main class="lab-main">
+      <section class="lab-panel lab-panel--accent">
+        <h2>Cilindro hidraulico - fuerza, caudal y seguridad estructural</h2>
+        <p class="lab-lead">
+          Valida fuerza de empuje/traccion, caudal requerido, pandeo del vastago (Euler) y espesor minimo de tubo para operar con seguridad a presion nominal.
+        </p>
+
+        <div class="lab-calc-layout lab-calc-layout--with-diag">
+          <div class="lab-calc-layout__diagram">
+            <div class="lab-diagram-wrap lab-diagram-wrap--elevated">
+              <p class="lab-diagram-wrap__title">Corte de cilindro hidraulico (doble efecto, alta presion)</p>
+              <svg id="hcDiagram" xmlns="http://www.w3.org/2000/svg" aria-label="Esquema de cilindro hidraulico con puertos de aceite"></svg>
+              <p class="lab-diagram-caption">Puertos A/B de aceite, sellos de alta presion, guia de vastago y zonas de empuje/traccion.</p>
+            </div>
+          </div>
+
+          <div class="lab-calc-layout__inputs">
+            <div class="lab-grid lab-grid--2">
+              <div class="lab-field lab-field--wide">
+                <label for="hcLabTier">Nivel de detalle memoria</label>
+                <select id="hcLabTier">
+                  <option value="basic" selected>Aula (basico)</option>
+                  <option value="project">Proyecto (Euler + temperatura aceite)</option>
+                </select>
+                <span class="hint">Memoria ampliada y PDF</span>
+                <p class="lab-field-help">Proyecto permite ajustar longitud efectiva de pandeo del vastago y registrar temperatura de aceite (supuestos).</p>
+              </div>
+              <div class="lab-field lab-field--wide" id="hcProjectPanel" hidden>
+                <div class="lab-grid lab-grid--2" style="gap:0.65rem">
+                  <div class="lab-field">
+                    <label for="hcEulerLengthFactor">Factor longitud efectiva pandeo (x carrera)</label>
+                    <select id="hcEulerLengthFactor">
+                      <option value="1">1.0 - apoyos ideales cortos</option>
+                      <option value="1.2" selected>1.2 - valor por defecto previo</option>
+                      <option value="1.5">1.5 - guias intermedias debiles</option>
+                      <option value="2">2.0 - vastago muy libre</option>
+                    </select>
+                  </div>
+                  <div class="lab-field">
+                    <label for="hcOilTempC">Temperatura aceite (C) - nota</label>
+                    <input id="hcOilTempC" type="number" step="any" value="50" />
+                    <span class="hint">Para trazabilidad; viscosidad no recalculada aqui</span>
+                  </div>
+                </div>
+              </div>
+              <div class="lab-field lab-field--wide">
+                <label for="hcMode">¿Qué quieres calcular?</label>
+                <select id="hcMode">
+                  <option value="design" selected>Diseñar nueva maquina</option>
+                  <option value="diagnostic">Diagnosticar maquina existente</option>
+                </select>
+                <span class="hint">Diseno o flujo inverso</span>
+                <p class="lab-field-help">Diseno: carga objetivo y dimensionado. Diagnostico: presion + diametro real para obtener fuerza/tonelaje disponible.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcPressureBar">Presion de trabajo (bar)</label>
+                <input id="hcPressureBar" type="number" min="1" step="any" value="180" />
+                <span class="hint">Presion hidraulica efectiva</span>
+                <p class="lab-field-help">Usada para calcular fuerza real del cilindro y para el chequeo estructural del tubo.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcBoreMm">Diametro piston (mm)</label>
+                <select id="hcBoreMm">
+                  <option value="32">32</option>
+                  <option value="40">40</option>
+                  <option value="50">50</option>
+                  <option value="63" selected>63</option>
+                  <option value="80">80</option>
+                  <option value="100">100</option>
+                  <option value="125">125</option>
+                  <option value="160">160</option>
+                </select>
+                <span class="hint">Define area de empuje</span>
+                <p class="lab-field-help">A mayor diametro, mayor fuerza de avance para la misma presion.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcRodMm">Diametro vastago (mm)</label>
+                <select id="hcRodMm"></select>
+                <span class="hint">Afecta traccion y pandeo</span>
+                <p class="lab-field-help">Un vastago mayor mejora estabilidad al pandeo y reduce riesgo de flexion.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcStrokeMm">Carrera (mm)</label>
+                <input id="hcStrokeMm" type="number" min="20" step="any" value="800" />
+                <span class="hint">Longitud util de desplazamiento</span>
+                <p class="lab-field-help">Carreras largas aumentan la carga critica del chequeo Euler.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcLoadKg">Carga de trabajo (kg)</label>
+                <input id="hcLoadKg" type="number" min="1" step="any" value="1500" />
+                <span class="hint">Carga mecanica externa</span>
+                <p class="lab-field-help">Se convierte a N para comparar con fuerza disponible y factor de seguridad.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcTargetSpeedMs">Velocidad objetivo (m/s)</label>
+                <input id="hcTargetSpeedMs" type="number" min="0.01" step="any" value="0.12" />
+                <span class="hint">Define caudal requerido</span>
+                <p class="lab-field-help">Con area de piston permite dimensionar el caudal que debe entregar la bomba.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcPumpFlowLmin">Caudal disponible bomba (L/min)</label>
+                <input id="hcPumpFlowLmin" type="number" min="0.1" step="any" value="35" />
+                <span class="hint">Para estimar velocidad real</span>
+                <p class="lab-field-help">Permite calcular la velocidad real del cilindro segun el flujo disponible.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcPortDiaMm">Diametro interno de puertos (mm)</label>
+                <input id="hcPortDiaMm" type="number" min="4" step="any" value="12" />
+                <span class="hint">Control de velocidad del aceite</span>
+                <p class="lab-field-help">Si la velocidad en puertos es alta, aumenta calentamiento y perdidas.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcWallMm">Espesor real del tubo (mm)</label>
+                <input id="hcWallMm" type="number" min="1" step="any" value="6" />
+                <span class="hint">Chequeo estructural del cuerpo</span>
+                <p class="lab-field-help">Se compara con espesor minimo calculado y con serie comercial estandar (3, 4, 5, 6, 8, 10, 12 mm, etc.) para evitar valores poco fabricables.</p>
+              </div>
+              <div class="lab-field">
+                <label for="hcSealMaterial">Material kit de juntas</label>
+                <select id="hcSealMaterial">
+                  <option value="NBR" selected>NBR (uso general)</option>
+                  <option value="PU">PU (alta abrasion)</option>
+                  <option value="FKM">FKM / Viton (alta temperatura)</option>
+                </select>
+                <span class="hint">Define nomenclatura del kit</span>
+                <p class="lab-field-help">La referencia de kit cambia segun material elastomerico seleccionado para compatibilidad con fluido y temperatura.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="lab-calc-layout__out">
+            <details class="lab-fluid-formulas" id="hcFormulasBlock">
+              <summary>Memoria de calculo, formulas y supuestos</summary>
+              <div id="hcFormulaBody" class="lab-fluid-formulas__body"></div>
+            </details>
+            <div id="hcResults" class="lab-results"></div>
+            <div id="hcAdvisor" class="lab-alerts"></div>
+            <p id="hcSealInfo" class="lab-small-print"></p>
+            <p id="hcVerdict" class="lab-verdict lab-verdict--ok">SISTEMA APTO</p>
+            <div id="labFluidPdfMountHc" class="premium-pdf-mount"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="js/ui/hydraulicCylinderPage.js?v=20260424a"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
+  </body>
+</html>

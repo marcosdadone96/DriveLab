@@ -12,11 +12,15 @@
   </head>
   <body class="lab-body">
     <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html">Laboratorio</a>
-        <a href="transmission-canvas.html">Lienzo técnico Pro</a>
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
     <main class="lab-main">
@@ -44,7 +48,7 @@
                 <input id="cpPower" type="number" min="0" step="any" value="7.5" />
               </div>
               <div class="lab-field">
-                <label for="cpRpm">Velocidad (min⁻¹)</label>
+                <label for="cpRpm">Velocidad (rpm)</label>
                 <input id="cpRpm" type="number" min="1" step="any" value="1455" />
               </div>
               <div class="lab-field">
@@ -60,6 +64,58 @@
                 <select id="cpSeries"></select>
               </div>
             </div>
+            <details class="lab-results-details">
+              <summary>Tabla recomendada de Kₐ (factor de aplicación)</summary>
+              <div class="lab-results">
+                <div class="lab-metric lab-metric--wide">
+                  <table class="lab-catalog-table">
+                    <thead>
+                      <tr>
+                        <th>Tipo de carga</th>
+                        <th>Condición de arranque</th>
+                        <th>Kₐ recomendado</th>
+                        <th>Aplicar</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>Uniforme (ventilador, bomba centrífuga)</td>
+                        <td>Suave (variador / rampa)</td>
+                        <td>1.25</td>
+                        <td><button type="button" class="cp-ka-btn" data-ka="1.25">Usar 1.25</button></td>
+                      </tr>
+                      <tr>
+                        <td>Uniforme a moderada (cinta ligera, mezclador suave)</td>
+                        <td>Directo estándar</td>
+                        <td>1.50</td>
+                        <td><button type="button" class="cp-ka-btn" data-ka="1.50">Usar 1.50</button></td>
+                      </tr>
+                      <tr>
+                        <td>Moderada (transportador con carga variable)</td>
+                        <td>Arranques frecuentes</td>
+                        <td>1.75</td>
+                        <td><button type="button" class="cp-ka-btn" data-ka="1.75">Usar 1.75</button></td>
+                      </tr>
+                      <tr>
+                        <td>Choque medio (trituración ligera, agitador denso)</td>
+                        <td>Directo o inversión ocasional</td>
+                        <td>2.00</td>
+                        <td><button type="button" class="cp-ka-btn" data-ka="2.00">Usar 2.00</button></td>
+                      </tr>
+                      <tr>
+                        <td>Choque alto (machaqueo, picos severos)</td>
+                        <td>Arranque duro / inversión frecuente</td>
+                        <td>2.50 – 3.00</td>
+                        <td><button type="button" class="cp-ka-btn" data-ka="2.75">Usar 2.75</button></td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p class="lab-small-print">
+                    Valores orientativos para preselección. Si hay duda, use el valor más conservador y confirme con el catálogo del fabricante.
+                  </p>
+                </div>
+              </div>
+            </details>
           </div>
           <div class="lab-calc-layout__out">
             <div id="cpOut"></div>
@@ -69,5 +125,6 @@
       </section>
     </main>
     <script type="module" src="js/ui/couplingsPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
   </body>
 </html>

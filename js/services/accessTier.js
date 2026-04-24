@@ -2,13 +2,13 @@
  * Plan de acceso — gratuito vs Pro (sin backend; listo para enlazar a pagos más adelante).
  *
  * Estrategia (qué módulo es la puerta gratis): `FEATURES.whichCalculatorIsFree` o `?freeTool=flat|inclined`.
- * Pro efectivo: `FEATURES.devSimulatePremium`, `?pro=1` (sesión), o localStorage tras "Activar Pro (demo)".
+ * Pro efectivo: `FEATURES.devSimulatePremium`, `?pro=1`, o acceso Pro limitado (free trial por usos).
  */
 
 import { FEATURES } from '../config/features.js';
-
-const LS_TIER = 'mdr-access-tier';
-const SS_PRO_DEMO = 'mdr-session-pro';
+const LS_FREE_PRO_USES = 'mdr-free-pro-uses';
+const SS_FREE_PRO_PAGE_MARK = 'mdr-free-pro-page-mark';
+const MAX_FREE_PRO_USES = 5;
 
 /** @returns {'flat'|'inclined'} */
 export function getFreemiumStrategy() {
@@ -26,51 +26,27 @@ export function getFreemiumStrategy() {
 export function getEffectiveTier() {
   if (FEATURES.devSimulatePremium) return 'premium';
   try {
-    if (sessionStorage.getItem(SS_PRO_DEMO) === '1') return 'premium';
-    if (localStorage.getItem(LS_TIER) === 'premium') return 'premium';
-  } catch (_) {
-    /* private mode */
-  }
-  try {
     const q = new URLSearchParams(window.location.search);
     if (q.get('pro') === '1') {
-      /** Misma persistencia que «Activar Pro (demo)»: si solo se usa ?pro=1, antes quedaba en sessionStorage y se perdía al cerrar la pestaña. */
-      try {
-        localStorage.setItem(LS_TIER, 'premium');
-      } catch (_) {
-        /* ignore */
-      }
-      try {
-        sessionStorage.setItem(SS_PRO_DEMO, '1');
-      } catch (_) {
-        /* p. ej. modo privado: Pro sigue activo en esta carga vía URL */
-      }
       return 'premium';
     }
   } catch (_) {
     /* ignore */
   }
+  if (getFreeProRemainingUses() > 0) return 'premium';
   return 'free';
 }
 
 /** @param {'flat'|'inclined'|'pump'|'screw'} tool */
 export function isToolUnlocked(tool) {
   if (getEffectiveTier() === 'premium') return true;
-  if (tool === 'pump' || tool === 'screw') return true;
+  // Cinta inclinada queda abierta como el resto de máquinas generalistas.
+  if (tool === 'inclined' || tool === 'pump' || tool === 'screw') return true;
   return getFreemiumStrategy() === tool;
 }
 
 export function setPremiumPersistent() {
-  try {
-    localStorage.setItem(LS_TIER, 'premium');
-  } catch (_) {
-    /* ignore */
-  }
-  try {
-    sessionStorage.setItem(SS_PRO_DEMO, '1');
-  } catch (_) {
-    /* ignore */
-  }
+  activateProDemoInBrowser();
 }
 
 /**
@@ -78,7 +54,6 @@ export function setPremiumPersistent() {
  * Así funciona aunque localStorage falle (p. ej. algunos entornos file:// o modo estricto).
  */
 export function activateProDemoInBrowser() {
-  setPremiumPersistent();
   try {
     const u = new URL(window.location.href);
     u.searchParams.set('pro', '1');
@@ -91,13 +66,71 @@ export function activateProDemoInBrowser() {
 
 export function clearPremiumPersistent() {
   try {
-    localStorage.removeItem(LS_TIER);
-    sessionStorage.removeItem(SS_PRO_DEMO);
+    const u = new URL(window.location.href);
+    u.searchParams.delete('pro');
+    window.location.replace(u.toString());
   } catch (_) {
-    /* ignore */
+    const href = window.location.href.replace(/\?.*$/, '');
+    window.location.replace(href);
   }
 }
 
 export function isPremiumEffective() {
   return getEffectiveTier() === 'premium';
+}
+
+function getUsageCounterRaw() {
+  try {
+    const n = Number(localStorage.getItem(LS_FREE_PRO_USES) || 0);
+    return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0;
+  } catch (_) {
+    return 0;
+  }
+}
+
+function setUsageCounterRaw(v) {
+  try {
+    localStorage.setItem(LS_FREE_PRO_USES, String(Math.max(0, Math.floor(v))));
+  } catch (_) {
+    /* ignore */
+  }
+}
+
+/**
+ * Marca un uso Pro gratuito (máximo 1 por página/sesión del navegador).
+ * Llame a esto al montar una máquina para que el cupo avance.
+ */
+export function consumeFreeProUseIfNeeded() {
+  if (FEATURES.devSimulatePremium) return;
+  try {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get('pro') === '1') return;
+  } catch (_) {
+    /* ignore */
+  }
+
+  const key = `${window.location.pathname}|${window.location.search}`;
+  try {
+    if (sessionStorage.getItem(SS_FREE_PRO_PAGE_MARK) === key) return;
+    sessionStorage.setItem(SS_FREE_PRO_PAGE_MARK, key);
+  } catch (_) {
+    /* ignore */
+  }
+
+  const used = getUsageCounterRaw();
+  if (used >= MAX_FREE_PRO_USES) return;
+  setUsageCounterRaw(used + 1);
+}
+
+export function getFreeProUsageCount() {
+  return getUsageCounterRaw();
+}
+
+export function getFreeProRemainingUses() {
+  const left = MAX_FREE_PRO_USES - getUsageCounterRaw();
+  return left > 0 ? left : 0;
+}
+
+export function getFreeProUsageLimit() {
+  return MAX_FREE_PRO_USES;
 }

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Correas — Laboratorio · DriveLab</title>
+    <title>Correas — Laboratorio · MechAssist</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/lab.css" />
       <!-- Google tag (gtag.js) -->
@@ -12,11 +12,15 @@
   </head>
   <body class="lab-body">
     <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html">Laboratorio</a>
-        <a href="transmission-canvas.html">Lienzo técnico Pro</a>
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
     <main class="lab-main">
@@ -215,7 +219,14 @@
             </div>
           </div>
           <div class="lab-calc-layout__out">
-            <div class="lab-units-bar" role="group" aria-label="Unidades de los resultados">
+            <div
+              class="lab-units-bar"
+              role="group"
+              aria-label="Unidades de los resultados"
+              data-lab-convert-categories="length rotation linear"
+              data-lab-convert-title="Conversor (correas)"
+              data-lab-convert-tip="Diametros primitivos y desarrollos en mm; RPM de poleas; velocidad lineal de la correa."
+            >
               <span class="lab-units-bar__title">Cómo ver los resultados</span>
               <label class="lab-units-bar__field">
                 <span class="lab-units-bar__lbl">Distancias</span>
@@ -243,6 +254,10 @@
             </div>
             <div id="bHero"></div>
             <div id="bSpeedVerdict" class="lab-belt-speed-verdict-wrap" aria-live="polite"></div>
+            <details class="lab-results-details">
+              <summary>Resultados por elemento</summary>
+              <div id="bElementResults" class="lab-element-columns"></div>
+            </details>
             <div class="lab-results-wrap" id="bResultsWrap">
               <div class="lab-results-computing" aria-hidden="true">
                 <svg class="lab-gear-spin" viewBox="0 0 64 64" aria-hidden="true">
@@ -253,14 +268,19 @@
                 </svg>
                 <span class="lab-results-computing__label">Recalculando</span>
               </div>
-              <div class="lab-results" id="bResults"></div>
+              <details class="lab-results-details">
+                <summary>Resultado completo</summary>
+                <div class="lab-results" id="bResults"></div>
+              </details>
             </div>
             <div id="bAlerts" class="lab-alerts"></div>
             <div id="bSubstitution"></div>
+            <div id="labPurchaseSuggestions" hidden></div>
           </div>
         </div>
       </section>
     </main>
     <script type="module" src="js/ui/calcBeltsPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
   </body>
 </html>

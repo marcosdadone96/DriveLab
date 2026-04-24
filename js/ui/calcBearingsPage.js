@@ -13,6 +13,7 @@ import { debounce, labAlert, metricHtml, renderResultHero, runCalcWithIndustrial
 import { commerceIdForBearingC } from '../data/commerceCatalog.js';
 import { emitEngineeringSnapshot } from '../services/engineeringSnapshot.js';
 import { bootSmartDashboardIfEnabled } from './smartDashboardBoot.js';
+import { setLabPurchaseFromShoppingLines } from './labPurchaseSuggestions.js';
 
 mountTierStatusBar();
 bootSmartDashboardIfEnabled('Rodamientos · laboratorio');
@@ -127,6 +128,9 @@ function refreshCore() {
     const d = parseFloat(String(dutyEl.value).replace(',', '.'));
     if (Number.isFinite(d) && d >= 0) dutyHours = d;
   }
+  const shoppingLines = [
+    { commerceId: commerceIdForBearingC(r.dynamicLoad_N), qty: 1, note: `C = ${r.dynamicLoad_N.toFixed(0)} N` },
+  ];
   emitEngineeringSnapshot({
     page: 'calc-bearings',
     moduleLabel: 'Rodamientos L₁₀',
@@ -137,9 +141,10 @@ function refreshCore() {
       },
       machineDuty: { dutyHoursPerDay: dutyHours },
     },
-    shoppingLines: [{ commerceId: commerceIdForBearingC(r.dynamicLoad_N), qty: 1, note: `C = ${r.dynamicLoad_N.toFixed(0)} N` }],
+    shoppingLines,
     metrics: { energyEfficiencyPct: null, materialUtilizationPct: null },
   });
+  setLabPurchaseFromShoppingLines(document.getElementById('labPurchaseSuggestions'), shoppingLines);
 }
 
 const wrap = document.getElementById('brgResultsWrap');

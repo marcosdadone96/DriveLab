@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Laboratorio de transmisión — DriveLab</title>
+    <title>Laboratorio de transmisión — MechAssist</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700&display=swap" rel="stylesheet" />
@@ -13,12 +13,16 @@
     <script src="js/gtag.js"></script>
   </head>
   <body class="lab-body">
-    <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html" aria-current="page">Laboratorio</a>
-        <a href="transmission-canvas.html">Lienzo técnico Pro</a>
+    <header class="lab-header" role="banner">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-pill" aria-current="page">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
     <main class="lab-main">
@@ -64,6 +68,21 @@
             <h3>Chavetas DIN 6885</h3>
             <p>Autocompletar b×h por Ø eje; aplastamiento con L y material (C45/inox).</p>
           </a>
+          <a class="lab-card" href="calc-iso-fit.html">
+            <span class="lab-badge">Gratis</span>
+            <h3>Ajustes ISO 286</h3>
+            <p>Ø nominal, letra e IT agujero/eje — límites, juego o apriete y esquema de zonas (extracto 1–500 mm).</p>
+          </a>
+          <a class="lab-card" href="calc-compression-spring.html">
+            <span class="lab-badge">Gratis</span>
+            <h3>Muelle helicoidal compresión · DIN 2089</h3>
+            <p>k, Fₙ, τ con factor de Wahl; esquema SVG dinámico, gráfico F–s y simulación Pro por deslizador.</p>
+          </a>
+          <a class="lab-card" href="calc-seeger.html">
+            <span class="lab-badge">Gratis</span>
+            <h3>Anillos Seeger · DIN 471 / 472</h3>
+            <p>Ø eje o agujero → designación, norma y cotas de ranura; diagrama de montaje.</p>
+          </a>
           <a class="lab-card" href="calc-bolts-iso898.html">
             <span class="lab-badge">Gratis</span>
             <h3>Tornillería ISO 898-1</h3>
@@ -87,5 +106,6 @@
         </div>
       </section>
     </main>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
   </body>
 </html>

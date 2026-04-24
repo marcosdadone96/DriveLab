@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Anillos Seeger DIN 471/472 &mdash; Laboratorio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/lab.css" />
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-43E5C8TB38"></script>
+    <script src="js/gtag.js"></script>
+  </head>
+  <body class="lab-body">
+    <header class="lab-header">
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegaci�n laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo t�cnico multieje (Pro)">Lienzo Pro</a>
+        </div>
+      </nav>
+    </header>
+    <main class="lab-main">
+      <section class="lab-panel lab-panel--accent">
+        <h2>Anillos Seeger (circlips) &mdash; DIN 471 y DIN 472</h2>
+        <p class="lab-lead">
+          Indique el <strong>di&aacute;metro nominal del eje</strong> (anillo exterior) o del <strong>agujero</strong> (anillo interior). La herramienta muestra la
+          <strong>codificaci&oacute;n de pedido</strong> (tipo <em>Anillo Seeger DIN 471 - 20</em> o <em>- INOX</em>), la norma y las <strong>cotas de ranura</strong> seg&uacute;n tablas de referencia (extracto 3&ndash;100 mm). Verifique siempre con el
+          pliego y el fabricante antes de mecanizar.
+        </p>
+        <div class="lab-calc-layout lab-calc-layout--with-diag">
+          <div class="lab-calc-layout__diagram">
+            <div class="lab-diagram-wrap lab-diagram-wrap--elevated">
+              <p class="lab-diagram-wrap__title">Esquema de ranura y anillo (actualizado con su talla)</p>
+              <svg id="sgDiagram" xmlns="http://www.w3.org/2000/svg" aria-label="Diagrama anillo Seeger"></svg>
+              <p class="lab-diagram-caption">
+                <strong>DIN 471</strong>: vista en secci&oacute;n del eje con ranura y anillo exterior.
+                <strong>DIN 472</strong>: vista axial del alojamiento con ranura y anillo interior. Esquema did&aacute;ctico.
+              </p>
+            </div>
+          </div>
+          <div class="lab-calc-layout__inputs">
+            <div class="lab-grid lab-grid--2">
+              <div class="lab-field">
+                <label for="sgKind" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Tipo">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <circle cx="12" cy="12" r="8" />
+                      <circle cx="12" cy="12" r="3" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Aplicaci&oacute;n</span>
+                </label>
+                <select id="sgKind">
+                  <option value="shaft">Anillo en eje (exterior) &mdash; DIN 471</option>
+                  <option value="bore">Anillo en agujero (interior) &mdash; DIN 472</option>
+                </select>
+                <p class="lab-field-help">El di&aacute;metro es el nominal de cat&aacute;logo <strong>d1</strong> asociado a la talla del anillo.</p>
+              </div>
+              <div class="lab-field">
+                <label for="sgD" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Di&aacute;metro">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M4 12h16M12 4v16" />
+                      <circle cx="12" cy="12" r="6" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Di&aacute;metro d1 (mm)</span>
+                </label>
+                <input id="sgD" type="number" min="3" step="0.1" value="25" />
+                <p class="lab-field-help">Eje: di&aacute;metro sobre el que apoya el conjunto antes de la ranura. Agujero: di&aacute;metro nominal del alojamiento.</p>
+              </div>
+              <div class="lab-field lab-field--wide">
+                <label for="sgMaterial" class="lab-field__label-row">
+                  <span class="lab-field-ico" title="Material">
+                    <svg class="lab-field-ico--stroke" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M12 3v18M6 8l6-5 6 5" />
+                      <path d="M8 14h8" />
+                    </svg>
+                  </span>
+                  <span class="lab-field__label-text">Material (pedido)</span>
+                </label>
+                <select id="sgMaterial">
+                  <option value="carbon">Acero al carbono (est&aacute;ndar)</option>
+                  <option value="inox">Acero inoxidable (a&ntilde;ade &quot; - INOX &quot; al c&oacute;digo)</option>
+                </select>
+                <p class="lab-field-help">La codificaci&oacute;n de almac&eacute;n suele a&ntilde;adir <strong>INOX</strong> para acero inoxidable; confirme con su proveedor.</p>
+              </div>
+            </div>
+          </div>
+          <div class="lab-calc-layout__out">
+            <div id="sgHero"></div>
+            <div class="lab-results-wrap" id="sgResultsWrap">
+              <div class="lab-results-computing" aria-hidden="true">
+                <svg class="lab-gear-spin" viewBox="0 0 64 64" aria-hidden="true">
+                  <path
+                    fill="#0f766e"
+                    d="M32 8l2.2 4.4 4.9-1.3 1.3 4.9 4.4 2.2-2.2 4.4 1.3 4.9-4.9 1.3-2.2 4.4-4.4-2.2-4.9 1.3-1.3-4.9-4.4-2.2 2.2-4.4-1.3-4.9 4.9-1.3 4.4-2.2zm0 10a14 14 0 100 28 14 14 0 000-28z"
+                  />
+                </svg>
+                <span class="lab-results-computing__label">Recalculando</span>
+              </div>
+              <div class="lab-results" id="sgResults"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="js/ui/calcSeegerPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
+  </body>
+</html>

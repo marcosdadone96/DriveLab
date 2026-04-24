@@ -1,7 +1,17 @@
 /**
- * Diagrama: columna en sección con husillo vertical, tuerca de bronce (carga) y tuerca de seguridad,
- * y motor eléctrico (arriba o abajo).
+ * Diagrama: columna en seccion con husillo vertical, tuerca de bronce (carga) y tuerca de seguridad,
+ * y motor electrico (arriba o abajo).
  */
+
+import { getCurrentLang } from '../config/i18nLabels.js';
+
+function esc(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
 
 /**
  * @param {SVGSVGElement | null} svg
@@ -13,18 +23,35 @@
  */
 export function renderCarLiftScrewDiagram(svg, p) {
   if (!svg) return;
+  const en = (p.lang ?? getCurrentLang()) === 'en';
+  const T = {
+    title: en ? 'Two-post lift - front view' : 'Elevador 2 columnas - vista frontal',
+    sub: en
+      ? (d, pitchLabel, H) => `H ${H.toFixed(2)} m - Screw OD ${d.toFixed(0)} mm - lead ${pitchLabel}`
+      : (d, pitchLabel, H) => `H ${H.toFixed(2)} m · Husillo Ø${d.toFixed(0)} mm · paso ${pitchLabel}`,
+    sync: en ? 'Cross-column sync' : 'Sincronismo entre columnas',
+    loadNut: en ? 'Load nut' : 'Tuerca de carga',
+    safety: en ? 'Safety' : 'Seguridad',
+    liftMotion: en ? 'Lift motion' : 'Movimiento elevacion',
+    usefulH: en ? 'Useful height H' : 'Altura util H',
+    motor: en ? 'Motor' : 'Motor',
+    colNote: en
+      ? 'Left column: screw with main + safety nuts'
+      : 'Columna izquierda: husillo con tuerca principal + seguridad',
+  };
+
   const H = Math.max(1.2, Number(p.liftHeight_m) || 1.8);
   const pitch = Math.max(1, Number(p.pitch_mm) || 8);
   const d = Math.max(12, Number(p.screwDiameter_mm) || 45);
   const motorPos = p.motorPosition === 'base' ? 'base' : 'top';
 
-  const vbW = 420;
+  const vbW = 460;
   const vbH = 360;
   svg.setAttribute('viewBox', `0 0 ${vbW} ${vbH}`);
 
   const floorY = 308;
-  const postLeftX = 82;
-  const postRightX = 306;
+  const postLeftX = 98;
+  const postRightX = 322;
   const postW = 28;
   const postTop = 58;
   const postH = 238;
@@ -60,11 +87,12 @@ export function renderCarLiftScrewDiagram(svg, p) {
       </pattern>
     </defs>
     <rect width="100%" height="100%" fill="url(#bgLift)"/>
-    <text x="14" y="22" font-size="11" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">
-      Elevador 2 columnas · vista frontal simplificada
+    <rect x="12" y="10" width="286" height="30" rx="8" fill="#ffffff" stroke="#dbe3ed"/>
+    <text x="22" y="23" font-size="10.5" font-weight="800" fill="#0f172a" font-family="Inter,system-ui,sans-serif">
+      ${esc(T.title)}
     </text>
-    <text x="14" y="35" font-size="8" fill="#64748b" font-family="Inter,system-ui,sans-serif">
-      H ≈ ${H.toFixed(2)} m · Husillo Ø${d.toFixed(0)} mm · paso ${pitchLabel}
+    <text x="22" y="33" font-size="7.5" fill="#64748b" font-family="Inter,system-ui,sans-serif">
+      ${esc(T.sub(d, pitchLabel, H))}
     </text>
 
     <!-- Suelo -->
@@ -93,7 +121,7 @@ export function renderCarLiftScrewDiagram(svg, p) {
     <line x1="${postLeftX + postW / 2}" y1="${postTop - 8}" x2="${postRightX + postW / 2}" y2="${postTop - 8}" stroke="#64748b" stroke-width="4.2" stroke-linecap="round"/>
     <circle cx="${postLeftX + postW / 2}" cy="${postTop - 8}" r="5.5" fill="#475569"/>
     <circle cx="${postRightX + postW / 2}" cy="${postTop - 8}" r="5.5" fill="#475569"/>
-    <text x="${(postLeftX + postRightX) / 2 + 14}" y="${postTop - 13}" font-size="7.2" fill="#475569" font-family="Inter,system-ui,sans-serif">Sincronismo entre columnas</text>
+    <text x="${(postLeftX + postRightX) / 2 + 14}" y="${postTop - 13}" font-size="7.2" fill="#475569" font-family="Inter,system-ui,sans-serif">${esc(T.sync)}</text>
 
     <!-- Husillo en columna izquierda -->
     <line x1="${screwX}" y1="${screwTop}" x2="${screwX}" y2="${screwBot}" stroke="#0f172a" stroke-width="${screwR * 2}" stroke-linecap="round"/>
@@ -101,35 +129,35 @@ export function renderCarLiftScrewDiagram(svg, p) {
 
     <!-- Tuerca principal -->
     <rect x="${screwX - 28}" y="${nutY}" width="56" height="${nutH}" rx="6" fill="#fef3c7" stroke="#b45309" stroke-width="2"/>
-    <text x="${screwX + 40}" y="${nutY + 11}" font-size="7.4" font-weight="800" fill="#78350f" font-family="Inter,system-ui,sans-serif">Tuerca de carga</text>
+    <text x="${screwX + 40}" y="${nutY + 11}" font-size="7.4" font-weight="800" fill="#78350f" font-family="Inter,system-ui,sans-serif">${esc(T.loadNut)}</text>
 
     <!-- Tuerca de seguridad -->
     <rect x="${screwX - 24}" y="${safeNutY}" width="48" height="20" rx="6" fill="#e0f2fe" stroke="#0369a1" stroke-width="2"/>
-    <text x="${screwX + 40}" y="${safeNutY + 12}" font-size="7.2" font-weight="800" fill="#0c4a6e" font-family="Inter,system-ui,sans-serif">Seguridad</text>
+    <text x="${screwX + 40}" y="${safeNutY + 12}" font-size="7.2" font-weight="800" fill="#0c4a6e" font-family="Inter,system-ui,sans-serif">${esc(T.safety)}</text>
 
     <!-- Flecha elevación -->
     <line x1="${postRightX + postW + 18}" y1="${nutY + 30}" x2="${postRightX + postW + 18}" y2="${postTop + 78}" stroke="#0f766e" stroke-width="2.3" marker-end="url(#liftArrow)"/>
-    <text x="${postRightX + postW + 26}" y="${postTop + 90}" font-size="7.2" fill="#0f766e" font-family="Inter,system-ui,sans-serif">Movimiento elevación</text>
+    <text x="${postRightX + postW + 26}" y="${postTop + 90}" font-size="7.2" fill="#0f766e" font-family="Inter,system-ui,sans-serif">${esc(T.liftMotion)}</text>
     <line x1="${postLeftX - 16}" y1="${postTop + postH}" x2="${postLeftX - 16}" y2="${postTop}" stroke="#94a3b8" stroke-width="1.3"/>
     <line x1="${postLeftX - 20}" y1="${postTop + postH}" x2="${postLeftX - 12}" y2="${postTop + postH}" stroke="#94a3b8" stroke-width="1.3"/>
     <line x1="${postLeftX - 20}" y1="${postTop}" x2="${postLeftX - 12}" y2="${postTop}" stroke="#94a3b8" stroke-width="1.3"/>
-    <text x="${postLeftX - 31}" y="${postTop + postH / 2}" font-size="7" fill="#64748b" transform="rotate(-90 ${postLeftX - 31} ${postTop + postH / 2})" font-family="Inter,system-ui,sans-serif">Altura útil H</text>
+    <text x="${postLeftX - 31}" y="${postTop + postH / 2}" font-size="7" fill="#64748b" transform="rotate(-90 ${postLeftX - 31} ${postTop + postH / 2})" font-family="Inter,system-ui,sans-serif">${esc(T.usefulH)}</text>
 
     <!-- Motor -->
     ${
       motorPos === 'top'
         ? `<rect x="${screwX - 42}" y="${postTop - 24}" width="84" height="18" rx="6" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
            <text x="${screwX}" y="${postTop - 11}" text-anchor="middle" font-size="8" font-weight="800" fill="#334155"
-            font-family="Inter,system-ui,sans-serif">Motor</text>
+            font-family="Inter,system-ui,sans-serif">${esc(T.motor)}</text>
            <line x1="${screwX}" y1="${postTop - 6}" x2="${screwX}" y2="${screwTop}" stroke="#475569" stroke-width="2"/>`
         : `<rect x="${screwX - 42}" y="${postTop + postH + 6}" width="84" height="18" rx="6" fill="#e2e8f0" stroke="#475569" stroke-width="2"/>
            <text x="${screwX}" y="${postTop + postH + 19}" text-anchor="middle" font-size="8" font-weight="800" fill="#334155"
-            font-family="Inter,system-ui,sans-serif">Motor</text>
+            font-family="Inter,system-ui,sans-serif">${esc(T.motor)}</text>
            <line x1="${screwX}" y1="${screwBot}" x2="${screwX}" y2="${postTop + postH + 6}" stroke="#475569" stroke-width="2"/>`
     }
 
     <text x="${postLeftX}" y="${postTop + postH + 18}" font-size="7.2" fill="#64748b" font-family="Inter,system-ui,sans-serif">
-      Columna izquierda: husillo con tuerca principal + seguridad
+      ${esc(T.colNote)}
     </text>
   `;
 }

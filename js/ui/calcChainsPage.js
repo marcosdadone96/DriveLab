@@ -14,6 +14,7 @@ import { injectLabUnitConverterIfNeeded, mountLabUnitConverter } from '../lab/la
 import { debounce, labAlert, labHelpTooltipMarkup, metricHtml, renderResultHero, runCalcWithIndustrialFeedback } from './labCalcUx.js';
 import { commerceIdForChainRef } from '../data/commerceCatalog.js';
 import { emitEngineeringSnapshot } from '../services/engineeringSnapshot.js';
+import { setLabPurchaseFromShoppingLines } from './labPurchaseSuggestions.js';
 import { bindCommerceFilteredSelect } from './commerceSelectBind.js';
 import { bootSmartDashboardIfEnabled } from './smartDashboardBoot.js';
 
@@ -34,6 +35,13 @@ function esc(s) {
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;');
+}
+
+function elementCardHtml(title, rows) {
+  const body = rows
+    .map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`)
+    .join('');
+  return `<article class="lab-element-card"><h4 class="lab-element-card__title">${esc(title)}</h4><dl class="lab-element-card__kv">${body}</dl></article>`;
 }
 
 bindCommerceFilteredSelect(
@@ -90,6 +98,27 @@ function refreshCore() {
   }
 
   const box = document.getElementById('cResults');
+  const elementBox = document.getElementById('cElementResults');
+  if (elementBox) {
+    elementBox.innerHTML = [
+      elementCardHtml('Piñón 1 · Motor', [
+        ['Dientes (z1)', String(r.z1)],
+        ['Diam. primitivo (D1)', formatLength(r.pitchDiameter1_mm, u.length)],
+        ['Velocidad (n1)', formatRotation(r.n1_rpm, u.rotation)],
+      ]),
+      elementCardHtml('Piñón 2 · Conducido', [
+        ['Dientes (z2)', String(r.z2)],
+        ['Diam. primitivo (D2)', formatLength(r.pitchDiameter2_mm, u.length)],
+        ['Velocidad (n2)', r.n2_rpm != null ? formatRotation(r.n2_rpm, u.rotation) : '—'],
+      ]),
+      elementCardHtml('Cadena · Tramo', [
+        ['Paso (p)', formatLength(r.pitch_mm, u.length)],
+        ['Longitud (L)', `${r.chainLength_pitches.toFixed(2)} pasos`],
+        ['Velocidad lineal (v)', formatLinearSpeed(r.linearSpeed_m_s, u.linear)],
+      ]),
+    ].join('');
+  }
+
   if (box) {
     const refLine = r.chainRefLabel ? `${r.chainRefLabel}` : 'Paso manual';
     const cells = [
@@ -177,25 +206,29 @@ function refreshCore() {
     const D2 = r.pitchDiameter2_mm;
     const vDisp = formatLinearSpeed(r.linearSpeed_m_s, u.linear);
     sub.innerHTML = `
-      <div class="calc-substitution">
-        <h3 class="calc-substitution__title">Sustitución — cinemática en primitivo</h3>
-        <p class="calc-substitution__step">
-          Diámetros primitivos: <code>D = p / sin(π/z)</code> →
-          <code>D₁ = ${D1.toFixed(2)} mm</code> (piñón 1), <code>D₂ = ${D2.toFixed(2)} mm</code> (piñón 2)
-        </p>
-        <p class="calc-substitution__step">
-          Giro · piñón 2 (RPM): <code>n₂ = n₁ · D₁/D₂ = ${r.n1_rpm.toFixed(2)} × ${D1.toFixed(2)} / ${D2.toFixed(2)} = ${r.n2_rpm != null ? r.n2_rpm.toFixed(2) : '—'} RPM</code>
-        </p>
-        <p class="calc-substitution__step">
-          Mismo resultado en sus unidades: <strong>${formatRotation(r.n2_rpm, u.rotation)}</strong>
-        </p>
-        <p class="calc-substitution__step">
-          Velocidad media de cadena: <strong>${vDisp}</strong>
-        </p>
-        <p class="calc-substitution__step">
-          Articulaciones por segundo · piñón 1: <strong>${r.articulationFrequency_Hz != null ? `${r.articulationFrequency_Hz.toFixed(2)} Hz` : '—'}</strong>
-        </p>
-      </div>`;
+      <details class="calc-substitution">
+        <summary class="calc-substitution__summary">
+          <span class="calc-substitution__title">Sustitución — cinemática en primitivo</span>
+        </summary>
+        <div class="calc-substitution__inner">
+          <p class="calc-substitution__step">
+            Diámetros primitivos: <code>D = p / sin(π/z)</code> →
+            <code>D₁ = ${D1.toFixed(2)} mm</code> (piñón 1), <code>D₂ = ${D2.toFixed(2)} mm</code> (piñón 2)
+          </p>
+          <p class="calc-substitution__step">
+            Giro · piñón 2 (RPM): <code>n₂ = n₁ · D₁/D₂ = ${r.n1_rpm.toFixed(2)} × ${D1.toFixed(2)} / ${D2.toFixed(2)} = ${r.n2_rpm != null ? r.n2_rpm.toFixed(2) : '—'} RPM</code>
+          </p>
+          <p class="calc-substitution__step">
+            Mismo resultado en sus unidades: <strong>${formatRotation(r.n2_rpm, u.rotation)}</strong>
+          </p>
+          <p class="calc-substitution__step">
+            Velocidad media de cadena: <strong>${vDisp}</strong>
+          </p>
+          <p class="calc-substitution__step">
+            Articulaciones por segundo · piñón 1: <strong>${r.articulationFrequency_Hz != null ? `${r.articulationFrequency_Hz.toFixed(2)} Hz` : '—'}</strong>
+          </p>
+        </div>
+      </details>`;
   } else if (sub) {
     sub.innerHTML = '';
   }
@@ -222,19 +255,23 @@ function refreshCore() {
   renderChainDriveDiagram(document.getElementById('cDiagram'), p);
 
   const cref = !useManual && chainRefId ? chainRefId : 'iso-12b-1';
+  const shoppingLines = [
+    {
+      commerceId: commerceIdForChainRef(cref),
+      qty: 1,
+      note: useManual ? 'Paso manual · kit orientativo' : r.chainRefLabel || cref,
+    },
+  ];
   emitEngineeringSnapshot({
     page: 'calc-chains',
     moduleLabel: 'Cadenas',
     advisorContext: {},
-    shoppingLines: [
-      {
-        commerceId: commerceIdForChainRef(cref),
-        qty: 1,
-        note: useManual ? 'Paso manual · kit orientativo' : r.chainRefLabel || cref,
-      },
-    ],
+    shoppingLines,
     metrics: { energyEfficiencyPct: 97, materialUtilizationPct: null },
   });
+  setLabPurchaseFromShoppingLines(document.getElementById('labPurchaseSuggestions'), shoppingLines, [
+    { label: 'Piñon cadena a juego', searchQuery: 'piñon cadena rodillos acero' },
+  ]);
 }
 
 const wrap = document.getElementById('cResultsWrap');

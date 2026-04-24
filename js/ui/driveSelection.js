@@ -1,4 +1,4 @@
-﻿/**
+/**
  * UI: recomendaciones por marca y verificación de motorreductor del usuario.
  */
 
@@ -19,10 +19,12 @@ import {
   filterModelsByMounting,
   explainMountingFit,
   MOUNTING_GUIDE,
+  MOUNTING_GUIDE_EN,
 } from '../modules/mountingPreferences.js';
 import { FEATURES } from '../config/features.js';
 import { isPremiumEffective } from '../services/accessTier.js';
 import { shaftSizingFromDrive } from '../modules/shaftSizing.js';
+import { getCurrentLang } from '../config/locales.js';
 
 /**
  * @typedef {import('../modules/motorVerify.js').DriveRequirement} DriveRequirement
@@ -89,7 +91,9 @@ export function getBestCatalogPick(req) {
 
 function datasheetLink(m) {
   const href = escapeAttr(getModelDatasheetUrl(m));
-  return `<a class="reco-ficha" href="${href}" target="_blank" rel="noopener noreferrer">Ficha técnica / PDF <span aria-hidden="true">↗</span></a>`;
+  const en = getCurrentLang() === 'en';
+  const label = en ? 'Technical datasheet / PDF' : 'Ficha t\u00e9cnica / PDF';
+  return `<a class="reco-ficha" href="${href}" target="_blank" rel="noopener noreferrer">${label} <span aria-hidden="true">\u2197</span></a>`;
 }
 
 /**
@@ -98,6 +102,7 @@ function datasheetLink(m) {
  * @param {{ torqueLabel?: string; rpmLabel?: string; rpmShortLabel?: string; contextHtml?: string } | undefined} [copyOpts]
  */
 export function renderBrandRecommendationCards(req, copyOpts) {
+  const en = getCurrentLang() === 'en';
   const r = normalizeDriveRequirement(req);
   const mountPref = {
     mountingType: r.mountingType,
@@ -106,14 +111,17 @@ export function renderBrandRecommendationCards(req, copyOpts) {
     spaceConstraint: r.spaceConstraint,
   };
   const pick = getBestCatalogPick(r);
-  const torqueLabel = copyOpts?.torqueLabel ?? 'par en tambor';
-  const rpmLabel = copyOpts?.rpmLabel ?? 'rpm del tambor';
+  const torqueLabel = copyOpts?.torqueLabel ?? (en ? 'torque at drum' : 'par en tambor');
+  const rpmLabel = copyOpts?.rpmLabel ?? (en ? 'drum rpm' : 'rpm del tambor');
   const contextHtml =
     copyOpts?.contextHtml ??
-    `Puntos de partida según su <strong>potencia de eje</strong>, <strong>${torqueLabel}</strong> y <strong>${rpmLabel}</strong>.
-        Cada tarjeta enlaza al <strong>portal de documentación</strong> del fabricante (PDF / catálogos). Valide siempre con su proveedor.`;
+    (en
+      ? `Starting points from your <strong>shaft power</strong>, <strong>${torqueLabel}</strong>, and <strong>${rpmLabel}</strong>.
+        Each card links to the manufacturer\u2019s <strong>documentation portal</strong> (PDF / catalogs). Always confirm with your supplier.`
+      : `Puntos de partida seg\u00fan su <strong>potencia de eje</strong>, <strong>${torqueLabel}</strong> y <strong>${rpmLabel}</strong>.
+        Cada tarjeta enlaza al <strong>portal de documentaci\u00f3n</strong> del fabricante (PDF / cat\u00e1logos). Valide siempre con su proveedor.`);
 
-  const mountGuide = MOUNTING_GUIDE[r.mountingType];
+  const mountGuide = (en ? MOUNTING_GUIDE_EN : MOUNTING_GUIDE)[r.mountingType];
   const mountPillLabel = mountGuide ? mountGuide.title : r.mountingType;
 
   const topShaft =
@@ -133,50 +141,76 @@ export function renderBrandRecommendationCards(req, copyOpts) {
   const outShaft = pick?.m.outputShaft;
   const outShaftLine =
     outShaft && outShaft.kind === 'hollow'
-      ? `Eje hueco · Ø interior orientativo ~${outShaft.nominalDiameter_mm}\u00A0mm`
+      ? en
+        ? `Hollow shaft \u00b7 indicative bore ~${outShaft.nominalDiameter_mm}\u00A0mm`
+        : `Eje hueco \u00b7 \u00d8 interior orientativo ~${outShaft.nominalDiameter_mm}\u00A0mm`
       : outShaft
-        ? `Eje salida sólido · Ø orientativo ~${outShaft.nominalDiameter_mm}\u00A0mm`
-        : '—';
+        ? en
+          ? `Solid output \u00b7 indicative OD ~${outShaft.nominalDiameter_mm}\u00A0mm`
+          : `Eje salida s\u00f3lido \u00b7 \u00d8 orientativo ~${outShaft.nominalDiameter_mm}\u00A0mm`
+        : '\u2014';
+
+  const heroTop = en ? 'Top pick' : 'Recomendaci\u00f3n principal';
+  const heroN2 = en ? 'n\u2082 out' : 'n\u2082 salida';
+  const heroIntro = en ? 'Operating point:' : 'Punto de trabajo:';
+  const heroOrient = en ? 'indicative' : 'orientativo';
+  const heroInteg = en
+    ? `Mechanical integration (your selection: ${escapeHtml(r.mountingType)})`
+    : `Integraci\u00f3n mec\u00e1nica (su selecci\u00f3n: ${escapeHtml(r.mountingType)})`;
+  const heroCat = en ? 'Catalog mount (demo)' : 'Montaje cat\u00e1logo (demo)';
+  const heroFlange = en ? 'Flange / interface' : 'Brida / interfaz';
+  const heroOut = en ? 'Output shaft config' : 'Config. eje salida';
+  const heroWhy = en ? 'Why it fits:' : 'Por qu\u00e9 es adecuado:';
+  const heroPros = en ? 'Advantages of this mounting:' : 'Ventajas de este tipo de montaje:';
+  const heroCons = en ? 'Limits / caution:' : 'L\u00edmites / precauci\u00f3n:';
+  const heroVerdictOk = en
+    ? 'Reasonable match to the demo catalog \u2014 confirm with manufacturer.'
+    : 'Encaje razonable con el cat\u00e1logo ejemplo \u2014 confirme con fabricante.';
+  const heroVerdictWarn = en
+    ? 'Review torque, rpm, or power; compare other cards.'
+    : 'Revisar par, rpm o potencia; compare con el resto de tarjetas.';
+  const heroShaftLine =
+    topShaft && Number.isFinite(topShaft.dMotor_suggest_mm)
+      ? en
+        ? `<p class="reco-hero__shaft">Motor shaft OD \u2265 <strong>${topShaft.dMotor_suggest_mm.toFixed(0)}\u00A0mm</strong> \u00b7 Output / drum OD \u2265 <strong>${topShaft.dGearboxOut_suggest_mm.toFixed(0)}\u00A0mm</strong> <span class="muted">(${heroOrient})</span></p>`
+        : `<p class="reco-hero__shaft">\u00d8 eje motor \u2265 <strong>${topShaft.dMotor_suggest_mm.toFixed(0)}\u00A0mm</strong> \u00b7 \u00d8 salida / tambor \u2265 <strong>${topShaft.dGearboxOut_suggest_mm.toFixed(0)}\u00A0mm</strong> <span class="muted">(${heroOrient})</span></p>`
+      : '';
 
   const topPickHtml = pick
     ? `
     <div class="reco-hero">
       <div class="reco-hero__glow" aria-hidden="true"></div>
       <div class="reco-hero__head">
-        <span class="reco-hero__kicker">Recomendación principal</span>
+        <span class="reco-hero__kicker">${heroTop}</span>
         <h3 class="reco-hero__title">${escapeHtml(pick.m.code)}</h3>
         <p class="reco-hero__brand">${escapeHtml(BRANDS.find((b) => b.id === pick.m.brandId)?.name || pick.m.brandId)} · ${escapeHtml(pick.m.series)}</p>
       </div>
       <ul class="reco-hero__stats">
-        <li><span>P motor</span><strong>${pick.m.motor_kW}\u00A0kW</strong></li>
-        <li><span>Relación <var>i</var></span><strong>${Number(pick.m.ratio).toFixed(1)}</strong></li>
-        <li><span>n₂ salida</span><strong>${pick.m.n2_rpm.toFixed(1)}\u00A0min⁻¹</strong></li>
-        <li><span>T₂ nom.</span><strong>${pick.m.T2_nom_Nm}\u00A0N·m</strong></li>
+        <li><span>${en ? 'Motor P' : 'P motor'}</span><strong>${pick.m.motor_kW}\u00A0kW</strong></li>
+        <li><span>${en ? 'Ratio' : 'Relaci\u00f3n'} <var>i</var></span><strong>${Number(pick.m.ratio).toFixed(1)}</strong></li>
+        <li><span>${heroN2}</span><strong>${pick.m.n2_rpm.toFixed(1)}\u00A0min\u207b\u00b9</strong></li>
+        <li><span>${en ? 'T\u2082 nom.' : 'T\u2082 nom.'}</span><strong>${pick.m.T2_nom_Nm}\u00A0N\u00b7m</strong></li>
       </ul>
-      <p class="reco-hero__intro">Punto de trabajo: <strong>${r.power_kW.toFixed(3)}\u00A0kW</strong> · <strong>${r.torque_Nm.toFixed(1)}\u00A0N·m</strong> · <strong>${r.drum_rpm.toFixed(1)}\u00A0min⁻¹</strong></p>
-      ${
-        topShaft && Number.isFinite(topShaft.dMotor_suggest_mm)
-          ? `<p class="reco-hero__shaft">Ø eje motor ≥ <strong>${topShaft.dMotor_suggest_mm.toFixed(0)}\u00A0mm</strong> · Ø salida / tambor ≥ <strong>${topShaft.dGearboxOut_suggest_mm.toFixed(0)}\u00A0mm</strong> <span class="muted">(orientativo)</span></p>`
-          : ''
-      }
+      <p class="reco-hero__intro">${heroIntro} <strong>${r.power_kW.toFixed(3)}\u00A0kW</strong> \u00b7 <strong>${r.torque_Nm.toFixed(1)}\u00A0N\u00b7m</strong> \u00b7 <strong>${r.drum_rpm.toFixed(1)}\u00A0min\u207b\u00b9</strong></p>
+      ${heroShaftLine}
       ${
         heroMount && mountGuide
           ? `<div class="reco-hero__integration">
-        <div class="reco-hero__integration-title">Integración mecánica (su selección: ${escapeHtml(r.mountingType)})</div>
+        <div class="reco-hero__integration-title">${heroInteg}</div>
         <ul class="reco-hero__integration-list">
-          <li><span>Montaje catálogo (demo)</span> <strong>${escapeHtml((pick.m.mountingTypes || []).join(' · ') || '—')}</strong></li>
-          <li><span>Brida / interfaz</span> <strong>${escapeHtml(pick.m.flangeLabel || '—')}</strong></li>
-          <li><span>Config. eje salida</span> <strong>${escapeHtml(pick.m.shaftConfigLabel || '')}</strong> · ${escapeHtml(outShaftLine)}</li>
+          <li><span>${heroCat}</span> <strong>${escapeHtml((pick.m.mountingTypes || []).join(' · ') || '\u2014')}</strong></li>
+          <li><span>${heroFlange}</span> <strong>${escapeHtml(pick.m.flangeLabel || '\u2014')}</strong></li>
+          <li><span>${heroOut}</span> <strong>${escapeHtml(pick.m.shaftConfigLabel || '')}</strong> \u00b7 ${escapeHtml(outShaftLine)}</li>
         </ul>
-        <p class="reco-hero__integration-why"><strong>Por qué es adecuado:</strong> ${escapeHtml(heroMount.why)}</p>
-        <p class="reco-hero__integration-pros"><strong>Ventajas de este tipo de montaje:</strong> ${escapeHtml(mountGuide.pros)}</p>
-        <p class="reco-hero__integration-cons muted"><strong>Límites / precaución:</strong> ${escapeHtml(mountGuide.cons)}</p>
+        <p class="reco-hero__integration-why"><strong>${heroWhy}</strong> ${escapeHtml(heroMount.why)}</p>
+        <p class="reco-hero__integration-pros"><strong>${heroPros}</strong> ${escapeHtml(mountGuide.pros)}</p>
+        <p class="reco-hero__integration-cons muted"><strong>${heroCons}</strong> ${escapeHtml(mountGuide.cons)}</p>
       </div>`
           : ''
       }
       <div class="reco-hero__foot">
         <p class="reco-hero__verdict reco-hero__verdict--${pick.verdict.suitable ? 'ok' : 'warn'}">
-          ${escapeHtml(pick.verdict.suitable ? 'Encaje razonable con el catálogo ejemplo — confirme con fabricante.' : 'Revisar par, rpm o potencia; compare con el resto de tarjetas.')}
+          ${escapeHtml(pick.verdict.suitable ? heroVerdictOk : heroVerdictWarn)}
         </p>
         <div class="reco-hero__actions">${datasheetLink(pick.m)}</div>
       </div>
@@ -199,8 +233,8 @@ export function renderBrandRecommendationCards(req, copyOpts) {
     const rows = top
       .map(({ m, verdict }) => {
         const badge = verdict.suitable
-          ? '<span class="reco-chip reco-chip--ok">Encaje OK</span>'
-          : '<span class="reco-chip reco-chip--warn">Revisar</span>';
+          ? `<span class="reco-chip reco-chip--ok">${en ? 'Fit OK' : 'Encaje OK'}</span>`
+          : `<span class="reco-chip reco-chip--warn">${en ? 'Review' : 'Revisar'}</span>`;
         const sh =
           Number.isFinite(r.torque_Nm) && r.torque_Nm > 0 && Number.isFinite(m.ratio) && m.ratio > 0
             ? shaftSizingFromDrive({
@@ -211,19 +245,24 @@ export function renderBrandRecommendationCards(req, copyOpts) {
             : null;
         const shaftLine =
           sh && Number.isFinite(sh.dMotor_suggest_mm)
-            ? `<div class="reco-kv"><span class="reco-kv__k">Ø ejes (orient.)</span><span class="reco-kv__v">${sh.dMotor_suggest_mm.toFixed(0)} / ${sh.dGearboxOut_suggest_mm.toFixed(0)}\u00A0mm</span></div>`
+            ? `<div class="reco-kv"><span class="reco-kv__k">${en ? 'Shaft ODs (indic.)' : '\u00d8 ejes (orient.)'}</span><span class="reco-kv__v">${sh.dMotor_suggest_mm.toFixed(0)} / ${sh.dGearboxOut_suggest_mm.toFixed(0)}\u00A0mm</span></div>`
             : '';
         const fitExpl = explainMountingFit(m, mountPref);
         const mOut = m.outputShaft;
         const mOutTxt =
           mOut && mOut.kind === 'hollow'
-            ? `Hueco ~${mOut.nominalDiameter_mm}\u00A0mm`
+            ? en
+              ? `Hollow ~${mOut.nominalDiameter_mm}\u00A0mm`
+              : `Hueco ~${mOut.nominalDiameter_mm}\u00A0mm`
             : mOut
-              ? `Sólido ~${mOut.nominalDiameter_mm}\u00A0mm`
-              : '—';
-        const mountKv = `<div class="reco-kv"><span class="reco-kv__k">Montaje (IEC)</span><span class="reco-kv__v">${escapeHtml((m.mountingTypes || []).join(' · ') || '—')}</span></div>
-            <div class="reco-kv"><span class="reco-kv__k">Brida</span><span class="reco-kv__v">${escapeHtml(m.flangeLabel || '—')}</span></div>
-            <div class="reco-kv"><span class="reco-kv__k">Eje salida</span><span class="reco-kv__v">${escapeHtml(mOutTxt)}</span></div>`;
+              ? en
+                ? `Solid ~${mOut.nominalDiameter_mm}\u00A0mm`
+                : `S\u00f3lido ~${mOut.nominalDiameter_mm}\u00A0mm`
+              : '\u2014';
+        const mountKv = `<div class="reco-kv"><span class="reco-kv__k">${en ? 'Mount (IEC)' : 'Montaje (IEC)'}</span><span class="reco-kv__v">${escapeHtml((m.mountingTypes || []).join(' · ') || '\u2014')}</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">${en ? 'Flange' : 'Brida'}</span><span class="reco-kv__v">${escapeHtml(m.flangeLabel || '\u2014')}</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">${en ? 'Output shaft' : 'Eje salida'}</span><span class="reco-kv__v">${escapeHtml(mOutTxt)}</span></div>`;
+        const mountCompat = en ? 'Mounting fit:' : 'Compatibilidad montaje:';
         return `
         <article class="reco-card">
           <div class="reco-card__accent" aria-hidden="true"></div>
@@ -235,18 +274,18 @@ export function renderBrandRecommendationCards(req, copyOpts) {
             ${badge}
           </header>
           <div class="reco-card__grid">
-            <div class="reco-kv"><span class="reco-kv__k">P motor</span><span class="reco-kv__v">${m.motor_kW}\u00A0kW</span></div>
-            <div class="reco-kv"><span class="reco-kv__k">n motor</span><span class="reco-kv__v">${m.motor_rpm_nom}\u00A0min⁻¹</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">${en ? 'Motor P' : 'P motor'}</span><span class="reco-kv__v">${m.motor_kW}\u00A0kW</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">${en ? 'Motor n' : 'n motor'}</span><span class="reco-kv__v">${m.motor_rpm_nom}\u00A0min\u207b\u00b9</span></div>
             <div class="reco-kv"><span class="reco-kv__k"><var>i</var></span><span class="reco-kv__v">${Number(m.ratio).toFixed(1)}\u00A0: 1</span></div>
-            <div class="reco-kv"><span class="reco-kv__k">n₂</span><span class="reco-kv__v">${m.n2_rpm.toFixed(1)}\u00A0min⁻¹</span></div>
-            <div class="reco-kv"><span class="reco-kv__k">T₂ nom. / pico</span><span class="reco-kv__v">${m.T2_nom_Nm} / ${m.T2_peak_Nm}\u00A0N·m</span></div>
-            <div class="reco-kv"><span class="reco-kv__k">η reductor</span><span class="reco-kv__v">${(m.eta_g * 100).toFixed(0)}\u00A0%</span></div>
-            <div class="reco-kv"><span class="reco-kv__k">IP · ciclo</span><span class="reco-kv__v">${escapeHtml(m.enclosure)} · ${escapeHtml(m.duty)}</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">n\u2082</span><span class="reco-kv__v">${m.n2_rpm.toFixed(1)}\u00A0min\u207b\u00b9</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">${en ? 'T\u2082 nom. / peak' : 'T\u2082 nom. / pico'}</span><span class="reco-kv__v">${m.T2_nom_Nm} / ${m.T2_peak_Nm}\u00A0N\u00b7m</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">${en ? 'Gearbox \u03b7' : '\u03b7 reductor'}</span><span class="reco-kv__v">${(m.eta_g * 100).toFixed(0)}\u00A0%</span></div>
+            <div class="reco-kv"><span class="reco-kv__k">IP \u00b7 ${en ? 'duty' : 'ciclo'}</span><span class="reco-kv__v">${escapeHtml(m.enclosure)} \u00b7 ${escapeHtml(m.duty)}</span></div>
             ${mountKv}
             ${shaftLine}
           </div>
           <p class="reco-card__note">${escapeHtml(m.notes)}</p>
-          <p class="reco-card__mount-note"><strong>Compatibilidad montaje:</strong> ${escapeHtml(fitExpl.why)} <span class="muted">· ${escapeHtml(fitExpl.guide.pros)}</span></p>
+          <p class="reco-card__mount-note"><strong>${mountCompat}</strong> ${escapeHtml(fitExpl.why)} <span class="muted">\u00b7 ${escapeHtml(fitExpl.guide.pros)}</span></p>
           <div class="reco-card__actions">${datasheetLink(m)}</div>
         </article>`;
       })
@@ -265,25 +304,32 @@ export function renderBrandRecommendationCards(req, copyOpts) {
 
   const relaxedBanner =
     pick?.mountingCatalogRelaxed === true
-      ? `<div class="reco-mounting-relaxed" role="status">
-    <strong>Ningún modelo del catálogo demo encaja de forma estricta con el montaje elegido (${escapeHtml(r.mountingType)}).</strong>
-    Se muestran igualmente candidatos por potencia/par/rpm — valide <em>B3 / B5 / B14 / eje hueco</em> con el fabricante antes de pedir.
+      ? en
+        ? `<div class="reco-mounting-relaxed" role="status">
+    <strong>No demo catalog model is a strict match for the selected mounting (${escapeHtml(r.mountingType)}).</strong>
+    Candidates are still shown by power/torque/rpm \u2014 confirm <em>B3 / B5 / B14 / hollow shaft</em> with the manufacturer before ordering.
+  </div>`
+        : `<div class="reco-mounting-relaxed" role="status">
+    <strong>Ning\u00fan modelo del cat\u00e1logo demo encaja de forma estricta con el montaje elegido (${escapeHtml(r.mountingType)}).</strong>
+    Se muestran igualmente candidatos por potencia/par/rpm \u2014 valide <em>B3 / B5 / B14 / eje hueco</em> con el fabricante antes de pedir.
   </div>`
       : '';
 
   const orientPill =
     r.orientation === 'vertical'
-      ? '<div class="reco-pill"><span>Orientación</span><strong>Vertical</strong></div>'
-      : '<div class="reco-pill"><span>Orientación</span><strong>Horizontal</strong></div>';
+      ? `<div class="reco-pill"><span>${en ? 'Orientation' : 'Orientaci\u00f3n'}</span><strong>Vertical</strong></div>`
+      : `<div class="reco-pill"><span>${en ? 'Orientation' : 'Orientaci\u00f3n'}</span><strong>Horizontal</strong></div>`;
 
   const shaftPill =
     r.machineShaftDiameter_mm != null
-      ? `<div class="reco-pill"><span>Ø eje máquina</span><strong>${r.machineShaftDiameter_mm}\u00A0mm</strong></div>`
+      ? `<div class="reco-pill"><span>${en ? 'Machine shaft OD' : '\u00d8 eje m\u00e1quina'}</span><strong>${r.machineShaftDiameter_mm}\u00A0mm</strong></div>`
       : '';
 
   const spaceLine =
     r.spaceConstraint.length > 0
-      ? `<p class="reco-space-note"><strong>Restricción de espacio (suya):</strong> ${escapeHtml(r.spaceConstraint)} — trasladar a longitud total y gálibos en el pedido.</p>`
+      ? en
+        ? `<p class="reco-space-note"><strong>Your space note:</strong> ${escapeHtml(r.spaceConstraint)} \u2014 carry over to total length and envelopes in the RFQ.</p>`
+        : `<p class="reco-space-note"><strong>Restricci\u00f3n de espacio (suya):</strong> ${escapeHtml(r.spaceConstraint)} \u2014 trasladar a longitud total y g\u00e1libos en el pedido.</p>`
       : '';
 
   return `
@@ -295,18 +341,22 @@ export function renderBrandRecommendationCards(req, copyOpts) {
         ${contextHtml}
       </p>
       <div class="reco-pills">
-        <div class="reco-pill"><span>P motor</span><strong>${r.power_kW.toFixed(3)} kW</strong></div>
-        <div class="reco-pill"><span>T diseño</span><strong>${r.torque_Nm.toFixed(1)} N·m</strong></div>
-        <div class="reco-pill"><span>${copyOpts?.rpmShortLabel ?? 'n tambor'}</span><strong>${r.drum_rpm.toFixed(2)} min⁻¹</strong></div>
-        <div class="reco-pill"><span>Montaje</span><strong>${escapeHtml(mountPillLabel)}</strong></div>
+        <div class="reco-pill"><span>${en ? 'Motor P' : 'P motor'}</span><strong>${r.power_kW.toFixed(3)} kW</strong></div>
+        <div class="reco-pill"><span>${en ? 'Design T' : 'T dise\u00f1o'}</span><strong>${r.torque_Nm.toFixed(1)} N\u00b7m</strong></div>
+        <div class="reco-pill"><span>${copyOpts?.rpmShortLabel ?? (en ? 'Drum n' : 'n tambor')}</span><strong>${r.drum_rpm.toFixed(2)} min\u207b\u00b9</strong></div>
+        <div class="reco-pill"><span>${en ? 'Mount' : 'Montaje'}</span><strong>${escapeHtml(mountPillLabel)}</strong></div>
         ${orientPill}
         ${shaftPill}
       </div>
       ${spaceLine}
       ${
         isPremiumEffective() && FEATURES.motorSelectionAdvanced
-          ? '<p class="reco-catalog-note"><span class="premium-flag">Catálogo</span> Datos de demostración — ampliable con su base de datos o API.</p>'
-          : '<p class="reco-catalog-note reco-catalog-note--muted">Catálogo de demostración; las fichas enlazan a documentación oficial.</p>'
+          ? en
+            ? '<p class="reco-catalog-note"><span class="premium-flag">Catalog</span> Demo data \u2014 extendable with your database or API.</p>'
+            : '<p class="reco-catalog-note"><span class="premium-flag">Cat\u00e1logo</span> Datos de demostraci\u00f3n \u2014 ampliable con su base de datos o API.</p>'
+          : en
+            ? '<p class="reco-catalog-note reco-catalog-note--muted">Demo catalog; datasheet links point to official documentation.</p>'
+            : '<p class="reco-catalog-note reco-catalog-note--muted">Cat\u00e1logo de demostraci\u00f3n; las fichas enlazan a documentaci\u00f3n oficial.</p>'
       }
     </div>
     <div class="reco-stack">${blocks}</div>
@@ -321,49 +371,141 @@ function injectManualMotorVerifyBlock(root) {
   if (root.querySelector('[data-verify-manual-wrap]')) return;
   const btn = root.querySelector('[data-verify-run]');
   if (!btn || !btn.parentNode) return;
+  const en = getCurrentLang() === 'en';
   const wrap = document.createElement('div');
   wrap.dataset.verifyManualWrap = '';
   wrap.className = 'verify-manual-wrap';
-  wrap.innerHTML = `
+  wrap.innerHTML = en
+    ? `
 <details class="input-details verify-manual-details">
-  <summary>O bien: introducir <strong>mi</strong> motorreductor a mano (ficha / placa)</summary>
+  <summary>Or: enter <strong>my</strong> gearmotor manually (nameplate / datasheet)</summary>
   <p class="muted" style="margin:0.5rem 0 0.75rem;font-size:0.84rem;line-height:1.45">
-    Mismos criterios que el catálogo: <strong>potencia de motor</strong>, <strong>par nominal de salida</strong> y <strong>rpm de salida del reductor</strong>
-    frente al punto de trabajo calculado. El <strong>montaje IEC</strong> (B3/B5/B14/hueco) no se valida en este modo.
+    Same checks as the catalog: <strong>motor P</strong>, <strong>rated T\u2082</strong>, and <strong>n\u2082</strong> vs the computed duty.
+    IEC mounting is not validated here. Use <strong>?</strong> on each field.
   </p>
   <div class="verify-grid">
     <div class="field" style="grid-column: 1 / -1">
-      <label>Referencia / modelo (opcional)</label>
-      <input type="text" data-verify-manual-label maxlength="160" placeholder="ej. Nord SK 42F – 132 SP/4" autocomplete="off" />
+      <label>Reference <span class="info-chip" title="Label for reports only; does not change the verification math." aria-label="Manual reference help.">?</span></label>
+      <input type="text" data-verify-manual-label maxlength="160" placeholder="e.g. Nord SK 42F - 132 SP/4" autocomplete="off" />
+      <span class="field-hint">opt.</span>
     </div>
     <div class="field">
-      <label>Potencia motor <em>P</em> (placa)</label>
+      <label><em>P</em> motor <span class="info-chip" title="Motor nameplate power (kW), not gearbox output power." aria-label="Motor kW help.">?</span></label>
       <input type="number" data-verify-manual-kw step="0.01" min="0" placeholder="kW" />
+      <span class="field-hint">kW</span>
     </div>
     <div class="field">
-      <label>RPM salida reductor <em>n</em>₂</label>
-      <input type="number" data-verify-manual-n2 step="0.1" min="0.01" placeholder="min⁻¹" />
+      <label><em>n</em>\u2082 out <span class="info-chip" title="Output shaft speed (min\u207b\u00b9); should cover required drum rpm." aria-label="n2 help.">?</span></label>
+      <input type="number" data-verify-manual-n2 step="0.1" min="0.01" placeholder="min\u207b\u00b9" />
+      <span class="field-hint">min\u207b\u00b9</span>
     </div>
     <div class="field">
-      <label>Par nominal salida <em>T</em>₂</label>
-      <input type="number" data-verify-manual-t2 step="0.1" min="0" placeholder="N·m" />
+      <label><em>T</em>\u2082 rated <span class="info-chip" title="Continuous rated torque at gearbox output (N\u00b7m), per datasheet." aria-label="T2 help.">?</span></label>
+      <input type="number" data-verify-manual-t2 step="0.1" min="0" placeholder="N\u00b7m" />
+      <span class="field-hint">N\u00b7m</span>
     </div>
     <div class="field">
-      <label><em>T</em>₂ pico (opcional)</label>
-      <input type="number" data-verify-manual-t2peak step="0.1" min="0" placeholder="Si vacío → 1,3·T₂" />
+      <label><em>T</em>\u2082 peak <span class="info-chip" title="Short-time peak torque. Empty: defaults to 1.3 x T\u2082 rated." aria-label="T2 peak help.">?</span></label>
+      <input type="number" data-verify-manual-t2peak step="0.1" min="0" placeholder="opt." />
+      <span class="field-hint">opt.</span>
     </div>
     <div class="field">
-      <label>RPM motor nominal (opcional)</label>
+      <label><em>n</em> motor <span class="info-chip" title="Motor synchronous/nominal rpm (e.g. 1400 min\u207b\u00b9). Optional; improves verification notes." aria-label="Motor rpm help.">?</span></label>
+      <input type="number" data-verify-manual-nmotor step="1" min="1" placeholder="e.g. 1400" />
+      <span class="field-hint">opt.</span>
+    </div>
+    <div class="field">
+      <label>Gearbox \u03b7 <span class="info-chip" title="Gearbox efficiency (0-1). Empty: 0.92. If you enter 92 (%), it is converted to 0.92." aria-label="Eta g help.">?</span></label>
+      <input type="number" data-verify-manual-eta step="0.01" min="0.5" max="1" placeholder="0-1" />
+      <span class="field-hint">opt.</span>
+    </div>
+  </div>
+  <button type="button" data-verify-run-manual style="margin-top: 1rem; width: 100%" class="button button--ghost">Check with these values</button>
+</details>`
+    : `
+<details class="input-details verify-manual-details">
+  <summary>O bien: introducir <strong>mi</strong> motorreductor a mano (ficha / placa)</summary>
+  <p class="muted" style="margin:0.5rem 0 0.75rem;font-size:0.84rem;line-height:1.45">
+    Mismos criterios que el cat\u00e1logo: <strong>P motor</strong>, <strong>T\u2082 nominal</strong> y <strong>n\u2082</strong> frente al punto calculado.
+    Montaje IEC no se valida aqu\u00ed. Use <strong>?</strong> en cada campo.
+  </p>
+  <div class="verify-grid">
+    <div class="field" style="grid-column: 1 / -1">
+      <label>Referencia <span class="info-chip" title="Solo etiqueta en el informe; no afecta al c\u00e1lculo de comprobaci\u00f3n." aria-label="Ayuda referencia manual.">?</span></label>
+      <input type="text" data-verify-manual-label maxlength="160" placeholder="ej. Nord SK 42F \u2013 132 SP/4" autocomplete="off" />
+      <span class="field-hint">opc.</span>
+    </div>
+    <div class="field">
+      <label><em>P</em> motor <span class="info-chip" title="Potencia en la placa del motor (kW), no en el eje de salida del reductor." aria-label="Ayuda potencia motor placa.">?</span></label>
+      <input type="number" data-verify-manual-kw step="0.01" min="0" placeholder="kW" />
+      <span class="field-hint">kW</span>
+    </div>
+    <div class="field">
+      <label><em>n</em>\u2082 salida <span class="info-chip" title="Revoluciones por minuto en el eje de salida del reductor (debe cubrir la rpm del tambor exigida)." aria-label="Ayuda rpm salida reductor.">?</span></label>
+      <input type="number" data-verify-manual-n2 step="0.1" min="0.01" placeholder="min\u207b\u00b9" />
+      <span class="field-hint">min\u207b\u00b9</span>
+    </div>
+    <div class="field">
+      <label><em>T</em>\u2082 nominal <span class="info-chip" title="Par nominal de uso continuo en el eje de salida del reductor (N\u00b7m), seg\u00fan ficha." aria-label="Ayuda par nominal salida.">?</span></label>
+      <input type="number" data-verify-manual-t2 step="0.1" min="0" placeholder="N\u00b7m" />
+      <span class="field-hint">N\u00b7m</span>
+    </div>
+    <div class="field">
+      <label><em>T</em>\u2082 pico <span class="info-chip" title="Par m\u00e1ximo admitido corto tiempo. Vac\u00edo: se asume 1,3 \u00d7 T\u2082 nominal." aria-label="Ayuda par pico.">?</span></label>
+      <input type="number" data-verify-manual-t2peak step="0.1" min="0" placeholder="opc." />
+      <span class="field-hint">opc.</span>
+    </div>
+    <div class="field">
+      <label><em>n</em> motor <span class="info-chip" title="RPM s\u00edncronas/nominales del motor (p. ej. 1400 min\u207b\u00b9). Opcional; mejora mensajes en verificaci\u00f3n." aria-label="Ayuda rpm motor.">?</span></label>
       <input type="number" data-verify-manual-nmotor step="1" min="1" placeholder="ej. 1400" />
+      <span class="field-hint">opc.</span>
     </div>
     <div class="field">
-      <label>η reductor (opcional, 0–1)</label>
-      <input type="number" data-verify-manual-eta step="0.01" min="0.5" max="1" placeholder="vacío → 0,92" />
+      <label>\u03b7 reductor <span class="info-chip" title="Rendimiento del reductor (0\u20131). Vac\u00edo: 0,92. Si introduce porcentaje 92 se convierte a 0,92." aria-label="Ayuda eta reductor verificaci\u00f3n.">?</span></label>
+      <input type="number" data-verify-manual-eta step="0.01" min="0.5" max="1" placeholder="0\u20131" />
+      <span class="field-hint">opc.</span>
     </div>
   </div>
   <button type="button" data-verify-run-manual style="margin-top: 1rem; width: 100%" class="button button--ghost">Comprobar con estos datos</button>
 </details>`;
   btn.parentNode.insertBefore(wrap, btn);
+}
+
+/**
+ * Re-inject manual verify UI when language changes (first injection is lang-locked).
+ * @param {HTMLElement | null} root
+ * @param {() => DriveRequirement} getRequirements
+ */
+export function refreshMotorVerificationManual(root, getRequirements) {
+  if (!root) return;
+  const out = root.querySelector('[data-verify-out]');
+  if (!out) return;
+  root.querySelector('[data-verify-manual-wrap]')?.remove();
+  injectManualMotorVerifyBlock(root);
+  wireManualVerifyButton(root, getRequirements, out);
+}
+
+/**
+ * @param {HTMLElement} root
+ * @param {() => DriveRequirement} getRequirements
+ * @param {Element} out
+ */
+function wireManualVerifyButton(root, getRequirements, out) {
+  const btnManual = /** @type {HTMLButtonElement | null} */ (root.querySelector('[data-verify-run-manual]'));
+  btnManual?.addEventListener('click', () => {
+    const raw = readManualMotorFieldsFromDom(root);
+    if (!raw) {
+      out.innerHTML =
+        getCurrentLang() === 'en'
+          ? `<p class="verify-result verify-result--warn">Enter <strong>motor power (kW)</strong>, <strong>gearbox output rpm</strong>, and <strong>rated T\u2082 (N\u00b7m)</strong>.</p>`
+          : `<p class="verify-result verify-result--warn">Rellene <strong>potencia motor (kW)</strong>, <strong>rpm salida del reductor</strong> y <strong>par nominal T\u2082 (N\u00b7m)</strong>.</p>`;
+      return;
+    }
+    const model = buildManualGearmotorModel(raw);
+    const req = normalizeDriveRequirement(getRequirements());
+    const r = verifyGearmotorAgainstRequirement(req, model);
+    out.innerHTML = renderMotorVerifyResultHtml(r, model);
+  });
 }
 
 /**
@@ -411,21 +553,24 @@ function readManualMotorFieldsFromDom(root) {
  * @param {import('../modules/motorVerify.js').GearmotorModel} model
  */
 function renderMotorVerifyResultHtml(r, model) {
+  const en = getCurrentLang() === 'en';
   const cls = r.suitable ? 'verify-result--ok' : 'verify-result--bad';
+  const warnTitle = en ? 'Warnings' : 'Advertencias';
+  const blockTitle = en ? 'Exclusion reasons' : 'Motivos de exclusi\u00f3n';
   const core = `
       <div class="verify-result ${cls}">
         <p class="verify-result__verdict">${escapeHtml(r.verdict)}</p>
         <ul class="verify-result__checks">${r.checks.map((c) => `<li>${escapeHtml(c)}</li>`).join('')}</ul>
         ${
           r.warnings.length
-            ? `<p class="verify-result__sub">Advertencias</p><ul class="verify-result__warns">${r.warnings
+            ? `<p class="verify-result__sub">${warnTitle}</p><ul class="verify-result__warns">${r.warnings
                 .map((w) => `<li>${escapeHtml(w)}</li>`)
                 .join('')}</ul>`
             : ''
         }
         ${
           r.blockers.length
-            ? `<p class="verify-result__sub">Motivos de exclusión</p><ul class="verify-result__blocks">${r.blockers
+            ? `<p class="verify-result__sub">${blockTitle}</p><ul class="verify-result__blocks">${r.blockers
                 .map((b) => `<li>${escapeHtml(b)}</li>`)
                 .join('')}</ul>`
             : ''
@@ -434,21 +579,34 @@ function renderMotorVerifyResultHtml(r, model) {
   if (model.userManual) {
     return (
       core +
-      `<p class="muted verify-disclaimer">
-        <strong>Modo manual:</strong> solo se contrastan potencia, par nominal de salida y rpm de salida con el cálculo de la máquina.
-        No sustituye ficha técnica, curvas del motor, montaje ni normativa.
+      (en
+        ? `<p class="muted verify-disclaimer">
+        <strong>Manual mode:</strong> only motor power, rated output torque, and output rpm are checked against the machine calculation.
+        This does not replace datasheets, motor curves, mounting, or standards.
       </p>`
+        : `<p class="muted verify-disclaimer">
+        <strong>Modo manual:</strong> solo se contrastan potencia, par nominal de salida y rpm de salida con el c\u00e1lculo de la m\u00e1quina.
+        No sustituye ficha t\u00e9cnica, curvas del motor, montaje ni normativa.
+      </p>`)
     );
   }
   return (
     core +
-    `<p class="verify-ficha">
-        <a class="reco-ficha reco-ficha--inline" href="${escapeAttr(getModelDatasheetUrl(model))}" target="_blank" rel="noopener noreferrer">Documentación y fichas técnicas (${escapeHtml(BRANDS.find((b) => b.id === model.brandId)?.name || model.brandId)}) ↗</a>
+    (en
+      ? `<p class="verify-ficha">
+        <a class="reco-ficha reco-ficha--inline" href="${escapeAttr(getModelDatasheetUrl(model))}" target="_blank" rel="noopener noreferrer">Documentation and datasheets (${escapeHtml(BRANDS.find((b) => b.id === model.brandId)?.name || model.brandId)}) \u2197</a>
       </p>
       <p class="muted verify-disclaimer">
-        Si su referencia no aparece, amplíe el registro paramétrico (<code>js/data/gearmotorParametricRegistry.js</code>) o las filas demo en
-        <code>js/data/gearmotorCatalog.js</code>. Esta herramienta no sustituye la validación del proveedor.
+        If your part number is missing, extend the parametric registry (<code>js/data/gearmotorParametricRegistry.js</code>) or demo rows in
+        <code>js/data/gearmotorCatalog.js</code>. This tool does not replace supplier validation.
       </p>`
+      : `<p class="verify-ficha">
+        <a class="reco-ficha reco-ficha--inline" href="${escapeAttr(getModelDatasheetUrl(model))}" target="_blank" rel="noopener noreferrer">Documentaci\u00f3n y fichas t\u00e9cnicas (${escapeHtml(BRANDS.find((b) => b.id === model.brandId)?.name || model.brandId)}) \u2197</a>
+      </p>
+      <p class="muted verify-disclaimer">
+        Si su referencia no aparece, ampl\u00ede el registro param\u00e9trico (<code>js/data/gearmotorParametricRegistry.js</code>) o las filas demo en
+        <code>js/data/gearmotorCatalog.js</code>. Esta herramienta no sustituye la validaci\u00f3n del proveedor.
+      </p>`)
   );
 }
 
@@ -468,14 +626,17 @@ export function initMotorVerification(root, getRequirements) {
   if (!brandEl || !modelSelect || !btn || !out) return;
 
   injectManualMotorVerifyBlock(root);
-  const btnManual = /** @type {HTMLButtonElement | null} */ (root.querySelector('[data-verify-run-manual]'));
+  wireManualVerifyButton(root, getRequirements, out);
 
   function refillModels() {
+    const en = getCurrentLang() === 'en';
     const bid = brandEl.value;
     const q = modelSearch ? modelSearch.value : '';
     const list = searchModels(bid, q);
     modelSelect.innerHTML =
-      '<option value="">— Elija modelo del catálogo ejemplo —</option>' +
+      (en
+        ? '<option value="">\u2014 Select a demo catalog model \u2014</option>'
+        : '<option value="">\u2014 Elija modelo del cat\u00e1logo ejemplo \u2014</option>') +
       list
         .map(
           (m) =>
@@ -491,21 +652,12 @@ export function initMotorVerification(root, getRequirements) {
     const model = getModelById(id);
     const req = normalizeDriveRequirement(getRequirements());
     if (!model) {
-      out.innerHTML = `<p class="verify-result verify-result--warn">Seleccione un modelo de la lista (catálogo de demostración).</p>`;
+      out.innerHTML =
+        getCurrentLang() === 'en'
+          ? `<p class="verify-result verify-result--warn">Select a model from the list (demo catalog).</p>`
+          : `<p class="verify-result verify-result--warn">Seleccione un modelo de la lista (cat\u00e1logo de demostraci\u00f3n).</p>`;
       return;
     }
-    const r = verifyGearmotorAgainstRequirement(req, model);
-    out.innerHTML = renderMotorVerifyResultHtml(r, model);
-  });
-
-  btnManual?.addEventListener('click', () => {
-    const raw = readManualMotorFieldsFromDom(root);
-    if (!raw) {
-      out.innerHTML = `<p class="verify-result verify-result--warn">Rellene <strong>potencia motor (kW)</strong>, <strong>rpm salida del reductor</strong> y <strong>par nominal T₂ (N·m)</strong>.</p>`;
-      return;
-    }
-    const model = buildManualGearmotorModel(raw);
-    const req = normalizeDriveRequirement(getRequirements());
     const r = verifyGearmotorAgainstRequirement(req, model);
     out.innerHTML = renderMotorVerifyResultHtml(r, model);
   });

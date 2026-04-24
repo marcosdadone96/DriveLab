@@ -21,13 +21,20 @@
 
 .hub-header {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 0.5rem 1rem;
-  padding: 1rem 1.5rem 0.5rem;
+  padding: 1rem 1.5rem 0.65rem;
   max-width: 1200px;
   margin: 0 auto;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.28);
+}
+
+.hub-header__right {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
 }
 
 .hub-header__title {
@@ -49,13 +56,82 @@
   color: #64748b;
 }
 
+.hub-lang {
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(148, 163, 184, 0.45);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  padding: 0.14rem;
+  backdrop-filter: blur(6px);
+}
+
+.hub-lang__btn {
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  border-radius: 999px;
+  padding: 0.28rem 0.56rem;
+  cursor: pointer;
+}
+
+.hub-lang__btn--active {
+  background: #0f172a;
+  color: #e2e8f0;
+}
+
+.hub-account {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-left: 0.35rem;
+}
+
+.hub-account__user {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #334155;
+}
+
+.hub-account__btn {
+  border: 1px solid rgba(22, 163, 74, 0.45);
+  background: rgba(255, 255, 255, 0.82);
+  color: #166534;
+  font-size: 0.66rem;
+  font-weight: 800;
+  border-radius: 999px;
+  padding: 0.3rem 0.58rem;
+  cursor: pointer;
+}
+
+.hub-account__btn:hover {
+  background: rgba(240, 253, 244, 0.92);
+}
+
 .hub-main {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: calc(100vh - 4rem);
-  padding: 0.5rem 1rem 2rem;
+  padding: 0.8rem 1rem 2rem;
+}
+
+.hub-zones-grid {
+  width: min(1400px, 100%);
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.9rem;
+  align-items: start;
+}
+
+.hub-zone {
+  width: 100%;
+  position: relative;
+  isolation: isolate;
 }
 
 .hub-scene {
@@ -320,9 +396,9 @@
 }
 
 .hub-badge--pro {
-  background: rgba(234, 179, 8, 0.22);
-  color: #854d0e;
-  border: 1px solid rgba(202, 138, 4, 0.45);
+  background: rgba(37, 99, 235, 0.16);
+  color: #1d4ed8;
+  border: 1px solid rgba(37, 99, 235, 0.38);
 }
 
 .hub-badge--ok {
@@ -355,9 +431,13 @@
 }
 
 .hub-zone--lab {
-  margin-top: 2.25rem;
   width: 100%;
-  max-width: 560px;
+  max-width: none;
+}
+
+.hub-zone--fluids {
+  width: 100%;
+  max-width: none;
 }
 
 .hub-zone__sub {
@@ -369,6 +449,11 @@
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.02em;
+}
+
+.hub-zone__sub--ghost {
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .hub-zone__dot {
@@ -390,8 +475,57 @@
 }
 
 .hub-scene--lab {
-  width: min(72vmin, 440px);
-  height: min(72vmin, 440px);
+  width: min(100%, 408px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  margin: 0 auto;
+  position: relative;
+}
+
+.hub-zone--machines .hub-scene {
+  width: min(100%, 408px);
+  aspect-ratio: 1 / 1;
+  height: auto;
+  margin: 0 auto;
+}
+
+.hub-zone--machines .hub-core {
+  width: min(22vmin, 132px);
+  height: min(22vmin, 132px);
+}
+
+.hub-zone--machines .hub-arm__inner {
+  width: min(26vmin, 118px);
+  margin-left: calc(-1 * min(13vmin, 59px));
+  top: calc(-1 * min(37.5vmin, 216px));
+}
+
+.hub-zone--machines .hub-node {
+  gap: 0.28rem;
+}
+
+.hub-zone--machines .hub-node__icon {
+  width: min(12.5vmin, 52px);
+  height: min(12.5vmin, 52px);
+  border-radius: 12px;
+}
+
+.hub-zone--machines .hub-node__label {
+  font-size: clamp(0.52rem, 1.38vmin, 0.64rem);
+  max-width: 5.1rem;
+  line-height: 1.1;
+}
+
+.hub-zone--machines .hub-badge {
+  font-size: clamp(0.44rem, 1.1vmin, 0.53rem);
+  padding: 0.14rem 0.32rem;
+  border-radius: 5px;
+}
+
+.hub-scene--fluid {
+  width: min(100%, 408px);
+  aspect-ratio: 1 / 1;
+  height: auto;
   margin: 0 auto;
   position: relative;
 }
@@ -415,8 +549,8 @@
 }
 
 .hub-core--lab {
-  width: min(22vmin, 132px);
-  height: min(22vmin, 132px);
+  width: min(26vmin, 168px);
+  height: min(26vmin, 168px);
 }
 
 .hub-core__pulse--lab {
@@ -436,9 +570,9 @@
 }
 
 .hub-arm__inner--lab {
-  width: min(26vmin, 118px);
-  margin-left: calc(-1 * min(13vmin, 59px));
-  top: calc(-1 * min(34vmin, 188px));
+  width: min(28vmin, 150px);
+  margin-left: calc(-1 * min(14vmin, 75px));
+  top: calc(-1 * min(38vmin, 230px));
 }
 
 .hub-node__icon--lab {
@@ -460,6 +594,74 @@
   border-color: rgba(56, 189, 248, 0.75);
 }
 
+.hub-wires__orbit--fluid {
+  stroke: #22d3ee;
+  stroke-width: 0.38;
+  stroke-dasharray: 0.85 1.4;
+  opacity: 0.9;
+}
+
+.hub-wires__spokes--fluid {
+  stroke: #06b6d4;
+  stroke-width: 0.42;
+  opacity: 0.65;
+}
+
+.hub-wires__spokes--fluid line {
+  stroke: #06b6d4;
+  stroke-width: 0.45;
+}
+
+.hub-core--fluid {
+  width: min(26vmin, 168px);
+  height: min(26vmin, 168px);
+}
+
+.hub-core__mesh--fluid {
+  filter: drop-shadow(0 2px 8px rgba(6, 182, 212, 0.28));
+}
+
+.hub-core__pulse--fluid {
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.35) 0%, transparent 70%);
+}
+
+.hub-core__ring--fluid {
+  border-color: #06b6d4;
+  box-shadow:
+    0 0 0 1px rgba(6, 182, 212, 0.35),
+    0 0 24px rgba(6, 182, 212, 0.35),
+    inset 0 0 16px rgba(0, 0, 0, 0.32);
+}
+
+.hub-core__body--fluid {
+  background: radial-gradient(circle at 35% 30%, #0e7490 0%, #0f172a 55%, #020617 100%);
+}
+
+.hub-arm__inner--fluid {
+  width: min(28vmin, 150px);
+  margin-left: calc(-1 * min(14vmin, 75px));
+  top: calc(-1 * min(38vmin, 230px));
+}
+
+.hub-node__icon--fluid {
+  border-color: rgba(6, 182, 212, 0.55);
+  color: #0e7490;
+  background: linear-gradient(155deg, #ffffff 0%, #ecfeff 50%, #cffafe 100%);
+}
+
+.hub-node--fluid.hub-node--go:hover .hub-node__icon--fluid {
+  border-color: #06b6d4;
+  color: #0891b2;
+  box-shadow:
+    0 0 0 3px rgba(6, 182, 212, 0.28),
+    0 10px 26px rgba(6, 182, 212, 0.18);
+  background: linear-gradient(165deg, #ffffff 0%, #cffafe 100%);
+}
+
+.hub-node--go.hub-node--fluid .hub-node__icon--fluid {
+  border-color: rgba(34, 211, 238, 0.75);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hub-core__mesh .hub-core__gear,
   .hub-core__pulse {
@@ -468,6 +670,11 @@
 }
 
 @media (max-width: 520px) {
+  .hub-zones-grid {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
   .hub-arm__inner {
     width: min(32vmin, 130px);
     margin-left: calc(-1 * min(16vmin, 65px));
@@ -475,9 +682,21 @@
   }
 
   .hub-arm__inner--lab {
+    width: min(32vmin, 130px);
+    margin-left: calc(-1 * min(16vmin, 65px));
+    top: calc(-1 * min(46vmin, 240px));
+  }
+
+  .hub-arm__inner--fluid {
+    width: min(32vmin, 130px);
+    margin-left: calc(-1 * min(16vmin, 65px));
+    top: calc(-1 * min(46vmin, 240px));
+  }
+
+  .hub-zone--machines .hub-arm__inner {
     width: min(30vmin, 108px);
     margin-left: calc(-1 * min(15vmin, 54px));
-    top: calc(-1 * min(38vmin, 200px));
+    top: calc(-1 * min(43vmin, 222px));
   }
 
   .hub-node__icon {
@@ -489,5 +708,13 @@
   .hub-node__label {
     font-size: 0.54rem;
     max-width: 5.5rem;
+  }
+
+}
+
+@media (min-width: 521px) and (max-width: 1180px) {
+  .hub-zones-grid {
+    grid-template-columns: 1fr;
+    gap: 1.35rem;
   }
 }

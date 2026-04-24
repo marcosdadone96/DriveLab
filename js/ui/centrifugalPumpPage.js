@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Página bomba centrífuga — mismo patrón que cintas: resultados, informe, motorreductores, PDF Pro.
  */
 
@@ -17,6 +17,10 @@ import { mountPremiumPdfExportBar, buildPumpPdfPayload } from '../services/repor
 import { readMountingPreferences } from '../modules/mountingPreferences.js';
 import { injectMountingConfigSection, MOUNTING_INPUT_IDS } from './mountingConfigSection.js';
 import { openMotorsRecommendationsAndScroll } from './motorsCollapsible.js';
+import { applyMachinePremiumGates } from './machinePremiumGates.js';
+import { foldAllMachineDetailsOncePerPageLoad } from './machineDetailsFold.js';
+import { initInfoChipPopovers } from './infoChipPopover.js';
+import { getI18nLabels } from '../config/i18nLabels.js';
 
 const pumpInputIds = [
   'pumpFlow',
@@ -35,6 +39,21 @@ const pumpInputIds = [
 ];
 
 const pumpSelectIds = ['pumpFlowUnit', 'fluidType', 'pumpLoadDuty', 'couplingType'];
+const PHYSICAL_LIMITS = Object.freeze({
+  pumpFlow: { min: 0.001, max: 200000 },
+  pumpHead: { min: 0.1, max: 3000 },
+  pumpEta: { min: 1, max: 99 },
+  rho: { min: 400, max: 2500 },
+  viscosity: { min: 0.1, max: 100000 },
+  tempC: { min: -30, max: 220 },
+  pumpSpeedRpm: { min: 100, max: 12000 },
+  pumpServiceFactor: { min: 1, max: 3 },
+  suctionKpa: { min: -95, max: 1000 },
+  pipeDiamMm: { min: 10, max: 3000 },
+  dailyHours: { min: 0.5, max: 24 },
+  pumpVoltage: { min: 24, max: 15000 },
+  pumpFreq: { min: 10, max: 400 },
+});
 
 function readNum(id, fallback) {
   const el = document.getElementById(id);
@@ -140,7 +159,73 @@ function getEls() {
     assumptions: document.getElementById('pumpAssumptionsList'),
     runtimeError: document.getElementById('runtimeError'),
     designAlerts: document.getElementById('pumpDesignAlerts'),
+    qualityChecklist: document.getElementById('pumpQualityChecklist'),
   };
+}
+
+function applyPhysicalLimitsToInputs() {
+  Object.entries(PHYSICAL_LIMITS).forEach(([id, lim]) => {
+    const el = document.getElementById(id);
+    if (!(el instanceof HTMLInputElement)) return;
+    el.min = String(lim.min);
+    el.max = String(lim.max);
+  });
+}
+
+function normalizePhysicalInputs() {
+  Object.entries(PHYSICAL_LIMITS).forEach(([id, lim]) => {
+    const el = document.getElementById(id);
+    if (!(el instanceof HTMLInputElement)) return;
+    const raw = parseFloat(String(el.value).replace(',', '.'));
+    if (!Number.isFinite(raw)) return;
+    const v = Math.min(lim.max, Math.max(lim.min, raw));
+    if (v !== raw) el.value = String(v);
+  });
+}
+
+function buildQualityChecklist(raw, r) {
+  const d = r.detail || {};
+  const checks = [];
+  const vPipe = raw.pipeDiameter_mm && raw.pipeDiameter_mm > 0
+    ? (d.Q_m3s ?? 0) / (Math.PI * (raw.pipeDiameter_mm / 1000 / 2) ** 2)
+    : null;
+  const specificEnergy = d.H_m != null ? d.H_m * 9.81 : 0;
+
+  checks.push(
+    r.efficiency_pct_effective < 35
+      ? { level: 'warn', text: `η=${formatNum(r.efficiency_pct_effective, 1)}% muy baja para bomba centrífuga; revise punto o estado del equipo.` }
+      : { level: 'info', text: `η=${formatNum(r.efficiency_pct_effective, 1)}% en rango plausible para predimensionado.` },
+  );
+  checks.push(
+    raw.rho_kg_m3 < 700 || raw.rho_kg_m3 > 1800
+      ? { level: 'warn', text: `Densidad ρ=${formatNum(raw.rho_kg_m3, 0)} kg/m³ fuera de rango típico de agua/proceso ligero.` }
+      : { level: 'info', text: `Densidad ρ=${formatNum(raw.rho_kg_m3, 0)} kg/m³ coherente.` },
+  );
+  checks.push(
+    raw.pumpSpeed_rpm > 3600
+      ? { level: 'warn', text: `Velocidad de eje ${formatNum(raw.pumpSpeed_rpm, 0)} rpm alta; confirme curva, NPSH y equilibrio dinámico.` }
+      : { level: 'info', text: `Velocidad de eje ${formatNum(raw.pumpSpeed_rpm, 0)} rpm en rango habitual industrial.` },
+  );
+  if (vPipe != null) {
+    checks.push(
+      vPipe > 3.5
+        ? { level: 'warn', text: `Velocidad en impulsión ≈ ${formatNum(vPipe, 2)} m/s alta; posibles pérdidas/ruido elevados.` }
+        : vPipe < 0.4
+          ? { level: 'warn', text: `Velocidad en impulsión ≈ ${formatNum(vPipe, 2)} m/s baja; riesgo de sedimentación/sobredimensionado.` }
+          : { level: 'info', text: `Velocidad en impulsión ≈ ${formatNum(vPipe, 2)} m/s en banda recomendada.` },
+    );
+  }
+  checks.push(
+    raw.serviceFactor > 2.2
+      ? { level: 'warn', text: `SF=${formatNum(raw.serviceFactor, 2)} elevado; puede sobredimensionar en exceso el accionamiento.` }
+      : { level: 'info', text: `SF=${formatNum(r.serviceFactorUsed ?? raw.serviceFactor, 2)} razonable para selección preliminar.` },
+  );
+  checks.push(
+    specificEnergy > 12000
+      ? { level: 'warn', text: `Energía específica alta (${formatNum(specificEnergy, 0)} J/kg). Revise H y pérdidas asumidas.` }
+      : { level: 'info', text: `Energía específica ${formatNum(specificEnergy, 0)} J/kg dentro de rango habitual.` },
+  );
+  return checks;
 }
 
 function getDriveRequirements() {
@@ -186,9 +271,11 @@ const recoCopyPump = {
 };
 
 function refresh() {
+  const LBL = getI18nLabels();
   const els = getEls();
   try {
     clearRuntimeError();
+    normalizePhysicalInputs();
     const raw = readInputs();
     const r = computeCentrifugalPump(raw);
     const d = r.detail || {};
@@ -268,7 +355,7 @@ function refresh() {
         : `<div class="metric"><div class="label">Instalación (Pro)</div><div class="value muted">Actíve Pro para succión, tubería y horario</div></div>`;
       els.results.innerHTML = `
     <div class="result-focus-grid">
-      <div class="metric"><div class="label">Par requerido</div><div class="value">${formatNum(r.torqueWithService_Nm, 2)} N·m</div></div>
+      <div class="metric"><div class="label">${LBL.requiredTorque}</div><div class="value">${formatNum(r.torqueWithService_Nm, 2)} N·m</div></div>
       <div class="metric"><div class="label">Factor de servicio</div><div class="value">${formatNum(r.serviceFactorUsed ?? 1, 3)}</div></div>
       <div class="metric metric--text"><div class="label">Tipo de montaje</div><div class="value">${formatMounting(mount)}</div></div>
       <div class="metric"><div class="label">Velocidad</div><div class="value">${formatNum(r.drumRpm, 2)} rpm</div></div>
@@ -288,15 +375,26 @@ function refresh() {
       <div class="motors-details__body">
         <div class="results-grid">
           <div class="metric"><div class="label">Potencia hidráulica P_h</div><div class="value">${formatNum(r.hydraulicPower_kW, 3)} kW</div></div>
-          <div class="metric"><div class="label">Potencia eje bomba (sin SF)</div><div class="value">${formatNum(r.shaftPower_kW, 3)} kW</div></div>
+          <div class="metric"><div class="label">${LBL.shaftPower} bomba (sin SF)</div><div class="value">${formatNum(r.shaftPower_kW, 3)} kW</div></div>
           <div class="metric"><div class="label">Factor corrección ν / fluido</div><div class="value">${formatNum(r.viscosityFactor ?? 1, 3)}</div></div>
-          <div class="metric"><div class="label">Caudal másico</div><div class="value">${formatNum(r.massFlow_kg_s, 3)} kg/s</div></div>
+          <div class="metric"><div class="label">${LBL.massFlow}</div><div class="value">${formatNum(r.massFlow_kg_s, 3)} kg/s</div></div>
           <div class="metric"><div class="label">Par en eje (régimen)</div><div class="value">${formatNum(r.torqueAtDrum_Nm, 2)} N·m</div></div>
           ${instNote}
         </div>
       </div>
     </details>
   `;
+    }
+
+    if (els.qualityChecklist) {
+      const checks = buildQualityChecklist(raw, r);
+      const bad = checks.filter((c) => c.level === 'error').length;
+      const warn = checks.filter((c) => c.level === 'warn').length;
+      const ok = checks.length - bad - warn;
+      els.qualityChecklist.innerHTML = `
+        <p class="muted" style="margin:0 0 0.5rem;font-size:0.83rem"><strong>Checklist técnica rápida</strong> · ${ok} OK · ${warn} avisos · ${bad} críticos</p>
+        ${checks.map((c) => `<p class="design-alert design-alert--${c.level}">${escHtml(c.text)}</p>`).join('')}
+      `;
     }
 
     if (els.engineeringReport) {
@@ -326,6 +424,8 @@ function refresh() {
       mountPremiumPdfExportBar(els.premiumPdfMount, {
         isPremium: isPremiumEffective(),
         getPayload: () => buildPumpPdfPayload(raw, r),
+        getDiagramElement: () => els.diagram,
+        diagramTitle: 'Diagrama de la máquina',
       });
     }
 
@@ -351,6 +451,8 @@ function refresh() {
         els.premiumOpt.innerHTML = '';
       }
     }
+    applyMachinePremiumGates();
+    foldAllMachineDetailsOncePerPageLoad();
   } catch (err) {
     console.error(err);
     showRuntimeError(
@@ -396,7 +498,9 @@ MOUNTING_INPUT_IDS.forEach((id) => {
 });
 
 syncProInstallUi();
+applyPhysicalLimitsToInputs();
 syncLoadDutyUi();
+initInfoChipPopovers(document.body);
 refresh();
 
 

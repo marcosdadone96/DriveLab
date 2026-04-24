@@ -135,6 +135,8 @@ export function computeTractionElevator(p) {
 
   const rope = selectWireRope(Mc, Q, SF, p.maxStrands ?? 8);
   const T_brake = emergencyBrakeTorque_Nm(Mc, Q, Mcp, D, 1.25);
+  const DdRatio = (D * 1000) / Math.max(1, rope.d_mm);
+  const minDdRecommended = duty === 'persons' ? 40 : 35;
 
   const F_imbalance = Math.abs(Mc + Q - Mcp) * g;
   const P_lift_kW = (F_imbalance * v * mechFactor) / 1000;
@@ -169,6 +171,38 @@ export function computeTractionElevator(p) {
     });
   }
 
+  if (DdRatio < minDdRecommended) {
+    verdicts.push({
+      level: 'warn',
+      code: 'dd_ratio',
+      text: `Relación D/d baja (≈ ${DdRatio.toFixed(1)}). Recomendable D/d >= ${minDdRecommended} para este servicio; considere mayor polea o menor diámetro de cable.`,
+    });
+  }
+
+  if (mu < 0.08 || mu > 0.15) {
+    verdicts.push({
+      level: 'warn',
+      code: 'mu_range',
+      text: `μ=${mu.toFixed(2)} fuera del rango orientativo habitual (0.08–0.15). Valide canal, acabado y condiciones reales de tracción.`,
+    });
+  }
+
+  if (adhesionOk && adhesionMargin < 1.2) {
+    verdicts.push({
+      level: 'warn',
+      code: 'adhesion_target',
+      text: `Margen de adherencia correcto pero justo (x${adhesionMargin.toFixed(2)}). Objetivo recomendado: >= x1.20 en diseño preliminar.`,
+    });
+  }
+
+  if ((duty === 'persons' && v > 1.75) || (duty === 'freight' && v > 1.25)) {
+    verdicts.push({
+      level: 'warn',
+      code: 'speed_service',
+      text: `Velocidad ${v.toFixed(2)} m/s elevada para servicio ${duty === 'persons' ? 'personas' : 'carga'} en este modelo simplificado; confirme dinámica de arranque/frenado y confort en cálculo detallado.`,
+    });
+  }
+
   const tractionOk = adhesionOk && rope.n <= (p.maxStrands ?? 8) + 2;
   if (tractionOk && verdicts.length === 0) {
     verdicts.push({
@@ -183,6 +217,78 @@ export function computeTractionElevator(p) {
       text: `Configuración de cables: ${rope.n} × Ø${rope.d_mm} mm (rotura nominal ≈ ${rope.minBreak_kN} kN/cable).`,
     });
   }
+
+  const steps = [
+    {
+      id: 'cw',
+      title: 'Contrapeso objetivo',
+      formula: 'Mcp_opt = Mc + k*Q',
+      substitution: `Mc=${Mc.toFixed(0)} kg, Q=${Q.toFixed(0)} kg, k=${kCw.toFixed(2)}`,
+      value: Mcp_opt,
+      unit: 'kg',
+      meaning: 'Compensación orientativa de cabina y fracción de carga útil.',
+    },
+    {
+      id: 'euler',
+      title: 'Límite de adherencia',
+      formula: 'T1/T2 <= exp(mu*alpha)',
+      substitution: `mu=${mu.toFixed(3)}, alpha=${alpha_deg.toFixed(0)}°`,
+      value: lim,
+      unit: '—',
+      meaning: 'Criterio Euler-Eytelwein en polea tractora.',
+    },
+    {
+      id: 'ratio',
+      title: 'Relación de tensiones peor caso',
+      formula: 'max((Mc+Q)/Mcp, Mcp/Mc)',
+      substitution: `Mcp=${Mcp.toFixed(0)} kg`,
+      value: ratio,
+      unit: '—',
+      meaning: 'Se compara contra exp(mu*alpha).',
+    },
+    {
+      id: 'power',
+      title: 'Potencia orientativa en polea',
+      formula: 'P = |Mc+Q-Mcp|*g*v*factor',
+      substitution: `v=${v.toFixed(2)} m/s, reeving=${reeving}`,
+      value: P_lift_kW,
+      unit: 'kW',
+      meaning: 'Orden de magnitud por desequilibrio de masas.',
+    },
+    {
+      id: 'brake',
+      title: 'Par de frenado de emergencia',
+      formula: 'T_brake = bf*DeltaF*(D/2)',
+      substitution: `bf=1.25, D=${D.toFixed(2)} m`,
+      value: T_brake,
+      unit: 'N·m',
+      meaning: 'Par resistente orientativo para retención.',
+    },
+    {
+      id: 'dd',
+      title: 'Chequeo geométrico D/d',
+      formula: 'D/d = (D*1000) / d_cable',
+      substitution: `D=${(D * 1000).toFixed(0)} mm, d=${rope.d_mm} mm`,
+      value: DdRatio,
+      unit: '—',
+      meaning: `Referencia preliminar: D/d >= ${minDdRecommended} (${duty === 'persons' ? 'personas' : 'carga'}).`,
+    },
+  ];
+
+  const explanations = [
+    `Adherencia: T1/T2=${ratio.toFixed(2)} frente a limite exp(mu*alpha)=${lim.toFixed(2)} (margen x${adhesionMargin.toFixed(2)}).`,
+    `Configuracion de cables sugerida: ${rope.n} x Ø${rope.d_mm} mm (${rope.minBreak_kN} kN por cable).`,
+    `Chequeo D/d: ${DdRatio.toFixed(1)} (objetivo >= ${minDdRecommended}).`,
+    `Ahorro energetico orientativo por contrapeso: ${Math.max(0, savingPct).toFixed(0)} %.`,
+  ];
+
+  const assumptions = [
+    'Modelo estatico-orientativo de traccion por cables y polea; no sustituye EN 81 ni proyecto reglamentario.',
+    'Se evalua adherencia con Euler-Eytelwein usando mu y angulo de abrazamiento declarados.',
+    'Potencia orientativa basada en desequilibrio de masas (sin regeneracion ni ciclo real detallado).',
+    'Seleccion de cables con catalogo demo de carga minima de rotura; validar cable real y terminaciones.',
+    'Factor de seguridad demo: 10 (carga) y 12 (personas).',
+  ];
 
   return {
     inputs: {
@@ -217,6 +323,9 @@ export function computeTractionElevator(p) {
       power_kW_orientative: P_lift_kW,
       sheave_rpm: n_rpm,
     },
+    steps,
+    explanations,
+    assumptions,
     verdicts,
     disclaimer:
       'No es memoria de instalación reglamentaria. Verifique EN 81, normas de cables (p. ej. EN 12385) y proyecto firmado.',

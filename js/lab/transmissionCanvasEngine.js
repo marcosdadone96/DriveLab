@@ -56,6 +56,7 @@ export function outerTangentSegment(c0, r0, c1, r1, side) {
   if (Math.abs(r0 - r1) >= d - 1e-9) return null;
   const ux = dx / d;
   const uy = dy / d;
+  /* Tangente exterior: sin(theta) = (R1 - R2) / d */
   const rrel = (r0 - r1) / d;
   const h = Math.sqrt(Math.max(0, 1 - rrel * rrel)) * side;
   const nx = rrel * ux - h * uy;
@@ -65,6 +66,71 @@ export function outerTangentSegment(c0, r0, c1, r1, side) {
     p1: { x: c1.x + r1 * nx, y: c1.y + r1 * ny },
     n: { x: nx, y: ny },
   };
+}
+
+/**
+ * Tangente interior (cruzada) entre circunferencias.
+ * Se usa para contacto "back-side" (cara externa) en polea tensora.
+ * @returns {{ p0: Pt; p1: Pt; n: Pt } | null}
+ */
+export function innerTangentSegment(c0, r0, c1, r1, side) {
+  const dx = c1.x - c0.x;
+  const dy = c1.y - c0.y;
+  const d = Math.hypot(dx, dy);
+  if (d < 1e-6) return null;
+  if (r0 + r1 >= d - 1e-9) return null;
+  const alpha = Math.atan2(dy, dx);
+  /* Tangente interior: beta = acos((R1 + R2)/d) */
+  const beta = Math.acos(Math.max(-1, Math.min(1, (r0 + r1) / d)));
+  const ang = alpha + side * beta;
+  const nx = Math.cos(ang);
+  const ny = Math.sin(ang);
+  return {
+    p0: { x: c0.x + r0 * nx, y: c0.y + r0 * ny },
+    p1: { x: c1.x - r1 * nx, y: c1.y - r1 * ny },
+    n: { x: nx, y: ny },
+  };
+}
+
+function orient(a, b, c) {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+function onSegment(a, b, p) {
+  return (
+    Math.min(a.x, b.x) - 1e-9 <= p.x &&
+    p.x <= Math.max(a.x, b.x) + 1e-9 &&
+    Math.min(a.y, b.y) - 1e-9 <= p.y &&
+    p.y <= Math.max(a.y, b.y) + 1e-9
+  );
+}
+
+function segmentsIntersect(a, b, c, d) {
+  const o1 = orient(a, b, c);
+  const o2 = orient(a, b, d);
+  const o3 = orient(c, d, a);
+  const o4 = orient(c, d, b);
+  if ((o1 > 0 && o2 < 0) || (o1 < 0 && o2 > 0)) {
+    if ((o3 > 0 && o4 < 0) || (o3 < 0 && o4 > 0)) return true;
+  }
+  if (Math.abs(o1) < 1e-9 && onSegment(a, b, c)) return true;
+  if (Math.abs(o2) < 1e-9 && onSegment(a, b, d)) return true;
+  if (Math.abs(o3) < 1e-9 && onSegment(c, d, a)) return true;
+  if (Math.abs(o4) < 1e-9 && onSegment(c, d, b)) return true;
+  return false;
+}
+
+function hasSelfIntersections(segments) {
+  const n = segments.length;
+  for (let i = 0; i < n; i++) {
+    const a = segments[i];
+    for (let j = i + 1; j < n; j++) {
+      if (j === i || j === (i + 1) % n || i === (j + 1) % n) continue;
+      const b = segments[j];
+      if (segmentsIntersect(a.p0, a.p1, b.p0, b.p1)) return true;
+    }
+  }
+  return false;
 }
 
 function angleOnCircle(c, p) {
@@ -177,6 +243,269 @@ export function buildOpenBeltPath2D(centers, radii) {
   };
 }
 
+/**
+ * Lazo ordenado que fuerza contacto en todas las poleas (incluye tensoras/intermedias).
+ * Aproxima puntos de entrada/salida por dirección entre centros consecutivos y suma arcos locales.
+ * @param {{ x: number; y: number }[]} centers
+ * @param {number[]} radii
+ * @param {Array<{ role?: 'drive'|'driven'|'idler', wrapSide?: 'outside'|'inside', isExternal?: boolean, contacto?: 'interior'|'exterior' }>} [nodeMeta]
+ * @param {Array<-1|1|null|undefined>} [edgeSigns] Signo por tramo i->i+1 (1=pos, -1=neg)
+ * @returns {{ pathD: string; length_mm: number; reliable: boolean; note: string }}
+ */
+export function buildOrderedBeltPath2D(centers, radii, nodeMeta = [], edgeSigns = []) {
+  const n = centers.length;
+  if (n < 2) return { pathD: '', length_mm: 0, reliable: false, note: 'Minimo 2 poleas.' };
+  if (n === 2) return buildOpenBeltPath2D(centers, radii);
+  const edges = Array.from({ length: n }, (_, i) => ({ i, j: (i + 1) % n }));
+  const centroid = centers.reduce((acc, c) => ({ x: acc.x + c.x, y: acc.y + c.y }), { x: 0, y: 0 });
+  centroid.x /= n;
+  centroid.y /= n;
+  const isExternal = (meta) =>
+    !!meta && (meta.contacto === 'exterior' || meta.isExternal === true || meta.wrapSide === 'outside');
+  const edgeUsesInnerTangents = (i, j) => {
+    const aExt = isExternal(nodeMeta[i] || {});
+    const bExt = isExternal(nodeMeta[j] || {});
+    return aExt !== bExt;
+  };
+  /** @type {Array<{pos: ReturnType<typeof outerTangentSegment>, neg: ReturnType<typeof outerTangentSegment>}>} */
+  const edgeTangents = edges.map(({ i, j }) => {
+    const useInner = edgeUsesInnerTangents(i, j);
+    const tangentFn = useInner ? innerTangentSegment : outerTangentSegment;
+    return {
+      pos: tangentFn(centers[i], radii[i], centers[j], radii[j], +1),
+      neg: tangentFn(centers[i], radii[i], centers[j], radii[j], -1),
+    };
+  });
+  if (edgeTangents.some((e) => !e.pos && !e.neg)) {
+    return { pathD: '', length_mm: 0, reliable: false, note: 'Geometria invalida para tangencias en al menos un tramo.' };
+  }
+
+  const maxMask = 1 << n;
+  let best = { mask: 0, len: Infinity, score: Infinity };
+
+  for (let mask = 0; mask < maxMask; mask++) {
+    /** @type {Array<ReturnType<typeof outerTangentSegment>>} */
+    const seg = [];
+    let valid = true;
+    for (let e = 0; e < n; e++) {
+      const choosePos = ((mask >> e) & 1) === 1;
+      const forced = edgeSigns[e];
+      if (forced === 1 && !choosePos) {
+        valid = false;
+        break;
+      }
+      if (forced === -1 && choosePos) {
+        valid = false;
+        break;
+      }
+      const t = choosePos ? edgeTangents[e].pos : edgeTangents[e].neg;
+      if (!t) {
+        valid = false;
+        break;
+      }
+      seg.push(t);
+    }
+    if (!valid) continue;
+    if (hasSelfIntersections(seg)) continue;
+
+    let L = 0;
+    let externalWrapPenalty = 0;
+    let externalWrapInvalid = false;
+    for (let e = 0; e < n; e++) {
+      const s = seg[e];
+      L += Math.hypot(s.p1.x - s.p0.x, s.p1.y - s.p0.y);
+    }
+    for (let k = 0; k < n; k++) {
+      const prev = seg[(k - 1 + n) % n];
+      const cur = seg[k];
+      const c = centers[k];
+      const r = Math.max(1e-6, radii[k]);
+      const tIn = angleOnCircle(c, prev.p1);
+      const tOut = angleOnCircle(c, cur.p0);
+      let d = tOut - tIn;
+      while (d <= -Math.PI) d += 2 * Math.PI;
+      while (d > Math.PI) d -= 2 * Math.PI;
+      const shortAbs = Math.abs(d);
+      const meta = nodeMeta[k] || {};
+      const insideIdler = meta.role === 'idler' && meta.wrapSide === 'inside';
+      const externalIdler = meta.role === 'idler' && isExternal(meta);
+      /* Polea interna: arco largo. Tensora dorsal (back-side): arco corto. */
+      L += insideIdler ? r * (2 * Math.PI - shortAbs) : r * shortAbs;
+      if (externalIdler) {
+        // Limitar abrazamiento de tensora dorsal: contacto pequeño/local.
+        const maxWrap = (95 * Math.PI) / 180;
+        if (shortAbs > maxWrap) {
+          externalWrapPenalty += shortAbs - maxWrap;
+          externalWrapInvalid = true;
+        }
+      }
+    }
+    if (externalWrapInvalid) continue;
+    /* Evitar que al insertar tensora se "gire" el lazo completo:
+       penalizamos cambios de rama entre tramos consecutivos en poleas no tensoras. */
+    let branchFlipPenalty = 0;
+    for (let k = 0; k < n; k++) {
+      const prevBit = (mask >> ((k - 1 + n) % n)) & 1;
+      const curBit = (mask >> k) & 1;
+      const meta = nodeMeta[k] || {};
+      const isIdler = meta.role === 'idler';
+      if (!isIdler && prevBit !== curBit) branchFlipPenalty += 1;
+    }
+    /* Mantener contorno exterior en tramos entre poleas no tensoras:
+       el segmento tangente debe quedar por fuera del "interior" definido por el centroide. */
+    let exteriorPenalty = 0;
+    /* En tramos mixtos (interior↔exterior), la rama debe desviar hacia el interior del lazo
+       (caso tensora dorsal) para evitar la rama "superior" no deseada. */
+    let inflectionPenalty = 0;
+    /* Regla local para tensora dorsal:
+       el contacto debe quedar en la cara orientada hacia el centro del lazo
+       (en tu caso, la parte inferior de la polea superior). */
+    let idlerContactPenalty = 0;
+    for (let e = 0; e < n; e++) {
+      const i = e;
+      const j = (e + 1) % n;
+      const mi = nodeMeta[i] || {};
+      const mj = nodeMeta[j] || {};
+      if (mi.role === 'idler' || mj.role === 'idler') continue;
+      const c0 = centers[i];
+      const c1 = centers[j];
+      const ux = c1.x - c0.x;
+      const uy = c1.y - c0.y;
+      const vx = centroid.x - c0.x;
+      const vy = centroid.y - c0.y;
+      const interiorSign = Math.sign(ux * vy - uy * vx);
+      const tangentSign = Math.sign(ux * seg[e].n.y - uy * seg[e].n.x);
+      if (interiorSign !== 0 && tangentSign !== 0 && interiorSign === tangentSign) exteriorPenalty += 1;
+
+      const mixed = edgeUsesInnerTangents(i, j);
+      if (mixed && interiorSign !== 0 && tangentSign !== 0 && interiorSign !== tangentSign) inflectionPenalty += 1;
+    }
+    for (let k = 0; k < n; k++) {
+      const meta = nodeMeta[k] || {};
+      const isExternalIdler = meta.role === 'idler' && isExternal(meta);
+      if (!isExternalIdler) continue;
+      const prev = seg[(k - 1 + n) % n];
+      const cur = seg[k];
+      const c = centers[k];
+      const cx = centroid.x - c.x;
+      const cy = centroid.y - c.y;
+      const inx = prev.p1.x - c.x;
+      const iny = prev.p1.y - c.y;
+      const outx = cur.p0.x - c.x;
+      const outy = cur.p0.y - c.y;
+      const inToward = inx * cx + iny * cy;
+      const outToward = outx * cx + outy * cy;
+      if (!(inToward > 0)) idlerContactPenalty += 1;
+      if (!(outToward > 0)) idlerContactPenalty += 1;
+    }
+    const score =
+      L +
+      branchFlipPenalty * 1e6 +
+      exteriorPenalty * 1e6 +
+      inflectionPenalty * 1e6 +
+      idlerContactPenalty * 1e6 +
+      externalWrapPenalty * 1e5;
+    if (score < best.score) best = { mask, len: L, score };
+  }
+
+  if (!Number.isFinite(best.len)) {
+    return { pathD: '', length_mm: 0, reliable: false, note: 'No se encontro combinacion de tangentes valida.' };
+  }
+
+  /** @type {Array<ReturnType<typeof outerTangentSegment>>} */
+  const bestSeg = [];
+  for (let e = 0; e < n; e++) {
+    const choosePos = ((best.mask >> e) & 1) === 1;
+    bestSeg.push((choosePos ? edgeTangents[e].pos : edgeTangents[e].neg) || edgeTangents[e].pos || edgeTangents[e].neg);
+  }
+
+  let pathD = `M ${bestSeg[0].p0.x.toFixed(2)} ${bestSeg[0].p0.y.toFixed(2)}`;
+  for (let e = 0; e < n; e++) {
+    const s = bestSeg[e];
+    const k = (e + 1) % n;
+    const nextOut = bestSeg[k].p0;
+    const c = centers[k];
+    const r = Math.max(1e-6, radii[k]);
+    const tIn = angleOnCircle(c, s.p1);
+    const tOut = angleOnCircle(c, nextOut);
+    let d = tOut - tIn;
+    while (d <= -Math.PI) d += 2 * Math.PI;
+    while (d > Math.PI) d -= 2 * Math.PI;
+    const shortAbs = Math.abs(d);
+    const meta = nodeMeta[k] || {};
+    const insideIdler = meta.role === 'idler' && meta.wrapSide === 'inside';
+    const externalIdler = isExternal(meta);
+    const largeArc = insideIdler ? 1 : externalIdler ? 0 : shortAbs > Math.PI ? 1 : 0;
+    const sweep = insideIdler ? (d >= 0 ? 0 : 1) : d >= 0 ? 1 : 0;
+    pathD += ` L ${s.p1.x.toFixed(2)} ${s.p1.y.toFixed(2)}`;
+    pathD += ` A ${r.toFixed(3)} ${r.toFixed(3)} 0 ${largeArc} ${sweep} ${nextOut.x.toFixed(2)} ${nextOut.y.toFixed(2)}`;
+  }
+  pathD += ' Z';
+
+  return {
+    pathD,
+    length_mm: best.len,
+    reliable: true,
+    note: 'Trazado tangente por tramos sin auto-intersecciones; tensora dorsal usa bitangentes internas.',
+  };
+}
+
+function pointSegmentDistance(px, py, ax, ay, bx, by) {
+  const vx = bx - ax;
+  const vy = by - ay;
+  const wx = px - ax;
+  const wy = py - ay;
+  const vv = vx * vx + vy * vy;
+  const t = vv > 1e-9 ? Math.max(0, Math.min(1, (wx * vx + wy * vy) / vv)) : 0;
+  const qx = ax + t * vx;
+  const qy = ay + t * vy;
+  return Math.hypot(px - qx, py - qy);
+}
+
+/**
+ * Ordena nodos de correa para que las poleas tensoras se inserten en el tramo más cercano
+ * sin romper el lazo principal de poleas motriz/conducidas.
+ * @param {TxState} state
+ * @param {{ nodeIds: number[] }} br
+ */
+export function orderedBeltNodeIds(state, br) {
+  const all = (br.nodeIds || []).filter((id) => state.nodes.some((n) => n.id === id && n.kind === 'pulley'));
+  if (all.length < 3) return all;
+
+  /** @type {number[]} */
+  const core = [];
+  /** @type {number[]} */
+  const idlers = [];
+  for (const id of all) {
+    const n = state.nodes.find((x) => x.id === id);
+    if (!n || n.kind !== 'pulley') continue;
+    if (n.pulleyRole === 'idler') idlers.push(id);
+    else core.push(id);
+  }
+  if (core.length < 2) return all;
+
+  /** @type {number[]} */
+  const ring = [...core];
+  for (const id of idlers) {
+    const p = state.nodes.find((x) => x.id === id);
+    if (!p) continue;
+    let bestIdx = 0;
+    let bestD = Infinity;
+    for (let i = 0; i < ring.length; i++) {
+      const a = state.nodes.find((x) => x.id === ring[i]);
+      const b = state.nodes.find((x) => x.id === ring[(i + 1) % ring.length]);
+      if (!a || !b) continue;
+      const d = pointSegmentDistance(p.x, p.y, a.x, a.y, b.x, b.y);
+      if (d < bestD) {
+        bestD = d;
+        bestIdx = i + 1;
+      }
+    }
+    ring.splice(bestIdx, 0, id);
+  }
+  return ring;
+}
+
 /** Carga de rotura demo kN ~ f(paso) — orientativa */
 export function demoChainBreakingLoad_kN(pitch_mm) {
   const p = Number(pitch_mm) || 12.7;
@@ -218,6 +547,9 @@ export function gearContactHint_MPa(T_Nm, m_mm, z1, z2, faceWidth_mm) {
  *   module_mm?: number;
  *   faceWidth_mm?: number;
  *   d_mm?: number;
+ *   pulleyRole?: 'drive'|'driven'|'idler';
+ *   idlerWrapSide?: 'outside'|'inside';
+ *   isExternal?: boolean;
  *   pitch_mm?: number;
  *   chainRefId?: string;
  *   isMotor?: boolean;
@@ -229,7 +561,7 @@ export function gearContactHint_MPa(T_Nm, m_mm, z1, z2, faceWidth_mm) {
  * @typedef {{
  *   nodes: TxNode[];
  *   meshes: { a: number; b: number }[];
- *   beltRuns: { id: string; nodeIds: number[]; kind: 'v'|'sync'; slip: number }[];
+ *   beltRuns: { id: string; nodeIds: number[]; kind: 'v'|'sync'; slip: number; edgeSigns?: Array<-1|1> }[];
  *   chainRuns: { id: string; nodeIds: number[]; chainRefId: string }[];
  *   selectedId: number | null;
  *   beltPickOrder: number[];
@@ -330,6 +662,9 @@ export function addNode(state, kind, x, y) {
       x,
       y,
       d_mm: 120,
+      pulleyRole: 'driven',
+      idlerWrapSide: 'outside',
+      isExternal: false,
       isMotor: false,
       phase_rad: 0,
     });
@@ -435,32 +770,54 @@ export function propagateKinematics(state, n0_rpm, T0_Nm) {
     }
 
     for (const br of state.beltRuns) {
-      const idx = br.nodeIds.indexOf(cur.id);
-      if (idx < 0 || idx >= br.nodeIds.length - 1) continue;
-      const idNext = br.nodeIds[idx + 1];
-      if (seen.has(idNext)) continue;
-      const pa = state.nodes.find((n) => n.id === br.nodeIds[idx]);
-      const pb = state.nodes.find((n) => n.id === idNext);
-      if (!pa || !pb) continue;
-      const da = getNodeD_mm(pa);
-      const db = getNodeD_mm(pb);
+      const orderedIds = orderedBeltNodeIds(state, br).filter((id) => state.nodes.some((n) => n.id === id && n.kind === 'pulley'));
+      if (orderedIds.length < 2) continue;
+
       const slip = br.kind === 'sync' ? 0 : Math.max(0, Math.min(0.08, br.slip ?? 0.015));
       const eff = 1 - slip;
-      const nAbs = Math.abs(cur.n);
-      const nNext = nAbs * (da / db) * eff;
-      const Tnext = cur.T * (db / da) * (br.kind === 'sync' ? 1 : 0.98);
-      seen.add(idNext);
-      out.byId[idNext] = {
-        n_rpm: nNext * cur.sign,
-        T_Nm: Math.abs(Tnext),
-        omega: (nNext * cur.sign * 2 * Math.PI) / 60,
-      };
-      out.formulas.push(
-        br.kind === 'sync'
-          ? `Correa síncrona: n₂ = n₁·d₁/d₂ = ${nAbs.toFixed(2)}·${da.toFixed(1)}/${db.toFixed(1)} = ${(nAbs * (da / db)).toFixed(2)} min⁻¹.`
-          : `Correa V: n₂ ≈ n₁·(d₁/d₂)·(1−s), s=${(slip * 100).toFixed(2)}% → ${nNext.toFixed(2)} min⁻¹.`,
-      );
-      q.push({ id: idNext, n: nNext, T: Math.abs(Tnext), sign: cur.sign });
+      const lossT = br.kind === 'sync' ? 1 : 0.98;
+
+      for (let i = 0; i < orderedIds.length; i++) {
+        const aId = orderedIds[i];
+        const bId = orderedIds[(i + 1) % orderedIds.length];
+        if (aId === bId) continue;
+
+        const a = state.nodes.find((n) => n.id === aId);
+        const b = state.nodes.find((n) => n.id === bId);
+        if (!a || !b) continue;
+        const da = getNodeD_mm(a);
+        const db = getNodeD_mm(b);
+        if (!(da > 0 && db > 0)) continue;
+
+        if (cur.id === aId && !seen.has(bId)) {
+          const nAbs = Math.abs(cur.n);
+          const nNext = nAbs * (da / db) * eff;
+          const Tnext = cur.T * (db / da) * lossT;
+          seen.add(bId);
+          out.byId[bId] = {
+            n_rpm: nNext * cur.sign,
+            T_Nm: Math.abs(Tnext),
+            omega: (nNext * cur.sign * 2 * Math.PI) / 60,
+          };
+          q.push({ id: bId, n: nNext, T: Math.abs(Tnext), sign: cur.sign });
+          out.formulas.push(
+            br.kind === 'sync'
+              ? `Correa síncrona: n₂ = n₁·d₁/d₂ = ${nAbs.toFixed(2)}·${da.toFixed(1)}/${db.toFixed(1)} = ${(nAbs * (da / db)).toFixed(2)} min⁻¹.`
+              : `Correa V: n₂ ≈ n₁·(d₁/d₂)·(1−s), s=${(slip * 100).toFixed(2)}% → ${nNext.toFixed(2)} min⁻¹.`,
+          );
+        } else if (cur.id === bId && !seen.has(aId)) {
+          const nAbs = Math.abs(cur.n);
+          const nPrev = nAbs * (db / da) * eff;
+          const Tprev = cur.T * (da / db) * lossT;
+          seen.add(aId);
+          out.byId[aId] = {
+            n_rpm: nPrev * cur.sign,
+            T_Nm: Math.abs(Tprev),
+            omega: (nPrev * cur.sign * 2 * Math.PI) / 60,
+          };
+          q.push({ id: aId, n: nPrev, T: Math.abs(Tprev), sign: cur.sign });
+        }
+      }
     }
 
     for (const cr of state.chainRuns) {
@@ -537,12 +894,30 @@ export function computeVerdicts(state, kin) {
   }
 
   for (const br of state.beltRuns) {
-    const centers = br.nodeIds.map((id) => {
+    const orderedIds = orderedBeltNodeIds(state, br);
+    const hasInsideIdler = orderedIds.some((id) => {
+      const n = state.nodes.find((x) => x.id === id);
+      return n?.kind === 'pulley' && n.pulleyRole === 'idler' && n.idlerWrapSide === 'inside';
+    });
+    const effectiveIds = hasInsideIdler
+      ? orderedIds
+      : orderedIds.filter((id) => {
+          const n = state.nodes.find((x) => x.id === id);
+          return !(n?.kind === 'pulley' && n.pulleyRole === 'idler' && (n.isExternal === true || n.idlerWrapSide === 'outside'));
+        });
+    const centers = effectiveIds.map((id) => {
       const n = state.nodes.find((x) => x.id === id);
       return n ? { x: n.x, y: n.y } : { x: 0, y: 0 };
     });
-    const radii = br.nodeIds.map((id) => getNodeD_mm(state.nodes.find((x) => x.id === id)) / 2);
-    const geo = buildOpenBeltPath2D(centers, radii);
+    const radii = effectiveIds.map((id) => getNodeD_mm(state.nodes.find((x) => x.id === id)) / 2);
+    const hasIdler = effectiveIds.some((id) => state.nodes.find((x) => x.id === id)?.pulleyRole === 'idler');
+    const meta = effectiveIds.map((id) => {
+      const n = state.nodes.find((x) => x.id === id);
+      const isIdler = n?.pulleyRole === 'idler';
+      const isExt = isIdler && (n?.isExternal === true || n?.idlerWrapSide === 'outside');
+      return { role: n?.pulleyRole, wrapSide: n?.idlerWrapSide, isExternal: isExt, contacto: isExt ? 'exterior' : 'interior' };
+    });
+    const geo = !hasIdler ? buildOpenBeltPath2D(centers, radii) : buildOrderedBeltPath2D(centers, radii, meta, br.edgeSigns || []);
     const Lgeom = geo.length_mm;
     const Leff = br.kind === 'sync' ? Lgeom : Lgeom * (1 + (br.slip ?? 0.015));
     const comm = nearestCommercialVBeltLength(Leff);

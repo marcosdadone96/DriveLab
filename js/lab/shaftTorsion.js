@@ -8,8 +8,10 @@
  * @param {number} p.tauAllow_MPa — tensión tangencial admisible (von Mises aprox. torsión pura)
  */
 export function computeSolidShaftTorsion(p) {
-  const T = Math.max(0, Number(p.torque_Nm) || 200);
-  const tauMPa = Math.max(1, Number(p.tauAllow_MPa) || 40);
+  const Tin = Number(p.torque_Nm);
+  const tauIn = Number(p.tauAllow_MPa);
+  const T = Number.isFinite(Tin) && Tin >= 0 ? Tin : 200;
+  const tauMPa = Number.isFinite(tauIn) && tauIn > 0 ? tauIn : 40;
   const tauPa = tauMPa * 1e6;
   const d_m = Math.pow((16 * T) / (Math.PI * tauPa), 1 / 3);
   const d_mm = d_m * 1000;

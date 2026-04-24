@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-tool="traction">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Ascensor de tracción — DriveLab</title>
+    <title>Ascensor de tracción — MechAssist</title>
     <link rel="stylesheet" href="css/app.css" />
       <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-43E5C8TB38"></script>
@@ -11,6 +11,7 @@
   </head>
   <body>
     <div id="fileProtoWarn" class="runtime-error" hidden role="alert"></div>
+    <div id="runtimeError" class="runtime-error runtime-error--js" hidden role="alert"></div>
     <script>
       (function () {
         if (location.protocol === 'file:') {
@@ -18,21 +19,27 @@
           if (el) {
             el.hidden = false;
             el.textContent =
-              'Abra con servidor HTTP (npx --yes serve .) para ver el módulo completo sin bloqueos del navegador.';
+              'Recomendación: abrir con un servidor local (en la carpeta del proyecto: npx --yes serve . y use la URL que muestre, p. ej. http://localhost:3000). Si abre el HTML con doble clic, el navegador puede bloquear el JavaScript y no verá resultados ni diagramas.';
           }
         }
       })();
     </script>
     <header class="app-header">
-      <a class="app-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="flat-conveyor.html">Cinta plana</a>
-        <a href="inclined-conveyor.html">Cinta inclinada</a>
-        <a href="bucket-elevator.html">Elevador cangilones</a>
-        <a href="traction-elevator.html" aria-current="page">Ascensor tracción</a>
-        <a href="screw-conveyor.html">Tornillo</a>
-        <a href="centrifugal-pump.html">Bomba</a>
+      <a class="app-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav aria-label="Navegación principal">
+        <div class="app-header__nav-start">
+          <a href="index.html">Inicio</a>
+          <a href="flat-conveyor.html">Cinta plana</a>
+          <a href="inclined-conveyor.html">Cinta inclinada</a>
+          <a href="bucket-elevator.html">Elevador cangilones</a>
+          <a href="traction-elevator.html" aria-current="page">Ascensor tracción</a>
+          <a href="screw-conveyor.html">Tornillo</a>
+          <a href="centrifugal-pump.html">Bomba</a>
+        </div>
+        <div class="app-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
 
@@ -44,49 +51,69 @@
           elección de <strong>Ø y número de cables</strong> con factor de seguridad (10 carga / 12 personas), y <strong>par de frenado</strong> en polea.
           El <strong>esquema del hueco</strong> está a la derecha, como en cinta plana y elevador de cangilones. No sustituye EN 81 ni memoria de instalación.
         </p>
+        <details class="help-details flat-help">
+          <summary>Guía rápida</summary>
+          <div class="help-details__body">
+            <ul>
+              <li><strong>Cargas:</strong> Q y Mc definen desequilibrio y potencia orientativa.</li>
+              <li><strong>Contrapeso:</strong> óptimo típico Mc + (0,40–0,50)*Q.</li>
+              <li><strong>Euler:</strong> adherencia en polea con T1/T2 y límite e^(mu*alpha).</li>
+              <li><strong>Cables:</strong> selección demo por carga mínima de rotura y SF según servicio.</li>
+            </ul>
+          </div>
+        </details>
 
-        <h3 class="field-section-title">Cargas y recorrido</h3>
-        <div class="field-grid field-grid--essential">
+        <details class="flat-accordion" id="teAccLoads">
+          <summary class="flat-accordion__summary">
+            <span class="flat-accordion__icon" aria-hidden="true">◇</span>
+            <span class="flat-accordion__label">Cargas y recorrido</span>
+          </summary>
+          <div class="flat-accordion__body field-grid field-grid--essential">
           <div class="field">
-            <label for="teQ">Carga útil <em>Q</em></label>
+            <label for="teQ">Carga útil <em>Q</em> <span class="info-chip" title="Carga útil nominal en kg. Determina SF y carga total sobre el sistema de tracción." aria-label="Ayuda carga útil.">?</span></label>
             <input id="teQ" type="number" step="50" min="0" value="2000" />
             <span class="field-hint">kg</span>
           </div>
           <div class="field">
-            <label for="teMc">Peso cabina vacía</label>
+            <label for="teMc">Peso cabina vacía <span class="info-chip" title="Masa propia de cabina sin carga. Junto con Q fija masas en cada rama." aria-label="Ayuda peso cabina.">?</span></label>
             <input id="teMc" type="number" step="50" min="1" value="1200" />
             <span class="field-hint">kg</span>
           </div>
           <div class="field">
-            <label for="teH">Altura de viaje</label>
+            <label for="teH">Altura de viaje <span class="info-chip" title="Recorrido vertical útil. Entra en energía de ciclo y representación del hueco." aria-label="Ayuda altura de viaje.">?</span></label>
             <input id="teH" type="number" step="0.5" min="0.5" value="12" />
             <span class="field-hint">m</span>
           </div>
           <div class="field">
-            <label for="teV">Velocidad nominal</label>
+            <label for="teV">Velocidad nominal <span class="info-chip" title="Velocidad lineal cabina. Condiciona rpm de polea y potencia de tracción." aria-label="Ayuda velocidad nominal.">?</span></label>
             <input id="teV" type="number" step="0.05" min="0.1" value="1" />
             <span class="field-hint">m/s</span>
           </div>
           <div class="field">
-            <label for="teDuty">Servicio</label>
+            <label for="teDuty">Servicio <span class="info-chip" title="Define factor de seguridad de selección demo: carga ~10, personas ~12." aria-label="Ayuda tipo de servicio.">?</span></label>
             <select id="teDuty">
               <option value="freight" selected>Montacargas / carga (SF ≈ 10)</option>
               <option value="persons">Personas (SF ≈ 12)</option>
             </select>
           </div>
           <div class="field">
-            <label for="teReeving">Arrollamiento</label>
+            <label for="teReeving">Arrollamiento <span class="info-chip" title="1:1 o 2:1. Cambia relación de movimiento, esfuerzos y rpm en polea." aria-label="Ayuda arrollamiento.">?</span></label>
             <select id="teReeving">
               <option value="1_1" selected>1:1</option>
               <option value="2_1">2:1</option>
             </select>
           </div>
-        </div>
+          </div>
+        </details>
 
-        <h3 class="field-section-title">Contrapeso</h3>
-        <div class="field-grid field-grid--essential">
+        <details class="flat-accordion" id="teAccCw">
+          <summary class="flat-accordion__summary">
+            <span class="flat-accordion__icon" aria-hidden="true">◇</span>
+            <span class="flat-accordion__label">Contrapeso</span>
+          </summary>
+          <div class="flat-accordion__body field-grid field-grid--essential">
           <div class="field">
-            <label for="teKcw">Fracción de <em>Q</em> en contrapeso óptimo</label>
+            <label for="teKcw">Fracción de <em>Q</em> en contrapeso óptimo <span class="info-chip" title="Rango típico 0,40–0,50 para Mcp≈Mc+k*Q." aria-label="Ayuda fracción de contrapeso.">?</span></label>
             <input id="teKcw" type="number" step="0.05" min="0.35" max="0.55" value="0.45" />
             <span class="field-hint">típ. 0,40–0,50 → <em>M</em><sub>cp</sub> ≈ <em>M</em><sub>c</sub> + <em>k</em>·<em>Q</em></span>
           </div>
@@ -97,40 +124,58 @@
             </label>
           </div>
           <div class="field" id="teMcpManualRow" hidden>
-            <label for="teMcpManual">Masa contrapeso</label>
+            <label for="teMcpManual">Masa contrapeso <span class="info-chip" title="Use valor manual si ya existe diseño de contrapeso; si no, mantenga el óptimo automático." aria-label="Ayuda masa contrapeso manual.">?</span></label>
             <input id="teMcpManual" type="number" step="50" min="1" value="2100" />
             <span class="field-hint">kg</span>
           </div>
-        </div>
+          </div>
+        </details>
 
-        <h3 class="field-section-title">Polea y adherencia (Euler-Eytelwein)</h3>
-        <div class="field-grid field-grid--essential">
+        <details class="flat-accordion" id="teAccSheave">
+          <summary class="flat-accordion__summary">
+            <span class="flat-accordion__icon" aria-hidden="true">◇</span>
+            <span class="flat-accordion__label">Polea y adherencia (Euler-Eytelwein)</span>
+          </summary>
+          <div class="flat-accordion__body field-grid field-grid--essential">
           <div class="field">
-            <label for="teD">Ø primitivo polea tractora</label>
+            <label for="teD">Ø primitivo polea tractora <span class="info-chip" title="Diámetro primitivo de polea (m). Influye en rpm, par y curvatura del cable." aria-label="Ayuda diámetro polea tractora.">?</span></label>
             <input id="teD" type="number" step="0.05" min="0.2" value="0.55" />
             <span class="field-hint">m</span>
           </div>
           <div class="field">
-            <label for="teAlpha">Ángulo de abrazamiento</label>
+            <label for="teAlpha">Ángulo de abrazamiento <span class="info-chip" title="Ángulo de contacto cable-polea. Mayor α mejora límite e^(mu*alpha)." aria-label="Ayuda ángulo de abrazamiento.">?</span></label>
             <input id="teAlpha" type="number" step="5" min="90" max="360" value="180" />
             <span class="field-hint">°</span>
           </div>
           <div class="field">
-            <label for="teMu">Coef. fricción cable–canal μ</label>
+            <label for="teMu">Coef. fricción cable–canal μ <span class="info-chip" title="Coeficiente efectivo de tracción. Orientativo 0,08–0,15 según canal/estado." aria-label="Ayuda coeficiente de fricción cable canal.">?</span></label>
             <input id="teMu" type="number" step="0.01" min="0.05" max="0.25" value="0.1" />
             <span class="field-hint">orientativo</span>
           </div>
           <div class="field">
-            <label for="teMaxN">Máx. cables / tiras</label>
+            <label for="teMaxN">Máx. cables / tiras <span class="info-chip" title="Tope de diseño para selección demo de cables. Si se supera, revise diámetro/cargas." aria-label="Ayuda máximo de cables.">?</span></label>
             <input id="teMaxN" type="number" step="1" min="2" max="16" value="8" />
             <span class="field-hint">límite diseño</span>
           </div>
-        </div>
+          </div>
+        </details>
 
         <div id="mountingConfigHost" class="mounting-config-host" style="margin-top: 1rem"></div>
+
+        <button type="button" class="btn-calc" id="btnTeCalc">Ver motorreductores sugeridos</button>
+        <p class="calc-hint flat-calc-hint">
+          Los resultados y el diagrama se <strong>actualizan al cambiar los datos</strong>. Este botón despliega el bloque de motorreductores.
+        </p>
       </section>
 
       <div class="layout-right">
+        <section class="panel">
+          <h2><span class="panel-icon">∑</span> Resultados y veredictos</h2>
+          <div id="teResults" class="metric-grid"></div>
+          <div id="teVerdicts" style="margin-top: 1rem"></div>
+          <p id="teDisclaimer" class="field-hint" style="margin-top: 1rem"></p>
+        </section>
+
         <section class="panel be-diag-panel">
           <h2><span class="panel-icon">◇</span> Hueco · vista lateral</h2>
           <p class="muted" style="margin: -0.5rem 0 0.75rem; font-size: 0.84rem">
@@ -159,15 +204,34 @@
         </section>
 
         <section class="panel">
-          <h2><span class="panel-icon">∑</span> Resultados y veredictos</h2>
-          <div id="teResults" class="metric-grid"></div>
-          <div id="teVerdicts" style="margin-top: 1rem"></div>
-          <p id="teDisclaimer" class="field-hint" style="margin-top: 1rem"></p>
-          <p style="margin-top: 1rem">
-            <button type="button" class="button button--ghost" id="teOpenMotors" style="width: 100%">
-              Abrir recomendaciones de motorreductores
-            </button>
-          </p>
+          <div class="verify-panel" id="teVerifyPanel">
+            <h2><span class="panel-icon">✓</span> Comprobar un motorreductor que ya tengo</h2>
+            <p class="muted" style="margin: -0.5rem 0 1rem; font-size: 0.84rem">
+              Compare potencia de motor, par de salida y rpm con el punto de <strong>polea tractora</strong> calculado arriba.
+            </p>
+            <div class="verify-grid">
+              <div class="field">
+                <label for="teVerifyBrand">Marca <span class="info-chip" title="Fabricante del catálogo demo para comprobación rápida." aria-label="Ayuda marca comprobador.">?</span></label>
+                <select id="teVerifyBrand" data-verify-brand>
+                  <option value="sew">SEW-Eurodrive</option>
+                  <option value="siemens">Siemens (Simogear)</option>
+                  <option value="nord">Nord Drivesystems</option>
+                  <option value="bonfiglioli">Bonfiglioli</option>
+                  <option value="motovario">Motovario</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="teVerifySearch">Filtrar modelo (texto) <span class="info-chip" title="Búsqueda por código o texto para acotar modelos disponibles." aria-label="Ayuda filtro de modelo.">?</span></label>
+                <input id="teVerifySearch" type="search" placeholder="ej. R47, SK…" data-verify-search autocomplete="off" />
+              </div>
+              <div class="field" style="grid-column: 1 / -1">
+                <label for="teVerifyModel">Modelo del catálogo ejemplo <span class="info-chip" title="Se compara contra potencia, par y rpm de polea calculados." aria-label="Ayuda modelo catálogo.">?</span></label>
+                <select id="teVerifyModel" data-verify-model size="1"></select>
+              </div>
+            </div>
+            <button type="button" data-verify-run style="margin-top: 1rem; width: 100%">Comprobar para este ascensor</button>
+            <div data-verify-out></div>
+          </div>
         </section>
 
         <section class="panel" id="section-te-motores">
@@ -183,36 +247,44 @@
             </summary>
             <div class="motors-details__body">
               <div id="teMotorBlock"></div>
-              <div class="verify-panel motors-details__verify" id="teVerifyPanel">
-                <h2><span class="panel-icon">✓</span> Comprobar un motorreductor que ya tengo</h2>
-                <p class="muted" style="margin: -0.5rem 0 1rem; font-size: 0.84rem">
-                  Compare potencia de motor, par de salida y rpm con el punto de <strong>polea tractora</strong> calculado arriba.
-                </p>
-                <div class="verify-grid">
-                  <div class="field">
-                    <label for="teVerifyBrand">Marca</label>
-                    <select id="teVerifyBrand" data-verify-brand>
-                      <option value="sew">SEW-Eurodrive</option>
-                      <option value="siemens">Siemens (Simogear)</option>
-                      <option value="nord">Nord Drivesystems</option>
-                      <option value="bonfiglioli">Bonfiglioli</option>
-                      <option value="motovario">Motovario</option>
-                    </select>
-                  </div>
-                  <div class="field">
-                    <label for="teVerifySearch">Filtrar modelo (texto)</label>
-                    <input id="teVerifySearch" type="search" placeholder="ej. R47, SK…" data-verify-search autocomplete="off" />
-                  </div>
-                  <div class="field" style="grid-column: 1 / -1">
-                    <label for="teVerifyModel">Modelo del catálogo ejemplo</label>
-                    <select id="teVerifyModel" data-verify-model size="1"></select>
-                  </div>
-                </div>
-                <button type="button" data-verify-run style="margin-top: 1rem; width: 100%">Comprobar para este ascensor</button>
-                <div data-verify-out></div>
-              </div>
             </div>
           </details>
+        </section>
+        <section class="panel">
+          <details class="motors-details">
+            <summary class="motors-details__summary">
+              <span class="motors-details__summary-main">
+                <span class="panel-icon">⌗</span>
+                <span class="motors-details__text">
+                  <span class="motors-details__title">Desglose de ingeniería</span>
+                  <span class="motors-details__hint">Plegado por defecto — relación, estrategias y pasos del modelo</span>
+                </span>
+              </span>
+            </summary>
+            <div class="motors-details__body">
+              <div id="teEngineeringReport" class="eng-report"></div>
+            </div>
+          </details>
+        </section>
+        <section class="panel" id="traction-assumptions">
+          <details class="motors-details result-focus-extra">
+            <summary class="motors-details__summary">
+              <span class="motors-details__summary-main">
+                <span class="panel-icon">※</span>
+                <span class="motors-details__text">
+                  <span class="motors-details__title">Hipótesis del modelo</span>
+                  <span class="motors-details__hint">Supuestos y límites del cálculo orientativo</span>
+                </span>
+              </span>
+            </summary>
+            <div class="motors-details__body">
+              <ul class="assumptions" id="teAssumptionsList"></ul>
+            </div>
+          </details>
+        </section>
+        <section class="panel">
+          <h2><span class="panel-icon">PDF</span> Exportar informe</h2>
+          <div id="premiumPdfExportMount" class="premium-pdf-mount"></div>
         </section>
       </div>
     </main>

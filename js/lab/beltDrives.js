@@ -51,9 +51,12 @@ export function syncPrimitiveDiameter_mm(Z, pitch_mm) {
 function openBeltPrimitiveGeometry(d1_mm, d2_mm, center_mm) {
   const d1 = Math.max(10, Number(d1_mm) || 100);
   const d2 = Math.max(10, Number(d2_mm) || 200);
-  const C = Math.max(50, Number(center_mm) || 400);
+  const Craw = Number(center_mm);
+  const C = Number.isFinite(Craw) && Craw > 0 ? Craw : 400;
+  const k = Math.abs(d2 - d1) / (2 * C);
+  const geometryValid = Number.isFinite(k) && k < 1;
   const L = 2 * C + (Math.PI / 2) * (d1 + d2) + ((d2 - d1) * (d2 - d1)) / (4 * C);
-  const alpha = Math.asin(Math.min(1, Math.abs(d2 - d1) / (2 * C)));
+  const alpha = geometryValid ? Math.asin(k) : NaN;
   const wrap1 = Math.PI - 2 * alpha;
   const wrap2 = Math.PI + 2 * alpha;
   const dLarge = Math.max(d1, d2);
@@ -68,8 +71,10 @@ function openBeltPrimitiveGeometry(d1_mm, d2_mm, center_mm) {
     ratio_d2_d1: d2 / d1,
     /** Relación cinemática i = ω₁/ω₂ ≈ d₂/d₁ (reductor si d₂>d₁). */
     ratio_i: d2 / d1,
-    wrapAngle_deg_small: (wrap1 * 180) / Math.PI,
-    wrapAngle_deg_large: (wrap2 * 180) / Math.PI,
+    wrapAngle_deg_small: geometryValid ? (wrap1 * 180) / Math.PI : NaN,
+    wrapAngle_deg_large: geometryValid ? (wrap2 * 180) / Math.PI : NaN,
+    geometryValid,
+    geometryNote: geometryValid ? '' : 'Geometria no fisica: C debe ser mayor que |d2-d1|/2.',
   };
 }
 

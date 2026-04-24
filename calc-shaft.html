@@ -12,11 +12,15 @@
   </head>
   <body class="lab-body">
     <header class="lab-header">
-      <a class="lab-header__brand" href="index.html">Drive<span>Lab</span></a>
-      <nav>
-        <a href="index.html">Inicio</a>
-        <a href="transmission-lab.html">Laboratorio</a>
-        <a href="transmission-canvas.html">Lienzo técnico Pro</a>
+      <a class="lab-header__brand" href="index.html">Mech<span>Assist</span></a>
+      <nav class="lab-header__nav" aria-label="Navegación laboratorio">
+        <div class="lab-header__nav-start">
+          <a href="index.html">Inicio</a>
+        </div>
+        <div class="lab-header__nav-end">
+          <a href="transmission-lab.html" class="lab-header__nav-cta">Laboratorio</a>
+          <a href="transmission-canvas.html" title="Lienzo técnico multieje (Pro)">Lienzo Pro</a>
+        </div>
       </nav>
     </header>
     <main class="lab-main">
@@ -64,7 +68,14 @@
             </div>
           </div>
           <div class="lab-calc-layout__out">
-            <div class="lab-units-bar" role="group" aria-label="Unidades de los resultados">
+            <div
+              class="lab-units-bar"
+              role="group"
+              aria-label="Unidades de los resultados"
+              data-lab-convert-categories="length rotation linear torque"
+              data-lab-convert-title="Conversor (eje y torsion)"
+              data-lab-convert-tip="Diametros y tramos en mm; velocidad de giro; v periferica; par motor o de torsion."
+            >
               <span class="lab-units-bar__title">Cómo ver los resultados</span>
               <label class="lab-units-bar__field">
                 <span class="lab-units-bar__lbl">Distancias</span>
@@ -103,10 +114,12 @@
               </div>
               <div class="lab-results" id="shResults"></div>
             </div>
+            <div id="labPurchaseSuggestions" hidden></div>
           </div>
         </div>
       </section>
     </main>
     <script type="module" src="js/ui/calcShaftPage.js"></script>
+    <script type="module" src="js/ui/labDonationFooter.js"></script>
   </body>
 </html>
